@@ -41,7 +41,7 @@ ASSETS: list[tuple[str, str]] = [
     ("BTC-USD", "Bitcoin"),
     ("ETH-USD", "ETH/USD"),
     ("EURUSD=X", "EUR/USD"),
-    ("CLPUSD=X", "USD/CLP"),
+    ("USDCLP=X", "USD/CLP"),
 ]
 
 # Consulta amplia; el filtro “últimas 24 h” se aplica en código (NewsAPI free suele exigir sortBy≠publishedAt).
