@@ -331,9 +331,9 @@ def build_news_fallback_html_sections(news: list[dict[str, Any]]) -> str:
             url = n.get("url") or ""
             if url:
                 link = html_module.escape(url, quote=True)
-            t_html = (
-                f'<a href="{link}" style="color:#1d4ed8;text-decoration:underline;">{t_esc}</a>'
-            )
+                t_html = (
+                    f'<a href="{link}" style="color:#1d4ed8;text-decoration:underline;">{t_esc}</a>'
+                )
             else:
                 t_html = t_esc
             src = html_module.escape(n.get("fuente") or "")
@@ -447,16 +447,42 @@ def _newsapi_fetch(
         return None, f"NewsAPI HTTP: {e}"
 
 
-def fetch_news_24h(api_key: str) -> tuple[list[dict[str, Any]], list[str], dict[str, Any]]:
+def get_news_lookback_hours() -> int:
     """
-    Artículos en las últimas 24 h (filtrado local).
+    Ventana de noticias en horas.
+    - Variable NEWS_LOOKBACK_HOURS (entero) si está definida.
+    - Lunes en UTC: 72 h (3 días) para cubrir fin de semana.
+    - Resto de días: 24 h.
+    """
+    raw = (os.getenv("NEWS_LOOKBACK_HOURS") or "").strip()
+    if raw.isdigit():
+        return max(1, min(int(raw), 168))
+    if datetime.now(timezone.utc).weekday() == 0:
+        return 72
+    return 24
+
+
+def fetch_news_24h(
+    api_key: str, lookback_hours: int | None = None
+) -> tuple[list[dict[str, Any]], list[str], dict[str, Any]]:
+    """
+    Artículos en la ventana lookback_hours (filtrado local).
     En plan gratuito, sortBy=publishedAt suele fallar; usamos relevancy/popularity.
     """
-    errors: list[str] = []
-    meta: dict[str, Any] = {"intentos": []}
+    if lookback_hours is None:
+        lookback_hours = get_news_lookback_hours()
 
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
-    from_day = (datetime.now(timezone.utc) - timedelta(days=2)).strftime("%Y-%m-%d")
+    errors: list[str] = []
+    meta: dict[str, Any] = {
+        "intentos": [],
+        "lookback_hours": lookback_hours,
+    }
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=lookback_hours)
+    # Margen para el parámetro `from` de NewsAPI
+    from_days_back = max(2, (lookback_hours + 23) // 24 + 1)
+    from_day = (now - timedelta(days=from_days_back)).strftime("%Y-%m-%d")
 
     # 1) relevancy + from (2 días) + sin language (más resultados)
     data, err = _newsapi_fetch(
@@ -552,7 +578,7 @@ def fetch_news_24h(api_key: str) -> tuple[list[dict[str, Any]], list[str], dict[
     if not raw and not errors:
         errors.append("NewsAPI: 0 artículos en la respuesta (revisa clave/plan y consulta).")
 
-    # Si la API trae notas pero ninguna pasa el corte 24 h (zonas horarias / retraso), usar recientes sin filtro.
+    # Si la API trae notas pero ninguna pasa el corte de la ventana (zonas horarias / retraso), usar recientes sin filtro.
     if not articles and raw:
         meta["relajado_sin_filtro_24h"] = True
         seen2: set[str] = set()
@@ -576,8 +602,8 @@ def fetch_news_24h(api_key: str) -> tuple[list[dict[str, Any]], list[str], dict[
             if len(articles) >= 40:
                 break
         errors.append(
-            "NewsAPI: ninguna noticia encajó en las últimas 24 h exactas; "
-            "se listan las más recientes devueltas por la API (pueden superar 24 h)."
+            f"NewsAPI: ninguna noticia encajó en las últimas {lookback_hours} h exactas; "
+            "se listan las más recientes devueltas por la API (pueden superar esa ventana)."
         )
 
     return articles, errors, meta
@@ -818,12 +844,16 @@ def run() -> int:
             print(f"  [precios] {err}", file=sys.stderr)
     print(f"  OK: {len(prices)} activos con datos.")
 
-    print("Obteniendo noticias (24h)…")
-    news, news_errors, news_meta = fetch_news_24h(env["NEWS_API_KEY"])
+    lookback_h = get_news_lookback_hours()
+    print(f"Obteniendo noticias (ventana últimas {lookback_h} h)…")
+    news, news_errors, news_meta = fetch_news_24h(env["NEWS_API_KEY"], lookback_h)
     if news_errors:
         for err in news_errors:
             print(f"  [noticias] {err}", file=sys.stderr)
-    print(f"  OK: {len(news)} titulares tras filtro 24 h (crudos API: {news_meta.get('recibidos_crudos', 0)}).")
+    print(
+        f"  OK: {len(news)} titulares tras filtro {lookback_h} h "
+        f"(crudos API: {news_meta.get('recibidos_crudos', 0)})."
+    )
     print(f"  Meta NewsAPI: {json.dumps(news_meta, ensure_ascii=False)}")
 
     pre_lang = len(news)
