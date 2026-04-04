@@ -36,5 +36,29 @@ GitHub Actions con cron `0 11 * * *` (11:00 UTC ≈ 8:00 Chile). Los lunes busca
 ## Archivos principales
 
 - **`daily_briefing.py`** — script principal
-- **`.github/workflows/daily_briefing.yml`** — workflow de automatización
+- **`alert_agent.py`** — alertas de portafolio (ver abajo)
+- **`swing_signals.py`** — señales swing S&P 500 (ver abajo)
+- **`.github/workflows/daily_briefing.yml`** — briefing diario
+- **`.github/workflows/alert_agent.yml`** — alertas cada 4 h
+- **`.github/workflows/swing_signals.yml`** — swing lun–vie
 - **`.env`** — credenciales locales (no se sube a GitHub)
+
+## `alert_agent.py`
+
+Monitorea noticias relevantes para un portafolio de **36 acciones** (watchlist personal).
+
+- **Fuentes:** NewsAPI + RSS de Reuters, CNBC y Reserva Federal
+- **Frecuencia:** cada **4 horas** vía GitHub Actions
+- Solo envía email si **Claude** determina que hay noticias relevantes
+- **Criterios:** movimientos >2%, resultados corporativos, decisiones Fed, geopolítica, crypto
+
+## `swing_signals.py`
+
+Analiza el **S&P 500 completo** buscando oportunidades de swing trading.
+
+- **Datos:** Yahoo Finance (**6 meses** de histórico diario)
+- **Señales:** RSI, medias móviles 20/50, volumen relativo, ATR
+- **Filtros:** retorno esperado **5–10%**, ratio riesgo/beneficio mínimo **1:2**, volumen relativo **>1,5**
+- **Salida:** máximo **3** señales de alta convicción (long o short) con entrada, stop loss, take profit y precio máximo/mínimo de entrada (según lado)
+- **Frecuencia:** lunes a viernes a las **12:00 UTC** (**8:30am Chile** aprox.) vía GitHub Actions
+- Si no hay señales de calidad, **no envía email**
