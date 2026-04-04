@@ -1,0 +1,32 @@
+# Ventana horaria Chile ~9:00–21:00 (UTC−3): 12, 16, 20 y 00 UTC cada día (~cada 4 h).
+
+name: Portfolio alert agent
+
+on:
+  schedule:
+    - cron: "0 0,12,16,20 * * *"
+  workflow_dispatch:
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install anthropic requests python-dotenv feedparser
+
+      - name: Run alert_agent.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+          EMAIL_DESTINO: ${{ secrets.EMAIL_DESTINO }}
+        run: python alert_agent.py
