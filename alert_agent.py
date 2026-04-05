@@ -331,6 +331,20 @@ def sanitize_subject_fragment(s: str, max_len: int = 70) -> str:
     return s or "Actualización"
 
 
+def _coerce_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "si"}:
+            return True
+        if normalized in {"false", "0", "no", ""}:
+            return False
+    return False
+
+
 def build_alert_email_html(
     decision: dict[str, Any],
     fetch_errors: list[str],
@@ -466,14 +480,23 @@ def run() -> int:
         return 1
 
     assert decision is not None
-    if not decision.get("alert"):
-        print("Claude: sin alertas relevantes. No se envía email.")
+    print("Respuesta JSON de Claude:")
+    print(json.dumps(decision, ensure_ascii=False, indent=2))
+
+    alert_flag = _coerce_bool(decision.get("alert"))
+    items = decision.get("items")
+    has_items = isinstance(items, list) and len(items) > 0
+    should_send_alert = alert_flag and has_items
+
+    if not should_send_alert:
+        print("Sin alertas relevantes, no se envía email")
         return 0
 
     tema = sanitize_subject_fragment(str(decision.get("tema_asunto") or ""))
     subject = f"🚨 Alerta Portafolio - {tema}"
     html_body = build_alert_email_html(decision, fetch_errors)
 
+    print("Alerta detectada, enviando email")
     print(f"Enviando alerta por email (asunto: {subject[:60]}…)…")
     ok, smtp_err = send_email_html(
         env["GMAIL_USER"],
