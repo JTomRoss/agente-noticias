@@ -376,6 +376,10 @@ def analyze_universe(tickers: list[str]) -> tuple[list[dict[str, Any]], list[str
                     lv["ma20"] = m["ma20"]
                     lv["ma50"] = m["ma50"]
                     lv["rel_vol"] = rel_vol
+                    pp = fetch_prepost_market(t)
+                    lv.update(pp)
+                    if pp.get("gap_alerta") and pp.get("gap_pct", 0) < 0:
+                        lv["score"] *= 0.5
                     longs.append(lv)
 
             if rsi > 55 and not m["sobre_ma50"]:
@@ -386,6 +390,10 @@ def analyze_universe(tickers: list[str]) -> tuple[list[dict[str, Any]], list[str
                     sv["ma20"] = m["ma20"]
                     sv["ma50"] = m["ma50"]
                     sv["rel_vol"] = rel_vol
+                    pp = fetch_prepost_market(t)
+                    sv.update(pp)
+                    if pp.get("gap_alerta") and pp.get("gap_pct", 0) > 0:
+                        sv["score"] *= 0.5
                     shorts.append(sv)
 
     longs.sort(key=lambda x: x["score"], reverse=True)
@@ -408,7 +416,177 @@ def analyze_universe(tickers: list[str]) -> tuple[list[dict[str, Any]], list[str
     return picked[:10], errors
 
 
-def build_claude_prompt(candidates: list[dict[str, Any]]) -> str:
+def fetch_market_futures() -> dict[str, dict[str, Any]]:
+    """Obtiene precio y variación % de futuros clave via yfinance."""
+    symbols = {
+        "S&P 500 Fut": "ES=F",
+        "Nasdaq Fut": "NQ=F",
+        "VIX": "^VIX",
+        "Oro": "GC=F",
+        "Petróleo WTI": "CL=F",
+        "Bono EEUU 10Y": "^TNX",
+    }
+    result: dict[str, dict[str, Any]] = {}
+    for name, sym in symbols.items():
+        try:
+            ticker = yf.Ticker(sym)
+            info = ticker.info
+            price = info.get("regularMarketPrice") or info.get("currentPrice")
+            prev_close = info.get("regularMarketPreviousClose")
+            if price is None or prev_close is None or prev_close == 0:
+                hist = ticker.history(period="2d", interval="1d")
+                if hist is not None and len(hist) >= 2:
+                    price = float(hist["Close"].iloc[-1])
+                    prev_close = float(hist["Close"].iloc[-2])
+                elif hist is not None and len(hist) == 1:
+                    price = float(hist["Close"].iloc[-1])
+                    prev_close = price
+            if price is not None and prev_close is not None and prev_close != 0:
+                chg = ((float(price) - float(prev_close)) / float(prev_close)) * 100.0
+                result[name] = {"precio": round(float(price), 4), "cambio_pct": round(chg, 3)}
+            else:
+                result[name] = {"precio": None, "cambio_pct": None}
+        except Exception:
+            result[name] = {"precio": None, "cambio_pct": None}
+    return result
+
+
+def fetch_prepost_market(ticker: str) -> dict[str, Any]:
+    """Obtiene datos de pre/post market para un ticker."""
+    out: dict[str, Any] = {
+        "preMarketPrice": None,
+        "postMarketPrice": None,
+        "regularMarketPreviousClose": None,
+    }
+    try:
+        info = yf.Ticker(ticker).info
+        pre = info.get("preMarketPrice")
+        post = info.get("postMarketPrice")
+        prev = info.get("regularMarketPreviousClose")
+        out["preMarketPrice"] = pre
+        out["postMarketPrice"] = post
+        out["regularMarketPreviousClose"] = prev
+
+        ext_price = pre if pre is not None else post
+        if ext_price is None:
+            try:
+                hist = yf.Ticker(ticker).history(period="1d", prePost=True)
+                if hist is not None and not hist.empty:
+                    ext_price = float(hist["Close"].iloc[-1])
+                    if prev is None and len(hist) >= 1:
+                        prev = float(hist["Close"].iloc[-1])
+            except Exception:
+                pass
+
+        if ext_price is not None and prev is not None and float(prev) != 0:
+            gap = ((float(ext_price) - float(prev)) / float(prev)) * 100.0
+            if abs(gap) > 1.5:
+                out["gap_pct"] = round(gap, 3)
+                out["gap_alerta"] = True
+    except Exception:
+        pass
+    return out
+
+
+def fetch_macro_news(news_api_key: str) -> list[dict[str, Any]]:
+    """Descarga titulares de negocio desde NewsAPI y filtra los relevantes a mercados."""
+    keywords = {
+        "market", "stocks", "fed", "rate", "inflation", "trade", "tariff",
+        "iran", "oil", "recession", "rally", "s&p", "nasdaq", "earnings", "jobs",
+    }
+    articles: list[dict[str, Any]] = []
+    if not news_api_key:
+        return articles
+    try:
+        url = "https://newsapi.org/v2/top-headlines"
+        params = {"category": "business", "language": "en", "pageSize": 20, "apiKey": news_api_key}
+        r = requests.get(url, params=params, timeout=20)
+        r.raise_for_status()
+        data = r.json()
+        for art in data.get("articles", []):
+            title = (art.get("title") or "").lower()
+            desc = (art.get("description") or "").lower()
+            text = title + " " + desc
+            if any(kw in text for kw in keywords):
+                articles.append({
+                    "titulo": art.get("title") or "",
+                    "descripcion": (art.get("description") or "")[:200],
+                    "fuente": (art.get("source") or {}).get("name") or "",
+                    "fecha": art.get("publishedAt") or "",
+                })
+    except Exception as e:
+        print(f"  [macro news] Error: {e}", flush=True)
+    return articles
+
+
+def build_macro_context_summary(
+    futures: dict[str, dict[str, Any]],
+    news: list[dict[str, Any]],
+    candidates: list[dict[str, Any]],
+) -> str:
+    lines: list[str] = ["=== CONTEXTO MACRO EN TIEMPO REAL ===", ""]
+    lines.append("FUTUROS:")
+    sp_chg: float | None = None
+    vix_price: float | None = None
+    for name, data in futures.items():
+        precio = data.get("precio")
+        chg = data.get("cambio_pct")
+        if precio is None or chg is None:
+            lines.append(f"  {name}: N/D")
+            continue
+        arrow = "▲" if chg >= 0 else "▼"
+        sign = "+" if chg >= 0 else ""
+        lines.append(f"  {name}: {precio} {arrow} {sign}{chg:.2f}%")
+        if name == "S&P 500 Fut":
+            sp_chg = chg
+        if name == "VIX":
+            vix_price = precio
+
+    lines.append("")
+    if sp_chg is not None:
+        if sp_chg > 0.5:
+            sesgo = "ALCISTA"
+        elif sp_chg < -0.5:
+            sesgo = "BAJISTA"
+        else:
+            sesgo = "NEUTRAL"
+        lines.append(f"SESGO MACRO S&P: {sesgo} (futuros {'+' if sp_chg >= 0 else ''}{sp_chg:.2f}%)")
+    else:
+        lines.append("SESGO MACRO S&P: DESCONOCIDO")
+
+    if vix_price is not None:
+        if vix_price > 25:
+            estado_vix = f"ELEVADO ({vix_price:.1f}) — mayor incertidumbre"
+        elif vix_price < 15:
+            estado_vix = f"BAJO ({vix_price:.1f}) — baja volatilidad implícita"
+        else:
+            estado_vix = f"MODERADO ({vix_price:.1f})"
+        lines.append(f"VIX: {estado_vix}")
+
+    lines.append("")
+    lines.append("NOTICIAS RELEVANTES (hasta 8):")
+    for art in news[:8]:
+        lines.append(f"  [{art.get('fuente','?')}] {art.get('titulo','')}")
+        if art.get("descripcion"):
+            lines.append(f"    → {art['descripcion'][:150]}")
+
+    cands_with_gap = [c for c in candidates if c.get("gap_alerta")]
+    if cands_with_gap:
+        lines.append("")
+        lines.append("GAPS PRE/POST MARKET DETECTADOS:")
+        for c in cands_with_gap:
+            gp = c.get("gap_pct", 0)
+            arrow = "▲" if gp > 0 else "▼"
+            lines.append(
+                f"  {c['ticker']} ({c['direccion'].upper()}): gap {arrow}{abs(gp):.2f}% "
+                f"respecto cierre anterior ({c.get('regularMarketPreviousClose','?')})"
+            )
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+def build_claude_prompt(candidates: list[dict[str, Any]], macro_context: str = "") -> str:
     slim = []
     for c in candidates:
         row = {
@@ -427,8 +605,18 @@ def build_claude_prompt(candidates: list[dict[str, Any]]) -> str:
             "rel_vol": round(c["rel_vol"], 2),
             "score": round(c["score"], 4),
         }
+        if c.get("gap_alerta"):
+            row["gap_pct"] = c.get("gap_pct")
+            row["gap_alerta"] = True
         slim.append(row)
-    return f"""Eres un analista de swing trading exigente. Candidatos del S&P 500 que ya cumplen filtros duros
+
+    macro_section = ""
+    if macro_context:
+        macro_section = f"""{macro_context}
+
+"""
+
+    return f"""{macro_section}Eres un analista de swing trading exigente. Candidatos del S&P 500 que ya cumplen filtros duros
 (TP entre 5% y 10%, stop 1,5×ATR, ratio riesgo/beneficio ≥ 1:2, entrada con buffer ±0,3% sobre el último cierre).
 
 {json.dumps(slim, ensure_ascii=False, indent=2)}
@@ -440,8 +628,17 @@ REGLAS:
 - Solo tickers de la lista. Copia los valores numéricos EXACTOS de precio_entrada, precio_maximo_entrada (long) o precio_minimo_entrada (short), stop_loss, take_profit, porcentaje_potencial y horizonte_dias del candidato elegido (no los modifiques).
 - En long, precio_minimo_entrada debe ser null. En short, precio_maximo_entrada debe ser null.
 
+REGLAS DE CONTEXTO MACRO (aplicar en base al contexto provisto arriba):
+- Si futuros S&P 500 >+0.5%: DESCARTAR todas las señales SHORT.
+- Si futuros S&P 500 <-0.5%: ser muy cauteloso con señales LONG; solo incluir si la convicción técnica es muy alta.
+- Si el precio pre/post market de una acción difiere >1.5% del cierre y va contra la señal (gap_alerta=True): DESCARTAR esa señal específica.
+- VIX >25: reducir convicción general; ser más selectivo.
+- Noticias de alto impacto que contradigan la dirección de la señal: DESCARTAR esa señal.
+- En el campo "motivo" de cada señal seleccionada, mencionar explícitamente si el contexto macro apoya o contradice la señal.
+
 Responde ÚNICAMENTE con JSON válido (sin markdown ni ```):
 {{
+  "sesgo_macro_detectado": "ALCISTA|BAJISTA|NEUTRAL|DESCONOCIDO",
   "seleccion": [
     {{
       "ticker": "AAPL",
@@ -453,7 +650,7 @@ Responde ÚNICAMENTE con JSON válido (sin markdown ni ```):
       "take_profit": 130.0,
       "porcentaje_potencial": 6.2,
       "horizonte_dias": "4-6",
-      "motivo": "breve, en español"
+      "motivo": "breve, en español, mencionando si macro apoya o contradice"
     }}
   ]
 }}
@@ -542,7 +739,11 @@ def merge_claude_with_candidates(
     return merged
 
 
-def build_email_html(rows: list[dict[str, Any]], wiki_errors: list[str]) -> str:
+def build_email_html(
+    rows: list[dict[str, Any]],
+    wiki_errors: list[str],
+    futures: dict[str, dict[str, Any]] | None = None,
+) -> str:
     alert = ""
     if wiki_errors:
         alert = (
@@ -558,6 +759,43 @@ def build_email_html(rows: list[dict[str, Any]], wiki_errors: list[str]) -> str:
         "<em>precio mínimo de entrada</em>. Si se supera el límite, la señal queda invalidada.</p>"
     )
 
+    futures_block = ""
+    if futures:
+        fut_rows = []
+        for name, data in futures.items():
+            precio = data.get("precio")
+            chg = data.get("cambio_pct")
+            if precio is None or chg is None:
+                fut_rows.append(
+                    f"<tr><td style='padding:6px 12px;border:1px solid #e5e7eb;'>{html_module.escape(name)}</td>"
+                    f"<td style='padding:6px 12px;border:1px solid #e5e7eb;'>N/D</td>"
+                    f"<td style='padding:6px 12px;border:1px solid #e5e7eb;'>—</td></tr>"
+                )
+                continue
+            color = "#166534" if chg >= 0 else "#991b1b"
+            arrow = "▲" if chg >= 0 else "▼"
+            sign = "+" if chg >= 0 else ""
+            fut_rows.append(
+                f"<tr>"
+                f"<td style='padding:6px 12px;border:1px solid #e5e7eb;font-weight:600;'>{html_module.escape(name)}</td>"
+                f"<td style='padding:6px 12px;border:1px solid #e5e7eb;'>{precio:,.2f}</td>"
+                f"<td style='padding:6px 12px;border:1px solid #e5e7eb;color:{color};font-weight:700;'>"
+                f"{arrow} {sign}{chg:.2f}%</td>"
+                f"</tr>"
+            )
+        futures_block = (
+            '<div style="margin-bottom:20px;">'
+            '<h2 style="font-size:1em;color:#1e3a5f;margin-bottom:6px;">Contexto de mercado</h2>'
+            '<table style="border-collapse:collapse;font-size:13px;">'
+            "<thead><tr style=\"background:#1e3a5f;color:#fff;\">"
+            "<th style=\"padding:6px 12px;text-align:left;\">Instrumento</th>"
+            "<th style=\"padding:6px 12px;\">Precio</th>"
+            "<th style=\"padding:6px 12px;\">Cambio</th>"
+            "</tr></thead><tbody>"
+            + "".join(fut_rows)
+            + "</tbody></table></div>"
+        )
+
     trs = []
     for r in rows:
         is_long = r["direccion"].lower() == "long"
@@ -571,6 +809,17 @@ def build_email_html(rows: list[dict[str, Any]], wiki_errors: list[str]) -> str:
         limite_label = "Máx. entrada" if is_long else "Mín. entrada"
         limite_cell = str(limite) if limite is not None else "—"
 
+        gap_cell = "—"
+        if r.get("gap_alerta"):
+            gp = r.get("gap_pct", 0)
+            arrow = "▲" if gp > 0 else "▼"
+            g_color = "#166534" if gp > 0 else "#991b1b"
+            pre = r.get("preMarketPrice") or r.get("postMarketPrice") or "?"
+            gap_cell = f'<span style="color:{g_color};font-weight:700;">{pre} ({arrow}{abs(gp):.2f}%)</span>'
+        elif r.get("preMarketPrice") or r.get("postMarketPrice"):
+            pre = r.get("preMarketPrice") or r.get("postMarketPrice")
+            gap_cell = str(pre)
+
         trs.append(
             f"<tr>"
             f'<td style="padding:10px;border:1px solid #e5e7eb;font-weight:700;">{html_module.escape(r["ticker"])}</td>'
@@ -581,12 +830,13 @@ def build_email_html(rows: list[dict[str, Any]], wiki_errors: list[str]) -> str:
             f'<td style="padding:10px;border:1px solid #e5e7eb;">{r["take_profit"]}</td>'
             f'<td style="padding:10px;border:1px solid #e5e7eb;">{r["pct_potencial"]}%</td>'
             f'<td style="padding:10px;border:1px solid #e5e7eb;">{html_module.escape(str(r["horizonte_dias"]))} días</td>'
+            f'<td style="padding:10px;border:1px solid #e5e7eb;">{gap_cell}</td>'
             f'<td style="padding:10px;border:1px solid #e5e7eb;font-size:13px;">{html_module.escape(str(r["motivo"]))}</td>'
             "</tr>"
         )
 
     table = (
-        '<table style="border-collapse:collapse;width:100%;max-width:1100px;font-size:13px;">'
+        '<table style="border-collapse:collapse;width:100%;max-width:1200px;font-size:13px;">'
         "<thead><tr style=\"background:#1e3a5f;color:#fff;\">"
         "<th style=\"padding:10px;text-align:left;\">Ticker</th>"
         "<th style=\"padding:10px;\">Lado</th>"
@@ -596,6 +846,7 @@ def build_email_html(rows: list[dict[str, Any]], wiki_errors: list[str]) -> str:
         "<th style=\"padding:10px;\">Take profit</th>"
         "<th style=\"padding:10px;\">% potencial</th>"
         "<th style=\"padding:10px;\">Horizonte</th>"
+        "<th style=\"padding:10px;\">Pre/Post Market</th>"
         "<th style=\"padding:10px;text-align:left;\">Motivo</th>"
         "</tr></thead><tbody>"
         + "".join(trs)
@@ -608,6 +859,7 @@ def build_email_html(rows: list[dict[str, Any]], wiki_errors: list[str]) -> str:
 <body style="font-family:Segoe UI,Roboto,sans-serif;line-height:1.5;color:#111;">
 <h1 style="font-size:1.2em;">Swing trading — S&amp;P 500</h1>
 <p style="color:#4b5563;">Señales con entrada buffer ±0,3%, TP 5–10% (3×ATR), stop 1,5×ATR, ratio ≥1:2. No es asesoría financiera.</p>
+{futures_block}
 {nota_limite}
 {alert}
 {table}
@@ -672,7 +924,20 @@ def run() -> int:
 
     print(f"  Candidatos tras filtros (vol, RSI/MA50, TP 5–10%, R/R): {len(candidates)}")
 
-    prompt = build_claude_prompt(candidates)
+    print("Obteniendo futuros y contexto macro…")
+    market_futures = fetch_market_futures()
+
+    news_api_key = os.getenv("NEWS_API_KEY", "")
+    macro_news = fetch_macro_news(news_api_key)
+    if not news_api_key:
+        print("  [macro news] NEWS_API_KEY no configurada; se omite sección de noticias.")
+    else:
+        print(f"  Noticias relevantes obtenidas: {len(macro_news)}")
+
+    macro_context = build_macro_context_summary(market_futures, macro_news, candidates)
+    print("\n" + macro_context)
+
+    prompt = build_claude_prompt(candidates, macro_context=macro_context)
     print("Consultando a Claude (máx. 3, puede devolver menos o cero)…")
     seleccion, cerr = call_claude(env["ANTHROPIC_API_KEY"], prompt)
     if cerr:
@@ -691,7 +956,7 @@ def run() -> int:
 
     fecha = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     subject = f"📈 Swing Trading Signals - {fecha}"
-    html_body = build_email_html(final_rows, wiki_errors)
+    html_body = build_email_html(final_rows, wiki_errors, futures=market_futures)
 
     print("Enviando email…")
     ok, smtp_e = send_email_html(
@@ -709,5 +974,28 @@ def run() -> int:
     return 0
 
 
+def test_macro_context() -> None:
+    load_dotenv()
+    print("Obteniendo futuros de mercado…")
+    futures = fetch_market_futures()
+    print(f"  {len(futures)} instrumentos obtenidos.\n")
+
+    news_api_key = os.getenv("NEWS_API_KEY", "")
+    if not news_api_key:
+        print("  NEWS_API_KEY no configurada; sección de noticias vacía.")
+    else:
+        print("Obteniendo noticias macro…")
+    news = fetch_macro_news(news_api_key)
+    if news_api_key:
+        print(f"  {len(news)} noticias relevantes.\n")
+
+    summary = build_macro_context_summary(futures, news, candidates=[])
+    sys.stdout.buffer.write((summary + "\n").encode("utf-8"))
+    sys.stdout.buffer.flush()
+
+
 if __name__ == "__main__":
-    raise SystemExit(run())
+    if len(sys.argv) > 1 and sys.argv[1] == "test_macro":
+        test_macro_context()
+    else:
+        raise SystemExit(run())
