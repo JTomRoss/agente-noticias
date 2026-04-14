@@ -5,6 +5,7 @@ resumen con Claude y envío por Gmail (SMTP).
 
 from __future__ import annotations
 
+import hashlib
 import html as html_module
 import json
 import os
@@ -12,7 +13,9 @@ import re
 import smtplib
 import sys
 import traceback
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlparse
 from difflib import SequenceMatcher
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -55,6 +58,27 @@ NEWS_QUERY = (
 )
 
 NEWS_QUERY_FALLBACK = "stock market OR economy OR Federal Reserve OR bitcoin OR cryptocurrency"
+
+# RSS de Apollo Academy: un único <item> con varias entradas embebidas en HTML (Torsten Slok).
+APOLLO_DAILY_SPARK_RSS = "https://www.apolloacademy.com/the-daily-spark/feed/"
+CONTENT_ENCODED_NS = "{http://purl.org/rss/1.0/modules/content/}encoded"
+
+# J.P. Morgan Asset Management (insights). Monitoreo por firma (HTML + model.json si existe).
+JPM_AM_DEFAULT_WATCH_URLS: tuple[str, ...] = (
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/monthly-market-review/",
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/fixed-income-views/",
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/equity-views/",
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/the-weekly-brief/",
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/asset-allocation-views/",
+)
+JPM_AM_STATE_FILENAME = "jpm_am_watch_state.json"
+_JPM_SLUG_LABELS: dict[str, str] = {
+    "monthly-market-review": "Monthly Market Review",
+    "fixed-income-views": "Fixed Income Views",
+    "equity-views": "Equity Views",
+    "the-weekly-brief": "The Weekly Brief",
+    "asset-allocation-views": "Asset Allocation Views",
+}
 
 
 def _parse_news_datetime(value: str) -> datetime | None:
@@ -191,7 +215,13 @@ def dedupe_news_by_title_similarity(
 
 
 def filter_news_en_es_titles(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return [it for it in items if title_is_english_or_spanish_chars(it.get("titular") or "")]
+    return [
+        it
+        for it in items
+        if it.get("apollo_daily_spark")
+        or it.get("jpm_institutional")
+        or title_is_english_or_spanish_chars(it.get("titular") or "")
+    ]
 
 
 def _fallback_news_bucket(title: str) -> int:
@@ -324,8 +354,16 @@ def build_news_fallback_html_sections(news: list[dict[str, Any]]) -> str:
         if not group:
             parts.append("<p><em>Sin titulares destacados en esta categoría.</em></p>")
             continue
+        def _fallback_inst_order(x: dict[str, Any]) -> tuple[int, str]:
+            if x.get("apollo_daily_spark"):
+                return (0, "")
+            if x.get("jpm_institutional"):
+                return (1, "")
+            return (2, x.get("titular") or "")
+
+        group_sorted = sorted(group, key=_fallback_inst_order)
         parts.append('<ul style="margin:0 0 12px 0;padding-left:1.2em;line-height:1.55;">')
-        for n in group[:25]:
+        for n in group_sorted[:25]:
             titular = n["titular"]
             t_esc = html_module.escape(titular)
             url = n.get("url") or ""
@@ -609,6 +647,304 @@ def fetch_news_24h(
     return articles, errors, meta
 
 
+def _apollo_rss_join_encoded_html(xml_text: str) -> str:
+    """Concatena el HTML de todos los content:encoded (y description) del canal RSS."""
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return ""
+    channel = root.find("channel")
+    if channel is None:
+        return ""
+    parts: list[str] = []
+    for item in channel.findall("item"):
+        enc = item.find(CONTENT_ENCODED_NS)
+        if enc is not None and (enc.text or "").strip():
+            parts.append(enc.text or "")
+        desc = item.find("description")
+        if desc is not None and (desc.text or "").strip():
+            parts.append(desc.text or "")
+    return "\n".join(parts)
+
+
+def _parse_apollo_daily_spark_from_html(
+    encoded_html: str, *, cutoff_utc: datetime
+) -> list[dict[str, Any]]:
+    """
+    Extrae entradas del listado embebido (li.wp-block-post + time + h2.spark-post-title).
+    Orden del feed: la más reciente va primero.
+    """
+    chunks = re.split(r'(?=<li class="wp-block-post)', encoded_html)
+    ordered: list[dict[str, Any]] = []
+    for ch in chunks:
+        if "spark-post-title" not in ch:
+            continue
+        m_time = re.search(r'<time datetime="([^"]+)"', ch)
+        m_link = re.search(
+            r'<h2[^>]*spark-post-title[^>]*>\s*<a href="([^"]+)"[^>]*>\s*([^<]*?)\s*</a>',
+            ch,
+            re.IGNORECASE | re.DOTALL,
+        )
+        if not m_link:
+            continue
+        url = (m_link.group(1) or "").strip()
+        title = html_module.unescape((m_link.group(2) or "").strip())
+        if not title or not url:
+            continue
+        if url.rstrip("/").endswith("/the-daily-spark"):
+            continue
+        pub_iso = (m_time.group(1) or "").strip() if m_time else ""
+        dt_utc: datetime | None = None
+        if pub_iso:
+            try:
+                dt_parsed = datetime.fromisoformat(pub_iso)
+            except ValueError:
+                dt_parsed = None
+            if dt_parsed is not None:
+                if dt_parsed.tzinfo is None:
+                    dt_utc = dt_parsed.replace(tzinfo=timezone.utc)
+                else:
+                    dt_utc = dt_parsed.astimezone(timezone.utc)
+        ordered.append(
+            {
+                "titular": title,
+                "fuente": "Apollo Daily Spark",
+                "url": url,
+                "fecha": pub_iso,
+                "apollo_daily_spark": True,
+                "_dt_utc": dt_utc,
+            }
+        )
+
+    in_window: list[dict[str, Any]] = []
+    for row in ordered:
+        dtu = row.get("_dt_utc")
+        if isinstance(dtu, datetime) and dtu >= cutoff_utc:
+            clean = {k: v for k, v in row.items() if k != "_dt_utc"}
+            in_window.append(clean)
+
+    if not in_window and ordered:
+        row0 = dict(ordered[0])
+        row0.pop("_dt_utc", None)
+        in_window = [row0]
+
+    return in_window
+
+
+def fetch_apollo_daily_spark(
+    lookback_hours: int,
+    *,
+    feed_url: str | None = None,
+) -> tuple[list[dict[str, Any]], str | None]:
+    """
+    Descarga el RSS de The Daily Spark y devuelve notas en la ventana lookback_hours (UTC).
+    Si ninguna entra en la ventana pero hay listado, devuelve la entrada más reciente.
+    """
+    url = (feed_url or os.getenv("APOLLO_DAILY_SPARK_RSS") or "").strip() or APOLLO_DAILY_SPARK_RSS
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=max(1, lookback_hours))
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; DailyBriefingBot/1.0; +https://example.local)",
+    }
+    try:
+        resp = requests.get(url, headers=headers, timeout=45)
+        if resp.status_code != 200:
+            return [], f"Apollo Daily Spark RSS HTTP {resp.status_code}"
+        blob = _apollo_rss_join_encoded_html(resp.text)
+        if not blob.strip():
+            return [], "Apollo Daily Spark: RSS sin HTML reconocible (content:encoded vacío)."
+        items = _parse_apollo_daily_spark_from_html(blob, cutoff_utc=cutoff)
+        return items, None
+    except requests.RequestException as e:
+        return [], f"Apollo Daily Spark RSS: {e}"
+
+
+def _jpm_html_text_fingerprint(html: str, max_chars: int = 12000) -> str:
+    s = re.sub(r"(?is)<script[^>]*>.*?</script>", " ", html)
+    s = re.sub(r"(?is)<style[^>]*>.*?</style>", " ", s)
+    s = re.sub(r"(?is)<noscript[^>]*>.*?</noscript>", " ", s)
+    s = re.sub(r"(?is)<[^>]+>", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s[:max_chars]
+
+
+def _jpm_parse_title_description(html: str) -> tuple[str, str]:
+    title = ""
+    m = re.search(r"<title>\s*([\s\S]*?)\s*</title>", html, re.IGNORECASE)
+    if m:
+        title = html_module.unescape(re.sub(r"\s+", " ", m.group(1)).strip())
+        for suf in (" | J.P. Morgan Asset Management", "| J.P. Morgan Asset Management"):
+            if title.endswith(suf):
+                title = title[: -len(suf)].strip()
+    desc = ""
+    m2 = re.search(r'<meta\s+name="description"\s+content="([^"]*)"', html, re.IGNORECASE)
+    if m2:
+        desc = html_module.unescape(m2.group(1).strip())
+    return title, desc
+
+
+def _jpm_model_json_url(html: str) -> str | None:
+    m = re.search(r'(/content/jpm-am-aem[^\s"<>]+\.model\.json)', html)
+    if not m:
+        return None
+    return "https://am.jpmorgan.com" + m.group(1)
+
+
+def _jpm_page_signature(
+    session: requests.Session, html: str
+) -> tuple[str, str, str | None]:
+    """Devuelve (sha256_hex, titular_desde_página, error_opcional)."""
+    title, desc = _jpm_parse_title_description(html)
+    headline = (title or "").strip()
+    model_url = _jpm_model_json_url(html)
+    if model_url:
+        try:
+            r = session.get(model_url, timeout=50)
+            if r.status_code == 200 and r.content:
+                return hashlib.sha256(r.content).hexdigest(), headline, None
+        except requests.RequestException:
+            pass
+    body_fp = _jpm_html_text_fingerprint(html)
+    blob = f"{headline}|{desc}|{body_fp}"
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest(), headline, None
+
+
+def _jpm_short_label(page_url: str) -> str:
+    path = urlparse(page_url).path.rstrip("/")
+    slug = path.split("/")[-1].lower()
+    return _JPM_SLUG_LABELS.get(slug, slug.replace("-", " ").title())
+
+
+def _load_jpm_watch_state(path: str) -> dict[str, Any]:
+    if not os.path.isfile(path):
+        return {"version": 1, "urls": {}}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {"version": 1, "urls": {}}
+    if not isinstance(data, dict):
+        return {"version": 1, "urls": {}}
+    if not isinstance(data.get("urls"), dict):
+        data["urls"] = {}
+    return data
+
+
+def _save_jpm_watch_state(path: str, data: dict[str, Any]) -> str | None:
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except OSError as e:
+        return str(e)
+    return None
+
+
+def fetch_jpm_am_watch_updates() -> tuple[list[dict[str, Any]], list[str], dict[str, Any]]:
+    """
+    Compara cada URL vigilada con jpm_am_watch_state.json (o JPM_AM_WATCH_STATE_PATH).
+    Si es la primera vez que vemos la URL, o cambió la firma del contenido, devuelve un titular
+    con enlace a la página (institucional).
+    """
+    meta: dict[str, Any] = {"urls_checked": 0, "n_new": 0, "state_path": "", "disabled": False}
+    if (os.getenv("JPM_AM_WATCH") or "1").strip().lower() in ("0", "false", "no"):
+        meta["disabled"] = True
+        return [], [], meta
+
+    raw = (os.getenv("JPM_AM_WATCH_URLS") or "").strip()
+    if raw:
+        urls = [p.strip() for p in raw.split(",") if p.strip()]
+    else:
+        urls = list(JPM_AM_DEFAULT_WATCH_URLS)
+
+    seen_norm: set[str] = set()
+    deduped: list[str] = []
+    for u in urls:
+        norm = u.rstrip("/").lower()
+        if norm in seen_norm:
+            continue
+        seen_norm.add(norm)
+        deduped.append(u if u.endswith("/") else u + "/")
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    state_path = (os.getenv("JPM_AM_WATCH_STATE_PATH") or "").strip() or os.path.join(
+        base_dir, JPM_AM_STATE_FILENAME
+    )
+    meta["state_path"] = state_path
+    state = _load_jpm_watch_state(state_path)
+    url_state: dict[str, Any] = state.setdefault("urls", {})
+
+    errors: list[str] = []
+    new_items: list[dict[str, Any]] = []
+    session = requests.Session()
+    session.headers.update(
+        {"User-Agent": "Mozilla/5.0 (compatible; DailyBriefingBot/1.0; +https://example.local)"}
+    )
+
+    for raw_url in deduped:
+        state_key = raw_url.rstrip("/").lower()
+        label = _jpm_short_label(raw_url)
+        try:
+            r = session.get(raw_url, timeout=60)
+        except requests.RequestException as e:
+            errors.append(f"JPM AM watch ({label}): {e}")
+            continue
+        if r.status_code != 200:
+            errors.append(f"JPM AM watch ({label}): HTTP {r.status_code}")
+            continue
+        meta["urls_checked"] += 1
+        sig, headline, sig_err = _jpm_page_signature(session, r.text)
+        if sig_err:
+            errors.append(f"JPM AM watch ({label}): {sig_err}")
+            continue
+        if not sig:
+            errors.append(f"JPM AM watch ({label}): firma vacía")
+            continue
+
+        prev = url_state.get(state_key)
+        prev_sig = prev.get("signature") if isinstance(prev, dict) else None
+        clean_h = (headline or "").strip() or label
+        titular = f"J.P. Morgan AM — {label}: {clean_h}"
+        if prev_sig is not None and prev_sig != sig:
+            titular = f"{titular} — actualización"
+
+        entry = {
+            "titular": titular,
+            "fuente": "J.P. Morgan Asset Management",
+            "url": raw_url,
+            "fecha": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "jpm_institutional": True,
+        }
+
+        emit_baseline = (os.getenv("JPM_AM_WATCH_EMIT_BASELINE") or "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        skip_baseline = (os.getenv("JPM_AM_WATCH_SILENT_BASELINE") or "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        is_github_ci = (os.getenv("GITHUB_ACTIONS") or "").strip().lower() == "true"
+        if prev_sig is None:
+            # Local: por defecto incluir una vez cada URL al iniciar seguimiento. En GitHub Actions
+            # sin estado persistido, línea base silenciosa salvo JPM_AM_WATCH_EMIT_BASELINE=1.
+            emit_first = emit_baseline or (not is_github_ci and not skip_baseline)
+            if emit_first:
+                new_items.append(entry)
+            url_state[state_key] = {"signature": sig, "headline": clean_h, "page_url": raw_url}
+        elif prev_sig != sig:
+            new_items.append(entry)
+            url_state[state_key] = {"signature": sig, "headline": clean_h, "page_url": raw_url}
+
+    meta["n_new"] = len(new_items)
+    save_err = _save_jpm_watch_state(state_path, state)
+    if save_err:
+        errors.append(f"JPM AM: no se pudo guardar estado ({state_path}): {save_err}")
+
+    return new_items, errors, meta
+
+
 def _format_price_display(p: float) -> str:
     ax = abs(p)
     if ax >= 1000:
@@ -689,9 +1025,18 @@ EXCLUSIONES OBLIGATORIAS (lee el JSON anterior y, ANTES de clasificar, deduplica
 - Apuestas deportivas, sports betting, gambling y noticias de juego/apuestas sin vínculo directo con mercados financieros o inversión.
 - Cualquier noticia que NO tenga relación directa con al menos uno de: mercados financieros, economía macro, resultados u operaciones corporativas de empresas relevantes para inversores, o cripto (activos, regulación, mercado, tecnología blockchain en contexto financiero).
 
+PRIORIDAD Apollo "The Daily Spark" (cada objeto en "noticias" puede traer el booleano "apollo_daily_spark": true):
+- Debes incluir en el HTML a TODAS las noticias con "apollo_daily_spark": true que vengan en el JSON (no las omitas por falta de espacio). Solo deduplica frente a otra entrada si es claramente la misma historia con la misma URL.
+- Clasifica cada una según su ángulo principal, alineado con los cuatro ejes temáticos de la serie: mercados financieros y dinámica del riesgo; desarrollos globales y geopolíticos; indicadores y tendencias macroeconómicas; política monetaria y fiscal. Asigna cada pieza a la sección de las cinco del briefing que mejor encaje (Economía, Internacional, Cripto, Corporativo o Mercados).
+- Dentro de cada <ul>, coloca primero los <li> de Apollo Daily Spark, después los de J.P. Morgan AM (si hay), y luego el resto de fuentes.
+
+PRIORIDAD J.P. Morgan Asset Management (booleano "jpm_institutional": true):
+- Incluye TODAS las entradas con "jpm_institutional": true del JSON (son páginas de insights vigiladas por el script; no las omitas).
+- Clasifícalas en la sección más adecuada (suele ser Mercados, Economía o Internacional según el tipo de informe).
+
 REGLAS OBLIGATORIAS (aplícalas en este orden):
-1) Idioma: descarta mentalmente cualquier titular que NO esté en inglés o en español. (El JSON ya viene prefiltrado por script latino EN/ES; si ves alguno dudoso, descártalo.)
-2) Duplicados: si dos o más titulares cuentan la misma noticia con redacción parecida, conserva solo UNO (el más claro o completo).
+1) Idioma: descarta mentalmente cualquier titular que NO esté en inglés o en español. (El JSON ya viene prefiltrado por script latino EN/ES; si ves alguno dudoso, descártalo.) Excepción: nunca descartes por idioma las entradas con "apollo_daily_spark": true ni las que tengan "jpm_institutional": true.
+2) Duplicados: si dos o más titulares cuentan la misma noticia con redacción parecida, conserva solo UNO (el más claro o completo). Prioridad de conservación: Apollo Daily Spark > J.P. Morgan AM > otras fuentes.
 3) Clasificación: asigna cada noticia a UNA sola categoría. Si varias encajan, elige la más específica. Si ninguna encaja bien, usa "📊 Mercados".
 4) Orden fijo: debes generar EXACTAMENTE estas 5 secciones, en ESTE orden, sin omitir ninguna ni cambiar el texto del subtítulo (copia literal, incluidos emojis):
 
@@ -851,12 +1196,24 @@ def run() -> int:
     lookback_h = get_news_lookback_hours()
     print(f"Obteniendo noticias (ventana últimas {lookback_h} h)…")
     news, news_errors, news_meta = fetch_news_24h(env["NEWS_API_KEY"], lookback_h)
+    apollo_items, apollo_err = fetch_apollo_daily_spark(lookback_h)
+    news_meta["apollo_daily_spark"] = {"n": len(apollo_items), "error": apollo_err}
+    if apollo_err:
+        news_errors = list(news_errors)
+        news_errors.append(apollo_err)
+    jpm_items, jpm_errs, jpm_meta = fetch_jpm_am_watch_updates()
+    news_meta["jpm_am_watch"] = jpm_meta
+    if jpm_errs:
+        news_errors = list(news_errors)
+        news_errors.extend(jpm_errs)
+    news = apollo_items + jpm_items + news
     if news_errors:
         for err in news_errors:
             print(f"  [noticias] {err}", file=sys.stderr)
     print(
         f"  OK: {len(news)} titulares tras filtro {lookback_h} h "
-        f"(crudos API: {news_meta.get('recibidos_crudos', 0)})."
+        f"(crudos API: {news_meta.get('recibidos_crudos', 0)}; Apollo Daily Spark: {len(apollo_items)}; "
+        f"JPM AM vigilancia: {len(jpm_items)} nuevos/actualizados)."
     )
     print(f"  Meta NewsAPI: {json.dumps(news_meta, ensure_ascii=False)}")
 
