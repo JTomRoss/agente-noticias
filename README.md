@@ -25,6 +25,8 @@ Futuros S&P 500, FTSE 100, Nikkei 225, Hang Seng, Shanghai, Oro, Petróleo WTI, 
 
 Economía, Internacional, Cripto, Corporativo, Mercados
 
+En **`daily_briefing.py`** y **`alert_agent.py`**, el prompt a Claude incluye exclusiones explícitas: no se usan titulares de **apuestas deportivas / sports betting / gambling** sin vínculo con inversión, ni noticias **sin relación directa** con mercados financieros, economía macro, resultados corporativos relevantes o cripto en contexto de mercado.
+
 ## Variables de entorno necesarias (`.env`)
 
 `ANTHROPIC_API_KEY`, `NEWS_API_KEY`, `GMAIL_USER`, `GMAIL_PASSWORD`, `EMAIL_DESTINO`

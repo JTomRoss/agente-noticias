@@ -685,6 +685,10 @@ def build_claude_prompt_news_only(news: list[dict[str, Any]], news_errors: list[
 
 {json.dumps(payload, ensure_ascii=False, indent=2)}
 
+EXCLUSIONES OBLIGATORIAS (lee el JSON anterior y, ANTES de clasificar, deduplicar o generar el resumen HTML, descarta por completo cualquier titular que encaje aquí; no lo incluyas en el correo):
+- Apuestas deportivas, sports betting, gambling y noticias de juego/apuestas sin vínculo directo con mercados financieros o inversión.
+- Cualquier noticia que NO tenga relación directa con al menos uno de: mercados financieros, economía macro, resultados u operaciones corporativas de empresas relevantes para inversores, o cripto (activos, regulación, mercado, tecnología blockchain en contexto financiero).
+
 REGLAS OBLIGATORIAS (aplícalas en este orden):
 1) Idioma: descarta mentalmente cualquier titular que NO esté en inglés o en español. (El JSON ya viene prefiltrado por script latino EN/ES; si ves alguno dudoso, descártalo.)
 2) Duplicados: si dos o más titulares cuentan la misma noticia con redacción parecida, conserva solo UNO (el más claro o completo).

@@ -266,6 +266,10 @@ Errores al obtener datos (si hay): {json.dumps(fetch_errors, ensure_ascii=False)
 
 {json.dumps(headlines[:200], ensure_ascii=False, indent=2)}
 
+EXCLUSIONES OBLIGATORIAS (lee el JSON de titulares anterior y, ANTES de decidir alert o redactar resumen/items, ignora por completo cualquier titular excluido; no debe generar alerta ni contenido por ellos):
+- Apuestas deportivas, sports betting, gambling y noticias de juego/apuestas sin vínculo directo con mercados financieros o inversión.
+- Cualquier noticia que NO tenga relación directa con al menos uno de: mercados financieros, economía macro, resultados u operaciones corporativas de empresas relevantes para inversores, o cripto (activos, regulación, mercado, tecnología blockchain aplicada al sector financiero).
+
 Responde ÚNICAMENTE con un JSON válido (sin markdown, sin ```), con esta forma exacta:
 {{
   "alert": true o false,
