@@ -112,20 +112,20 @@ def _parse_news_datetime(value: str) -> datetime | None:
 
 # Subtítulos fijos (mismo texto en prompt, HTML de Claude y fallback)
 NEWS_SECTION_HEADINGS: list[tuple[str, str]] = [
+    ("mercados", "📊 Mercados: flujos, valuación, renta fija, commodities"),
     (
         "economia",
         "🏦 Economía: bancos centrales, inflación, datos macroeconómicos",
     ),
     (
         "internacional",
-        "🌍 Internacional: geopolítica, guerras, relaciones entre países",
+        "🌍 Internacional: geopolítica, guerras, aranceles, sanciones",
     ),
-    ("cripto", "₿ Cripto: bitcoin, ethereum, blockchain, hacks"),
     (
         "corporativo",
         "🏢 Corporativo: resultados de empresas, fusiones, nombramientos",
     ),
-    ("mercados", "📊 Mercados: todo lo demás relevante para inversores"),
+    ("₿ cripto", "₿ Cripto: bitcoin, ethereum, blockchain, hacks"),
 ]
 
 
@@ -243,7 +243,9 @@ def filter_news_en_es_titles(items: list[dict[str, Any]]) -> list[dict[str, Any]
 
 
 def _fallback_news_bucket(title: str) -> int:
-    """Índice 0..4 en NEWS_SECTION_HEADINGS (heurística si Claude falla)."""
+    """Índice 0..4 en NEWS_SECTION_HEADINGS (heurística si Claude falla).
+    Nuevo orden: mercados=0, economia=1, internacional=2, corporativo=3, cripto=4
+    """
     t = (title or "").lower()
     if any(
         k in t
@@ -264,7 +266,7 @@ def _fallback_news_bucket(title: str) -> int:
             "binance",
         )
     ):
-        return 2
+        return 4
     if any(
         k in t
         for k in (
@@ -289,7 +291,7 @@ def _fallback_news_bucket(title: str) -> int:
             "retail sales",
         )
     ):
-        return 0
+        return 1
     if any(
         k in t
         for k in (
@@ -314,7 +316,7 @@ def _fallback_news_bucket(title: str) -> int:
             "missile",
         )
     ):
-        return 1
+        return 2
     if any(
         k in t
         for k in (
@@ -342,7 +344,7 @@ def _fallback_news_bucket(title: str) -> int:
         )
     ):
         return 3
-    return 4
+    return 0
 
 
 def build_news_fallback_html_sections(news: list[dict[str, Any]]) -> str:
@@ -1111,6 +1113,11 @@ EXCLUSIONES OBLIGATORIAS (aplica ANTES de clasificar, deduplicar o generar HTML;
 - Artículos de opinión o análisis de pundits sin hechos noticiosos concretos recientes (ej. "lo que piensan X sobre Y", "¿puede perdurar?", opiniones sobre tendencias de largo plazo sin evento de mercado concreto).
 - Noticias de política interna de partidos, encuestas electorales, coaliciones o disputas parlamentarias que NO tengan impacto demostrable y concreto en mercados, tasas, aranceles o economía.
 - Cripto: precio o nivel de BTC/ETH nunca va en 🏦 Economía; es siempre ₿ Cripto.
+- Artículos del tipo "¿Es X una buena inversión?", "¿Debería invertir en X?", "¿Crees que X es sensible?": son opinión disfrazada de Corporativo; descarta.
+- Opiniones de celebridades, actores, influencers o personajes no financieros sobre activos (ej. "El tipo de X dice que bitcoin es un Ponzi"): no son noticias; descarta.
+- Artículos de finanzas personales / lifestyle financiero: cómo reducir costos de vivienda, jubilación anticipada (FIRE), parejas que ahorran, etc.: descarta.
+- Listas y rankings de acciones sin evento concreto (IBD 50, "líderes del mercado emergen", screeners, listas de "mejores acciones hoy"): descarta salvo que haya un hecho de mercado concreto.
+- Titulares vagos o clickbait sin hecho concreto verificable ("El producto que hizo explotar la economía ha regresado", "El activo que nadie esperaba"): descarta.
 - Cualquier titular que NO tenga relación directa con: mercados financieros, economía macro, resultados corporativos relevantes para inversores, o cripto en contexto financiero.
 
 PRIORIDAD TRUMP (booleano "trump_priority": true):
@@ -1136,7 +1143,7 @@ REGLAS OBLIGATORIAS (aplícalas en este orden):
 {headings_lines}
 
 5) Formato HTML: después de cada <h3>, incluye un <ul> con un <li> por noticia.
-   - OBLIGATORIO: si el objeto en JSON trae "url" no vacía, el titular (en español, puedes parafrasear) debe ir DENTRO de un enlace: <a href="URL_EXACTA_COPIADA_DEL_JSON" style="color:#1d4ed8;text-decoration:underline;">texto</a>. No acortes ni cambies la URL.
+   - OBLIGATORIO: si el objeto en JSON trae "url" no vacía, escribe como texto del enlace la IDEA FUERZA de la noticia en una línea: la conclusión, dato clave o consecuencia concreta que importa al inversor (no el título literal del artículo, no parafraseo del titular, sino lo que realmente está pasando). El enlace: <a href="URL_EXACTA_COPIADA_DEL_JSON" style="color:#1d4ed8;text-decoration:underline;">idea fuerza</a>. No acortes ni cambies la URL.
    - Si "url" viene vacía, usa solo texto plano en el <li> (sin <a>).
    - Tras el enlace puedes añadir la fuente en un <span style="color:#6b7280;font-size:12px;">(nombre fuente)</span> usando el campo "fuente" del JSON.
    - Orden dentro de cada <ul>: primero trump_priority, luego apollo_daily_spark, luego jpm_institutional, luego el resto.
@@ -1148,12 +1155,12 @@ REGLAS OBLIGATORIAS (aplícalas en este orden):
 7) Si una categoría queda vacía tras filtrar, escribe debajo del <h3>: <p><em>Sin titulares destacados en esta categoría.</em></p>
 8) Salida: devuelve ÚNICAMENTE el fragmento HTML (sin <!DOCTYPE>, sin <html>, sin <head>, sin <body>). Prohibido markdown, prohibido ```, prohibido JSON suelto.
 
-Descripciones de sección (para clasificar):
-- 🏦 Economía: bancos centrales, inflación, datos macroeconómicos CONCRETOS (no cripto, no consejos).
-- 🌍 Internacional: geopolítica, guerras, aranceles, sanciones, declaraciones de Trump con impacto en mercados, relaciones entre países con consecuencia económica concreta.
-- ₿ Cripto: SIEMPRE aquí cualquier noticia sobre bitcoin, ethereum, precios crypto, blockchain, hacks, regulación crypto. NUNCA en Economía.
-- 🏢 Corporativo: resultados de empresas, fusiones, nombramientos clave, guidance.
-- 📊 Mercados: flujos, valoraciones, estrategia, renta fija, commodities, divises, lo demás relevante para inversores."""
+Descripciones de sección (para clasificar, en el orden en que deben aparecer):
+1. 📊 Mercados: flujos de capital, valoraciones, estrategia, renta fija, commodities, divisas, lo demás relevante para inversores. DEFAULT si no encaja en otra categoría.
+2. 🏦 Economía: bancos centrales, inflación, datos macroeconómicos CONCRETOS y recientes (no cripto, no consejos).
+3. 🌍 Internacional: geopolítica, guerras, aranceles, sanciones, declaraciones de Trump con impacto en mercados, relaciones entre países con consecuencia económica directa.
+4. 🏢 Corporativo: SOLO resultados concretos de empresas, fusiones/adquisiciones anunciadas, nombramientos ejecutivos clave, guidance; NO artículos de opinión sobre si una empresa "es sensible".
+5. ₿ Cripto: SIEMPRE aquí cualquier noticia sobre bitcoin, ethereum, precios crypto, blockchain, hacks, regulación crypto. NUNCA en Economía."""
 
 
 def summarize_with_claude(api_key: str, user_prompt: str) -> tuple[str | None, str | None]:
