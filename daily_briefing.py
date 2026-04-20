@@ -1,6 +1,10 @@
 """
-Genera un briefing diario: precios (yfinance), noticias 24h (NewsAPI),
+Genera un briefing financiero: precios (yfinance), noticias 24 h (NewsAPI + Apollo RSS + JPM vigilancia),
 resumen con Claude y envío por Gmail (SMTP).
+
+Modos:
+  BRIEFING_MODE=diario     (default) — mañana, con tabla de precios
+  BRIEFING_MODE=vespertino — tarde/6pm, sin tabla de precios, lookback ~11 h, sin vigilancia JPM
 """
 
 from __future__ import annotations
@@ -54,10 +58,23 @@ NEWS_QUERY = (
     '("European economy" OR eurozone OR "ECB") OR '
     '("China economy" OR "Chinese economy" OR Beijing economy) OR '
     '("S&P 500" OR "S&P500" OR SPX) OR '
-    '(cryptocurrency OR crypto OR bitcoin OR ethereum OR BTC OR ETH)'
+    '(cryptocurrency OR crypto OR bitcoin OR ethereum OR BTC OR ETH) OR '
+    '(Trump AND (tariff OR trade OR market OR economy OR rate OR China OR Fed OR stock OR crypto OR sanction OR executive OR order))'
+)
+
+# Consulta dedicada a declaraciones / posts de Trump con impacto en mercados.
+NEWS_QUERY_TRUMP = (
+    '(Trump OR "Donald Trump") AND '
+    '(tweet OR post OR "Truth Social" OR tariff OR sanction OR "executive order" OR '
+    'China OR Fed OR rate OR market OR economy OR trade OR crypto OR wall OR budget)'
 )
 
 NEWS_QUERY_FALLBACK = "stock market OR economy OR Federal Reserve OR bitcoin OR cryptocurrency"
+
+# Palabras en minúscula que identifican un titular como relacionado con Trump.
+_TRUMP_KEYWORDS = frozenset(
+    ["trump", "donald trump", "truth social", "@realdonaldtrump", "mar-a-lago"]
+)
 
 # RSS de Apollo Academy: un único <item> con varias entradas embebidas en HTML (Torsten Slok).
 APOLLO_DAILY_SPARK_RSS = "https://www.apolloacademy.com/the-daily-spark/feed/"
@@ -220,6 +237,7 @@ def filter_news_en_es_titles(items: list[dict[str, Any]]) -> list[dict[str, Any]
         for it in items
         if it.get("apollo_daily_spark")
         or it.get("jpm_institutional")
+        or it.get("trump_priority")
         or title_is_english_or_spanish_chars(it.get("titular") or "")
     ]
 
@@ -357,9 +375,11 @@ def build_news_fallback_html_sections(news: list[dict[str, Any]]) -> str:
         def _fallback_inst_order(x: dict[str, Any]) -> tuple[int, str]:
             if x.get("apollo_daily_spark"):
                 return (0, "")
-            if x.get("jpm_institutional"):
+            if x.get("trump_priority"):
                 return (1, "")
-            return (2, x.get("titular") or "")
+            if x.get("jpm_institutional"):
+                return (2, "")
+            return (3, x.get("titular") or "")
 
         group_sorted = sorted(group, key=_fallback_inst_order)
         parts.append('<ul style="margin:0 0 12px 0;padding-left:1.2em;line-height:1.55;">')
@@ -379,6 +399,12 @@ def build_news_fallback_html_sections(news: list[dict[str, Any]]) -> str:
             parts.append(f"<li style='margin-bottom:8px;'>{t_html}{meta}</li>")
         parts.append("</ul>")
     return "\n".join(parts)
+
+
+
+def get_briefing_mode() -> str:
+    """'diario' (default, mañana con precios) o 'vespertino' (tarde sin precios)."""
+    return (os.getenv("BRIEFING_MODE") or "diario").strip().lower()
 
 
 def load_env() -> dict[str, str]:
@@ -489,12 +515,15 @@ def get_news_lookback_hours() -> int:
     """
     Ventana de noticias en horas.
     - Variable NEWS_LOOKBACK_HOURS (entero) si está definida.
-    - Lunes en UTC: 72 h (3 días) para cubrir fin de semana.
-    - Resto de días: 24 h.
+    - Modo vespertino: 11 h (desde el briefing de mañana).
+    - Lunes en UTC (modo diario): 72 h para cubrir fin de semana.
+    - Resto de días (modo diario): 24 h.
     """
     raw = (os.getenv("NEWS_LOOKBACK_HOURS") or "").strip()
     if raw.isdigit():
         return max(1, min(int(raw), 168))
+    if get_briefing_mode() == "vespertino":
+        return 11
     if datetime.now(timezone.utc).weekday() == 0:
         return 72
     return 24
@@ -645,6 +674,61 @@ def fetch_news_24h(
         )
 
     return articles, errors, meta
+
+
+
+def _title_has_trump(title: str) -> bool:
+    t = title.lower()
+    return any(k in t for k in _TRUMP_KEYWORDS)
+
+
+def fetch_trump_news(
+    api_key: str, lookback_hours: int
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Fetch dedicado a noticias/tweets Trump con impacto en mercados."""
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=lookback_hours)
+    from_days_back = max(2, (lookback_hours + 23) // 24 + 1)
+    from_day = (now - timedelta(days=from_days_back)).strftime("%Y-%m-%d")
+    data, err = _newsapi_fetch(
+        api_key,
+        NEWS_QUERY_TRUMP,
+        sort_by="relevancy",
+        from_param=from_day,
+        language=None,
+    )
+    if err:
+        return [], err
+    raw = list((data or {}).get("articles") or [])
+    items: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for a in raw:
+        title = (a.get("title") or "").strip()
+        link = (a.get("url") or "").strip()
+        if "[Removed]" in title or not title:
+            continue
+        dt = _parse_news_datetime((a.get("publishedAt") or "").strip())
+        if dt is not None:
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            else:
+                dt = dt.astimezone(timezone.utc)
+            if dt < cutoff:
+                continue
+        key = link or title
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append(
+            {
+                "titular": title,
+                "fuente": (a.get("source") or {}).get("name") or "",
+                "url": link,
+                "fecha": a.get("publishedAt") or "",
+                "trump_priority": True,
+            }
+        )
+    return items, None
 
 
 def _apollo_rss_join_encoded_html(xml_text: str) -> str:
@@ -1021,11 +1105,20 @@ def build_claude_prompt_news_only(news: list[dict[str, Any]], news_errors: list[
 
 {json.dumps(payload, ensure_ascii=False, indent=2)}
 
-EXCLUSIONES OBLIGATORIAS (lee el JSON anterior y, ANTES de clasificar, deduplicar o generar el resumen HTML, descarta por completo cualquier titular que encaje aquí; no lo incluyas en el correo):
-- Apuestas deportivas, sports betting, gambling y noticias de juego/apuestas sin vínculo directo con mercados financieros o inversión.
-- Cualquier noticia que NO tenga relación directa con al menos uno de: mercados financieros, economía macro, resultados u operaciones corporativas de empresas relevantes para inversores, o cripto (activos, regulación, mercado, tecnología blockchain en contexto financiero).
+EXCLUSIONES OBLIGATORIAS (aplica ANTES de clasificar, deduplicar o generar HTML; descarta estos titulares por completo):
+- Apuestas deportivas, sports betting, gambling sin vínculo directo con mercados financieros.
+- Artículos de educación o consejos financieros personales: "cómo invertir", "margen de seguridad", "reglas para el inversor", "invertir inteligentemente", "guía de inversión", "por qué deberías...", cualquier artículo que dé consejos genéricos sin ser una noticia concreta con hecho reciente.
+- Artículos de opinión o análisis de pundits sin hechos noticiosos concretos recientes (ej. "lo que piensan X sobre Y", "¿puede perdurar?", opiniones sobre tendencias de largo plazo sin evento de mercado concreto).
+- Noticias de política interna de partidos, encuestas electorales, coaliciones o disputas parlamentarias que NO tengan impacto demostrable y concreto en mercados, tasas, aranceles o economía.
+- Cripto: precio o nivel de BTC/ETH nunca va en 🏦 Economía; es siempre ₿ Cripto.
+- Cualquier titular que NO tenga relación directa con: mercados financieros, economía macro, resultados corporativos relevantes para inversores, o cripto en contexto financiero.
 
-PRIORIDAD Apollo "The Daily Spark" (cada objeto en "noticias" puede traer el booleano "apollo_daily_spark": true):
+PRIORIDAD TRUMP (booleano "trump_priority": true):
+- Las declaraciones, tweets, posts en X/Truth Social y órdenes ejecutivas de Trump que muevan o puedan mover mercados son noticia de primer orden. Inclúyelas siempre que estén en el JSON con "trump_priority": true.
+- Clasifícalas en Internacional si son geopolíticas/aranceles/sanciones, o en Economía si son sobre Fed/tasas/macro, o en Mercados si afectan activos concretos.
+- Dentro de cada <ul>, los <li> con "trump_priority": true van primero.
+
+PRIORIDAD Apollo "The Daily Spark" (booleano "apollo_daily_spark": true):
 - Debes incluir en el HTML a TODAS las noticias con "apollo_daily_spark": true que vengan en el JSON (no las omitas por falta de espacio). Solo deduplica frente a otra entrada si es claramente la misma historia con la misma URL.
 - Clasifica cada una según su ángulo principal, alineado con los cuatro ejes temáticos de la serie: mercados financieros y dinámica del riesgo; desarrollos globales y geopolíticos; indicadores y tendencias macroeconómicas; política monetaria y fiscal. Asigna cada pieza a la sección de las cinco del briefing que mejor encaje (Economía, Internacional, Cripto, Corporativo o Mercados).
 - Dentro de cada <ul>, coloca primero los <li> de Apollo Daily Spark, después los de J.P. Morgan AM (si hay), y luego el resto de fuentes.
@@ -1046,15 +1139,21 @@ REGLAS OBLIGATORIAS (aplícalas en este orden):
    - OBLIGATORIO: si el objeto en JSON trae "url" no vacía, el titular (en español, puedes parafrasear) debe ir DENTRO de un enlace: <a href="URL_EXACTA_COPIADA_DEL_JSON" style="color:#1d4ed8;text-decoration:underline;">texto</a>. No acortes ni cambies la URL.
    - Si "url" viene vacía, usa solo texto plano en el <li> (sin <a>).
    - Tras el enlace puedes añadir la fuente en un <span style="color:#6b7280;font-size:12px;">(nombre fuente)</span> usando el campo "fuente" del JSON.
-6) Si una categoría queda vacía tras filtrar, escribe debajo del <h3>: <p><em>Sin titulares destacados en esta categoría.</em></p>
-7) Salida: devuelve ÚNICAMENTE el fragmento HTML (sin <!DOCTYPE>, sin <html>, sin <head>, sin <body>). Prohibido markdown, prohibido ```, prohibido JSON suelto.
+   - Orden dentro de cada <ul>: primero trump_priority, luego apollo_daily_spark, luego jpm_institutional, luego el resto.
+6) NARRATIVA POR SECCIÓN: inmediatamente DESPUÉS del </ul> de cada sección (que tenga al menos 2 noticias), escribe un párrafo <p style="font-size:14px;color:#374151;margin:8px 0 20px 0;line-height:1.6;border-left:3px solid #d1d5db;padding-left:12px;"> con un resumen narrativo de 3-4 líneas que cuente una historia coherente usando los titulares de esa sección. Reglas del párrafo:
+   a) Debe ser una narración fluida, no una lista ni un punteo de cada noticia.
+   b) Enfocarse en el impacto o implicación para mercados, macro o inversores.
+   c) Si los titulares de esa sección son muy dispares o no forman una historia coherente (señal de mala asignación o poco interés), escribe: <p style="font-size:13px;color:#9ca3af;font-style:italic;margin:4px 0 20px 0;">Sin tendencia clara en esta sección.</p>
+   d) Si la sección quedó vacía (solo el placeholder "Sin titulares..."), omite el párrafo narrativo.
+7) Si una categoría queda vacía tras filtrar, escribe debajo del <h3>: <p><em>Sin titulares destacados en esta categoría.</em></p>
+8) Salida: devuelve ÚNICAMENTE el fragmento HTML (sin <!DOCTYPE>, sin <html>, sin <head>, sin <body>). Prohibido markdown, prohibido ```, prohibido JSON suelto.
 
 Descripciones de sección (para clasificar):
-- 🏦 Economía: bancos centrales, inflación, datos macroeconómicos
-- 🌍 Internacional: geopolítica, guerras, relaciones entre países
-- ₿ Cripto: bitcoin, ethereum, blockchain, hacks
-- 🏢 Corporativo: resultados de empresas, fusiones, nombramientos
-- 📊 Mercados: todo lo demás relevante para inversores"""
+- 🏦 Economía: bancos centrales, inflación, datos macroeconómicos CONCRETOS (no cripto, no consejos).
+- 🌍 Internacional: geopolítica, guerras, aranceles, sanciones, declaraciones de Trump con impacto en mercados, relaciones entre países con consecuencia económica concreta.
+- ₿ Cripto: SIEMPRE aquí cualquier noticia sobre bitcoin, ethereum, precios crypto, blockchain, hacks, regulación crypto. NUNCA en Economía.
+- 🏢 Corporativo: resultados de empresas, fusiones, nombramientos clave, guidance.
+- 📊 Mercados: flujos, valoraciones, estrategia, renta fija, commodities, divises, lo demás relevante para inversores."""
 
 
 def summarize_with_claude(api_key: str, user_prompt: str) -> tuple[str | None, str | None]:
@@ -1116,6 +1215,7 @@ def compose_email_document(
     news_errors: list[str],
 ) -> str:
     """Documento HTML completo: tabla de precios (código) + bloque de noticias."""
+    hr_block = '<hr style="margin:28px 0;border:none;border-top:1px solid #e5e7eb;" />' if price_block.strip() else ""
     alerts: list[str] = []
     if news_errors:
         esc = html_module.escape("\n".join(news_errors))
@@ -1134,7 +1234,7 @@ def compose_email_document(
 <body style="font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5;color:#111;max-width:800px;">
 {alert_block}
 {price_block}
-<hr style="margin:28px 0;border:none;border-top:1px solid #e5e7eb;" />
+{hr_block}
 {news_block}
 <hr style="margin-top:2em;border:none;border-top:1px solid #ccc;" />
 <p style="font-size:0.85em;color:#666;">Generado: {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}</p>
@@ -1186,8 +1286,14 @@ def run() -> int:
         print(f"Error al cargar .env: {e}", file=sys.stderr)
         return 1
 
-    print("Obteniendo precios…")
-    prices, price_errors = fetch_prices()
+    mode = get_briefing_mode()
+    print(f"Modo: {mode}")
+
+    if mode != "vespertino":
+        print("Obteniendo precios…")
+        prices, price_errors = fetch_prices()
+    else:
+        prices, price_errors = [], []
     if price_errors:
         for err in price_errors:
             print(f"  [precios] {err}", file=sys.stderr)
@@ -1196,24 +1302,32 @@ def run() -> int:
     lookback_h = get_news_lookback_hours()
     print(f"Obteniendo noticias (ventana últimas {lookback_h} h)…")
     news, news_errors, news_meta = fetch_news_24h(env["NEWS_API_KEY"], lookback_h)
+    trump_items, trump_err = fetch_trump_news(env["NEWS_API_KEY"], lookback_h)
+    if trump_err:
+        print(f"  [Trump news] {trump_err}", file=sys.stderr)
+    news_meta["trump_fetch"] = {"n": len(trump_items), "error": trump_err}
     apollo_items, apollo_err = fetch_apollo_daily_spark(lookback_h)
     news_meta["apollo_daily_spark"] = {"n": len(apollo_items), "error": apollo_err}
     if apollo_err:
         news_errors = list(news_errors)
         news_errors.append(apollo_err)
-    jpm_items, jpm_errs, jpm_meta = fetch_jpm_am_watch_updates()
+    if mode != "vespertino":
+        jpm_items, jpm_errs, jpm_meta = fetch_jpm_am_watch_updates()
+    else:
+        jpm_items, jpm_errs, jpm_meta = [], [], {"disabled": True}
     news_meta["jpm_am_watch"] = jpm_meta
     if jpm_errs:
         news_errors = list(news_errors)
         news_errors.extend(jpm_errs)
-    news = apollo_items + jpm_items + news
+    # trump_items ya tienen trump_priority=True; van primero pero dedupe los quita si duplicados
+    news = apollo_items + trump_items + jpm_items + news
     if news_errors:
         for err in news_errors:
             print(f"  [noticias] {err}", file=sys.stderr)
     print(
         f"  OK: {len(news)} titulares tras filtro {lookback_h} h "
-        f"(crudos API: {news_meta.get('recibidos_crudos', 0)}; Apollo Daily Spark: {len(apollo_items)}; "
-        f"JPM AM vigilancia: {len(jpm_items)} nuevos/actualizados)."
+        f"(crudos API: {news_meta.get('recibidos_crudos', 0)}; Trump: {len(trump_items)}; "
+        f"Apollo Daily Spark: {len(apollo_items)}; JPM AM: {len(jpm_items)} nuevos)."
     )
     print(f"  Meta NewsAPI: {json.dumps(news_meta, ensure_ascii=False)}")
 
@@ -1234,7 +1348,7 @@ def run() -> int:
                 print(f"      {item['url']}")
     print("--- Fin noticias ---\n")
 
-    price_html = build_prices_table_html(prices, price_errors)
+    price_html = build_prices_table_html(prices, price_errors) if mode != "vespertino" else ""
 
     prompt = build_claude_prompt_news_only(news, news_errors)
     api_key = env["ANTHROPIC_API_KEY"]
@@ -1268,7 +1382,10 @@ def run() -> int:
             news_html = build_news_fallback_html_sections(news)
 
     subject_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    subject = f"Daily briefing — {subject_date}"
+    if mode == "vespertino":
+        subject = f"Resumen vespertino — {subject_date}"
+    else:
+        subject = f"Daily briefing — {subject_date}"
     html = compose_email_document(price_html, news_html, news_errors)
 
     print("Enviando correo (HTML multipart)…")

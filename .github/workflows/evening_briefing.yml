@@ -1,15 +1,16 @@
-# Portfolio alert agent — desactivado (reemplazado por resumen vespertino en evening_briefing.yml).
-# Descomentar el bloque schedule para reactivar alertas específicas de portafolio.
+# Resumen vespertino: lunes-viernes a las 22:00 UTC (≈18:00 Chile UTC-4 / 19:00 Chile UTC-3).
+# Usa los últimos 11 h de noticias para cubrir desde el briefing de mañana.
+# Sin tabla de precios. Sin vigilancia JPM (solo se hace una vez al día en el briefing de mañana).
 
-name: Portfolio alert agent
+name: Resumen vespertino
 
 on:
-  # schedule:
-  #   - cron: "0 0,12,16,20 * * *"
+  schedule:
+    - cron: "0 22 * * 1-5"
   workflow_dispatch:
 
 jobs:
-  alert:
+  vespertino:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,15 +20,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
       - name: Install dependencies
-        run: pip install anthropic requests python-dotenv feedparser
+        run: pip install -r requirements.txt
 
-      - name: Run alert_agent.py
+      - name: Run daily_briefing.py (modo vespertino)
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
           EMAIL_DESTINO: ${{ secrets.EMAIL_DESTINO }}
-        run: python alert_agent.py
+          BRIEFING_MODE: vespertino
+        run: python daily_briefing.py

@@ -1,11 +1,11 @@
-# Ejecuta el briefing diario a las 11:00 UTC (08:00 en Chile, UTC−3 aprox.).
-# Los lunes (UTC) el script usa 72 h de noticias para cubrir el fin de semana.
+# Briefing de mañana: lunes-viernes a las 11:00 UTC (≈08:00 Chile).
+# Los lunes el script usa 72 h de noticias para cubrir el fin de semana.
 
 name: Daily briefing
 
 on:
   schedule:
-    - cron: "0 11 * * *"
+    - cron: "0 11 * * 1-5"
   workflow_dispatch:
 
 jobs:
@@ -31,4 +31,5 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
           EMAIL_DESTINO: ${{ secrets.EMAIL_DESTINO }}
+          BRIEFING_MODE: diario
         run: python daily_briefing.py
