@@ -31,7 +31,7 @@ from anthropic import Anthropic
 from dotenv import load_dotenv
 
 # Modelo solicitado; alias documentado por Anthropic para Haiku 4.5
-DEFAULT_CLAUDE_MODEL = "claude-haiku-4-5"
+DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6"
 
 ASSETS: list[tuple[str, str]] = [
     ("ES=F", "Futuros S&P 500"),
@@ -46,8 +46,7 @@ ASSETS: list[tuple[str, str]] = [
     ("GC=F", "Oro"),
 ]
 
-# Símbolos cuyo valor de yfinance es una tasa (%). ^TNX viene multiplicado por 10.
-YIELD_SYMBOLS_DIV10 = frozenset({"^TNX"})
+# Símbolos cuyo valor de yfinance es una tasa en % (variación expresada en pb).
 YIELD_SYMBOLS_PCT = frozenset({"2YY=F", "^TNX"})
 
 # Consulta amplia; el filtro “últimas 24 h” se aplica en código (NewsAPI free suele exigir sortBy≠publishedAt).
@@ -502,9 +501,6 @@ def fetch_prices() -> tuple[list[dict[str, Any]], list[str]]:
                 prev = float(closes.iloc[-2])
             else:
                 prev = last
-
-            if symbol in YIELD_SYMBOLS_DIV10:
-                last, prev = last / 10.0, prev / 10.0
 
             es_tasa = symbol in YIELD_SYMBOLS_PCT
             if es_tasa:
@@ -1099,189 +1095,41 @@ def _format_price_display(p: float) -> str:
 
 
 def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str]) -> str:
-    """Tabla HTML de precios con verde/rojo según variación."""
-    parts: list[str] = [
-        '<h2 style="margin:0 0 12px 0;font-size:1.35em;">Indicadores de apertura</h2>',
-        '<table style="border-collapse:collapse;width:100%;max-width:720px;font-size:14px;'
-        'box-shadow:0 1px 4px rgba(0,0,0,.08);border-radius:8px;overflow:hidden;">',
-        "<thead><tr>"
-        '<th style="text-align:left;padding:10px 12px;background:#1a365d;color:#fff;">Activo</th>'
-        '<th style="text-align:right;padding:10px 12px;background:#1a365d;color:#fff;">Precio</th>'
-        '<th style="text-align:right;padding:10px 12px;background:#1a365d;color:#fff;">Variación</th>'
-        "</tr></thead><tbody>",
-    ]
+    """Bloque monoespaciado de indicadores, estilo Flash Report (sin tabla HTML)."""
+    if not rows:
+        return ""
+    ancho_activo = max(len(r["activo"]) for r in rows) + 2
 
-    for i, r in enumerate(rows):
+    lineas: list[str] = []
+    for r in rows:
         pct = float(r["variacion_pct"])
-        if pct > 0:
-            color = "#166534"
-            bg = "#ecfdf5"
-            sign = "+"
-        elif pct < 0:
-            color = "#991b1b"
-            bg = "#fef2f2"
-            sign = ""
-        else:
-            color = "#374151"
-            bg = "#f9fafb"
-            sign = ""
-
-        row_bg = bg if i % 2 == 0 else "#ffffff"
         if r.get("es_tasa"):
             precio = f"{float(r['precio']):.2f}%"
-            var_str = f"{sign}{pct:.0f} pb"
+            if abs(pct) < 0.5:
+                var_str = "="
+            else:
+                var_str = f"{'+' if pct > 0 else ''}{pct:.0f} pb"
         else:
             precio = _format_price_display(float(r["precio"]))
-            var_str = f"{sign}{pct:.2f}%"
-        parts.append(
-            f'<tr style="background:{row_bg};">'
-            f'<td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;">'
-            f'{html_module.escape(r["activo"])}'
-            f'<span style="color:#6b7280;font-size:12px;"> ({html_module.escape(r["ticker"])})</span></td>'
-            f'<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #e5e7eb;">{precio}</td>'
-            f'<td style="text-align:right;padding:10px 12px;border-bottom:1px solid #e5e7eb;'
-            f'font-weight:600;color:{color};">{html_module.escape(var_str)}</td>'
-            "</tr>"
+            var_str = f"{'+' if pct > 0 else ''}{pct:.2f}%"
+        lineas.append(
+            f"{r['activo']:<{ancho_activo}}|  {precio:>11}  |  {var_str:>8}"
         )
 
-    parts.append("</tbody></table>")
-
+    cuerpo = html_module.escape("\n".join(lineas))
+    parts = [
+        '<pre style="font-family:Consolas,Menlo,monospace;font-size:13.5px;'
+        'background:#f6f8fa;border:1px solid #e5e7eb;border-radius:8px;'
+        'padding:14px 16px;overflow-x:auto;line-height:1.7;margin:0;">'
+        f"{cuerpo}</pre>"
+    ]
     if price_errors:
         parts.append(
-            "<p style='margin-top:14px;font-size:13px;color:#92400e;'><strong>Avisos:</strong> "
+            "<p style='margin-top:10px;font-size:13px;color:#92400e;'><strong>Avisos:</strong> "
             + html_module.escape(" | ".join(price_errors))
             + "</p>"
         )
-
     return "\n".join(parts)
-
-
-def _gnews_rss_fetch(
-    query: str, label: str, lang: str = "es-419", country: str = "CL"
-) -> tuple[list[dict[str, Any]], str | None]:
-    """Trae titulares desde Google News RSS (sin API key). Devuelve (items, error)."""
-    params = {"q": query, "hl": lang, "gl": country, "ceid": f"{country}:{lang.split('-')[0]}"}
-    try:
-        resp = requests.get(GNEWS_RSS_BASE, params=params, timeout=30)
-        resp.raise_for_status()
-        root = ET.fromstring(resp.content)
-    except Exception as e:
-        return [], f"GoogleNews RSS ({label}): {e}"
-
-    items: list[dict[str, Any]] = []
-    for it in root.iter("item"):
-        title = (it.findtext("title") or "").strip()
-        link = (it.findtext("link") or "").strip()
-        pub = (it.findtext("pubDate") or "").strip()
-        source_el = it.find("source")
-        fuente = (source_el.text or "").strip() if source_el is not None else "Google News"
-        if not title:
-            continue
-        # Google News antepone " - Fuente" al final del título; lo limpiamos.
-        if fuente and title.endswith(f" - {fuente}"):
-            title = title[: -(len(fuente) + 3)].strip()
-        items.append(
-            {
-                "titular": title,
-                "url": link,
-                "fuente": fuente,
-                "fecha": pub,
-                "gnews_label": label,
-            }
-        )
-    return items[:25], None
-
-
-def fetch_flash_report_sources() -> tuple[list[dict[str, Any]], list[str], dict[str, Any]]:
-    """
-    Trae las fuentes nuevas del Flash Report:
-    - Noticias nacionales (Chile): economía, política y sectores prioritarios.
-    - Watchlist family office (CMPC, Colbún, Bice, Security, Bice Vida, Arauco).
-    - Celulosa global (Suzano, Klabin, demanda China/Europa, producción Brasil).
-    - Históricos 7 días (Chile + EE.UU.) para los bloques "última semana".
-    Cada item lleva flags para que el prompt los clasifique.
-    """
-    all_items: list[dict[str, Any]] = []
-    errors: list[str] = []
-    meta: dict[str, Any] = {}
-
-    grupos: tuple[tuple[tuple[tuple[str, str], ...], dict[str, Any], str, str], ...] = (
-        (GNEWS_QUERIES_NACIONAL, {"nacional": True}, "es-419", "CL"),
-        (GNEWS_QUERIES_WATCHLIST, {"nacional": True, "fo_watchlist": True}, "es-419", "CL"),
-        (GNEWS_QUERIES_CELULOSA, {"celulosa_global": True}, "en-US", "US"),
-        (GNEWS_QUERIES_HISTORICO_7D, {"historico_7d": True}, "es-419", "CL"),
-    )
-
-    for queries, flags, lang, country in grupos:
-        for q, label in queries:
-            items, err = _gnews_rss_fetch(q, label, lang=lang, country=country)
-            if err:
-                errors.append(err)
-                continue
-            for it in items:
-                it.update(flags)
-                # El histórico de EE.UU. va al bloque internacional.
-                if label == "hist_eeuu":
-                    it.pop("nacional", None)
-            meta[label] = len(items)
-            all_items.extend(items)
-
-    return all_items, errors, meta
-
-
-def load_trending_state(path: str = TRENDING_STATE_FILENAME) -> dict[str, Any]:
-    """Temas trending de días previos: {"fecha": "YYYY-MM-DD", "temas": ["...", ...]}."""
-    try:
-        with open(path, "r", encoding="utf-8") as fh:
-            data = json.load(fh)
-        if isinstance(data, dict):
-            return data
-    except FileNotFoundError:
-        pass
-    except Exception:
-        pass
-    return {"fecha": None, "temas": []}
-
-
-def save_trending_state(
-    temas: list[str], path: str = TRENDING_STATE_FILENAME
-) -> str | None:
-    try:
-        with open(path, "w", encoding="utf-8") as fh:
-            json.dump(
-                {
-                    "fecha": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-                    "temas": temas[:12],
-                },
-                fh,
-                ensure_ascii=False,
-                indent=2,
-            )
-        return None
-    except Exception as e:
-        return f"trending_state: {e}"
-
-
-_TRENDING_COMMENT_RE = re.compile(r"<!--\s*TRENDING_JSON:(.*?)-->", re.DOTALL)
-
-
-def extract_trending_topics_from_html(html_fragment: str) -> tuple[list[str], str]:
-    """
-    Extrae el comentario <!--TRENDING_JSON:[...]--> que Claude incluye al final
-    del HTML (lista de temas 🟢 de hoy) y devuelve (temas, html_sin_comentario).
-    """
-    temas: list[str] = []
-    m = _TRENDING_COMMENT_RE.search(html_fragment)
-    if m:
-        try:
-            parsed = json.loads(m.group(1).strip())
-            if isinstance(parsed, list):
-                temas = [str(t)[:80] for t in parsed if isinstance(t, (str, int, float))]
-        except json.JSONDecodeError:
-            temas = []
-    cleaned = _TRENDING_COMMENT_RE.sub("", html_fragment).strip()
-    return temas, cleaned
-
 
 def build_claude_prompt_news_only(
     news: list[dict[str, Any]],
@@ -1303,14 +1151,17 @@ def build_claude_prompt_news_only(
 - Apuestas deportivas, gambling, lifestyle financiero, consejos de inversión genéricos ("cómo invertir", "guía", "¿deberías comprar X?").
 - Opinión de pundits o celebridades sin hecho noticioso concreto; listas/rankings de acciones sin evento; clickbait sin hecho verificable.
 - Política partidista sin impacto demostrable en mercados, tasas, reformas económicas o regulación.
+- Beneficios estatales y trámites para personas: bonos (Bono por Hijo, bonos invierno, etc.), subsidios, "consulta con tu RUT", fechas de pago, requisitos de postulación, pensiones individuales. Descarta SIEMPRE.
+- Noticias de consumo u operativa cotidiana: medios de pago aceptados en transporte o comercios, promociones bancarias a clientes, concursos, lanzamientos de apps de consumo. Descarta.
+- En los sectores prioritarios (banca, seguros de vida, energía) solo entran noticias CORPORATIVAS: resultados, fusiones/adquisiciones, inversiones, emisiones de deuda, regulación con impacto en las empresas, nombramientos clave. Lo demás del sector se descarta.
 - EXCEPCIÓN ABSOLUTA: nunca descartes una noticia que mencione a {", ".join(FO_WATCHLIST)} — esas se incluyen SIEMPRE, sin importar su tamaño o relevancia aparente.
 
 === ESTRUCTURA OBLIGATORIA DEL HTML (en este orden exacto) ===
 
 (1) MARKET TRENDING
-<h2>📈 Market Trending</h2> seguido de un <ul> con hasta 10 <li>, una sola línea de idea fuerza cada uno (sin estructura "Título: Explicación", sin fuentes, sin links):
-- 🟢 al inicio del <li> para los temas que HOY dominan el flujo noticioso (los detectas por cantidad/peso de titulares en el JSON).
-- 🔴 para temas que aparecen en "temas_trending_dias_previos" pero que HOY casi no tienen titulares (en retirada). Incluye 2-3 si existen.
+<h2>📈 Market Trending</h2> seguido de hasta 10 párrafos <p style="margin:0 0 10px 0;">, una sola línea de idea fuerza cada uno (sin "Título: Explicación", sin fuentes, sin links, sin viñetas):
+- 🟢 al inicio del <p> para los temas que HOY dominan el flujo noticioso (los detectas por cantidad/peso de titulares en el JSON).
+- 🔴 para temas que aparecen en "temas_trending_dias_previos" pero que HOY casi no tienen titulares (en retirada). Incluye 2-3 si existen; si "temas_trending_dias_previos" viene vacío, no inventes 🔴.
 Al FINAL de todo el HTML (después de la última sección), agrega en una sola línea el comentario: <!--TRENDING_JSON:["tema1","tema2",...]--> con los temas 🟢 de hoy (máximo 10, strings cortos). Es obligatorio para la memoria del sistema.
 
 (2) BLOQUE INTERNACIONAL
@@ -1319,8 +1170,10 @@ Al FINAL de todo el HTML (después de la última sección), agrega en una sola l
 (3) BLOQUE NACIONAL
 <h2>II. NACIONAL</h2> con las mismas tres subsecciones <h3>. Usa las noticias con "nacional": true. El título es "II. NACIONAL" a secas (sin "Chile").
 
-=== REGLAS DE REDACCIÓN (aplican a todos los bullets) ===
-- Redacción directa: la idea fuerza de inmediato, máximo DOS líneas (~220 caracteres). Nunca "Título: Explicación".
+=== REGLAS DE REDACCIÓN (aplican a todas las noticias) ===
+- PROHIBIDO el formato "Título: Explicación" o "Tema: detalle". NUNCA empieces una noticia con una etiqueta en negrita seguida de dos puntos (MAL: "<strong>Banco de Chile:</strong> se posiciona como marca más valiosa"). Redacta la idea fuerza directamente con las palabras clave en negrita DENTRO de la frase (BIEN: "<strong>Banco de Chile</strong> se posiciona como la marca más valiosa del país y acelera su financiamiento automotriz 100% digital").
+- ÚNICAS excepciones con prefijo permitido: "Hoy:" / "Hoy reporta:" (agenda), los prefijos geográficos de Macroeconomía Internacional (<strong>EE.UU.:</strong>, <strong>China:</strong>, <strong>Europa:</strong>, <strong>Otros:</strong>) y <strong>Celulosa:</strong>.
+- Máximo DOS líneas por noticia (~220 caracteres). Idea fuerza de inmediato.
 - Negritas <strong> en palabras clave de identificación rápida (dólar, IPC, Fed, CMPC, cobre…).
 - Datos económicos: SIEMPRE métrica exacta + comparación explícita contra expectativas si está disponible ("IPC subió 0,4% MoM vs 0,3% esperado").
 - Noticias corporativas: estilo directo con cifras concretas y dato prospectivo. Ejemplo de referencia: "Oracle cae más del 7% en la pre apertura, luego de que el gasto en centros de datos superara las estimaciones. La compañía prevé invertir ~US$70.000 millones en capex el año fiscal que termina en mayo 2027."
@@ -1341,13 +1194,14 @@ PRIORIDAD TRUMP ("trump_priority": true): declaraciones/órdenes con impacto en 
 Apollo Daily Spark y J.P. Morgan AM ("apollo_daily_spark"/"jpm_institutional": true): inclúyelos todos, clasificados donde corresponda.
 
 === HISTÓRICO ÚLTIMA SEMANA ===
-Al final de CADA subsección (las seis), si hay noticias con "historico_7d": true o material de días previos muy relevante (IPC, Imacec, PIB, reformas, CPI, jobs report) que corresponda a esa subsección, agrega:
+OBLIGATORIO: si en el JSON existen noticias con "historico_7d": true, DEBEN aparecer en el reporte. Al final de CADA subsección que tenga material histórico (noticias con "historico_7d": true o hechos de días previos muy relevantes: IPC, Imacec, PIB, reformas, CPI, jobs report), agrega:
 <blockquote style="border-left:3px solid #d1d5db;margin:8px 0 4px 0;padding:6px 12px;background:#f9fafb;"><em>📅 Última semana: [resumen consolidado en cursiva, máximo 3 líneas, con links si hay URL]</em></blockquote>
 Cada noticia histórica va en la subsección temática que le corresponde (un IPC pasado en Macroeconomía, no en Política). Si la noticia del día ya quedó vieja (ej. un IPC publicado hace 2+ días), va aquí y no como noticia del día. Si no hay material para una subsección, omite el blockquote.
 
 === FORMATO DE SALIDA ===
 - Devuelve ÚNICAMENTE el fragmento HTML (sin <!DOCTYPE>, <html>, <head>, <body>). Prohibido markdown y ```.
-- Después de cada <h3> va un <ul> con los <li>. Si una subsección queda vacía: <p><em>Sin titulares destacados.</em></p>.
+- PROHIBIDO usar <ul>, <ol> o <li> en todo el reporte: cada noticia y cada tema del trending va en su propio <p style="margin:0 0 14px 0;line-height:1.55;">. La separación visual entre temas es el espacio entre párrafos, no viñetas.
+- Si una subsección queda vacía: <p><em>Sin titulares destacados.</em></p>.
 - Separa los bloques I y II con <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">.
 - No agregues preguntas, menús ni cierres al final del reporte; solo el comentario TRENDING_JSON."""
 
