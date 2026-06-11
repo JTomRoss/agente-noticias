@@ -1131,6 +1131,133 @@ def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str])
         )
     return "\n".join(parts)
 
+def _gnews_rss_fetch(
+    query: str, label: str, lang: str = "es-419", country: str = "CL"
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Trae titulares desde Google News RSS (sin API key). Devuelve (items, error)."""
+    params = {"q": query, "hl": lang, "gl": country, "ceid": f"{country}:{lang.split('-')[0]}"}
+    try:
+        resp = requests.get(GNEWS_RSS_BASE, params=params, timeout=30)
+        resp.raise_for_status()
+        root = ET.fromstring(resp.content)
+    except Exception as e:
+        return [], f"GoogleNews RSS ({label}): {e}"
+
+    items: list[dict[str, Any]] = []
+    for it in root.iter("item"):
+        title = (it.findtext("title") or "").strip()
+        link = (it.findtext("link") or "").strip()
+        pub = (it.findtext("pubDate") or "").strip()
+        source_el = it.find("source")
+        fuente = (source_el.text or "").strip() if source_el is not None else "Google News"
+        if not title:
+            continue
+        # Google News antepone " - Fuente" al final del título; lo limpiamos.
+        if fuente and title.endswith(f" - {fuente}"):
+            title = title[: -(len(fuente) + 3)].strip()
+        items.append(
+            {
+                "titular": title,
+                "url": link,
+                "fuente": fuente,
+                "fecha": pub,
+                "gnews_label": label,
+            }
+        )
+    return items[:25], None
+
+
+def fetch_flash_report_sources() -> tuple[list[dict[str, Any]], list[str], dict[str, Any]]:
+    """
+    Trae las fuentes nuevas del Flash Report:
+    - Noticias nacionales (Chile): economía, política y sectores prioritarios.
+    - Watchlist family office (CMPC, Colbún, Bice, Security, Bice Vida, Arauco).
+    - Celulosa global (Suzano, Klabin, demanda China/Europa, producción Brasil).
+    - Históricos 7 días (Chile + EE.UU.) para los bloques "última semana".
+    Cada item lleva flags para que el prompt los clasifique.
+    """
+    all_items: list[dict[str, Any]] = []
+    errors: list[str] = []
+    meta: dict[str, Any] = {}
+
+    grupos: tuple[tuple[tuple[tuple[str, str], ...], dict[str, Any], str, str], ...] = (
+        (GNEWS_QUERIES_NACIONAL, {"nacional": True}, "es-419", "CL"),
+        (GNEWS_QUERIES_WATCHLIST, {"nacional": True, "fo_watchlist": True}, "es-419", "CL"),
+        (GNEWS_QUERIES_CELULOSA, {"celulosa_global": True}, "en-US", "US"),
+        (GNEWS_QUERIES_HISTORICO_7D, {"historico_7d": True}, "es-419", "CL"),
+    )
+
+    for queries, flags, lang, country in grupos:
+        for q, label in queries:
+            items, err = _gnews_rss_fetch(q, label, lang=lang, country=country)
+            if err:
+                errors.append(err)
+                continue
+            for it in items:
+                it.update(flags)
+                # El histórico de EE.UU. va al bloque internacional.
+                if label == "hist_eeuu":
+                    it.pop("nacional", None)
+            meta[label] = len(items)
+            all_items.extend(items)
+
+    return all_items, errors, meta
+
+
+def load_trending_state(path: str = TRENDING_STATE_FILENAME) -> dict[str, Any]:
+    """Temas trending de días previos: {"fecha": "YYYY-MM-DD", "temas": ["...", ...]}."""
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        if isinstance(data, dict):
+            return data
+    except FileNotFoundError:
+        pass
+    except Exception:
+        pass
+    return {"fecha": None, "temas": []}
+
+
+def save_trending_state(
+    temas: list[str], path: str = TRENDING_STATE_FILENAME
+) -> str | None:
+    try:
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(
+                {
+                    "fecha": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                    "temas": temas[:12],
+                },
+                fh,
+                ensure_ascii=False,
+                indent=2,
+            )
+        return None
+    except Exception as e:
+        return f"trending_state: {e}"
+
+
+_TRENDING_COMMENT_RE = re.compile(r"<!--\s*TRENDING_JSON:(.*?)-->", re.DOTALL)
+
+
+def extract_trending_topics_from_html(html_fragment: str) -> tuple[list[str], str]:
+    """
+    Extrae el comentario <!--TRENDING_JSON:[...]--> que Claude incluye al final
+    del HTML (lista de temas 🟢 de hoy) y devuelve (temas, html_sin_comentario).
+    """
+    temas: list[str] = []
+    m = _TRENDING_COMMENT_RE.search(html_fragment)
+    if m:
+        try:
+            parsed = json.loads(m.group(1).strip())
+            if isinstance(parsed, list):
+                temas = [str(t)[:80] for t in parsed if isinstance(t, (str, int, float))]
+        except json.JSONDecodeError:
+            temas = []
+    cleaned = _TRENDING_COMMENT_RE.sub("", html_fragment).strip()
+    return temas, cleaned
+
+
 def build_claude_prompt_news_only(
     news: list[dict[str, Any]],
     news_errors: list[str],
