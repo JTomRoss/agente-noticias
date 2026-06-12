@@ -102,28 +102,49 @@ PULP_GLOBAL_WATCHLIST: tuple[str, ...] = (
 # Google News RSS (sin API key). when:Xd limita la antigüedad.
 GNEWS_RSS_BASE = "https://news.google.com/rss/search"
 
+# --- Fuentes internacionales premium (whitelist) ---
+# RSS directo (links limpios, tiempo real). label = nombre visible de la fuente.
+PREMIUM_INTL_RSS: tuple[tuple[str, str], ...] = (
+    ("https://www.cnbc.com/id/100003114/device/rss/rss.html", "CNBC"),       # Markets
+    ("https://www.cnbc.com/id/20910258/device/rss/rss.html", "CNBC"),        # Economy
+    ("https://www.cnbc.com/id/10000664/device/rss/rss.html", "CNBC"),        # Economy/Finance
+    ("https://feeds.marketwatch.com/marketwatch/topstories/", "MarketWatch"),
+    ("https://feeds.marketwatch.com/marketwatch/marketpulse/", "MarketWatch"),
+    ("https://finance.yahoo.com/news/rssindex", "Yahoo Finance"),
+    ("https://feeds.a.dj.com/rss/RSSMarketsMain.xml", "WSJ"),
+    ("https://feeds.a.dj.com/rss/RSSWorldNews.xml", "WSJ"),
+)
+
+# Premium sin RSS abierto fiable → Google News restringido por dominio (links de Google, fuente confiable).
+PREMIUM_INTL_GNEWS: tuple[tuple[str, str], ...] = (
+    ('site:reuters.com (markets OR economy OR Fed OR stocks OR inflation) when:1d', "Reuters"),
+    ('site:bloomberg.com (markets OR economy OR Fed OR stocks OR rates) when:1d', "Bloomberg"),
+    ('site:ft.com (markets OR economy OR central bank OR equities) when:1d', "Financial Times"),
+)
+
+# Fuentes chilenas reputadas para noticia nacional (evita medios menores).
+_CL_SITES = "(site:df.cl OR site:latercera.com OR site:emol.com OR site:elmercurio.com OR site:bloomberglinea.com OR site:t13.cl OR site:elmostrador.cl)"
+
 GNEWS_QUERIES_NACIONAL: tuple[tuple[str, str], ...] = (
     # (query, etiqueta para logs)
-    ("economía OR mercados OR IPSA OR dólar Chile when:1d", "chile_economia"),
-    ("(Senado OR gobierno OR Hacienda OR reforma) Chile when:1d", "chile_politica"),
-    ("(banco OR banca OR seguros de vida OR eléctrica OR energía) Chile when:1d", "chile_sectores"),
+    (f"{_CL_SITES} (economía OR mercados OR IPSA OR dólar OR Banco Central) when:1d", "chile_economia"),
+    (f"{_CL_SITES} (Senado OR gobierno OR Hacienda OR reforma OR Presupuesto) when:1d", "chile_politica"),
+    (f"{_CL_SITES} (banco OR banca OR \"seguros de vida\" OR eléctrica OR energía OR generadora) when:1d", "chile_sectores"),
 )
 
 GNEWS_QUERIES_WATCHLIST: tuple[tuple[str, str], ...] = (
     ('"CMPC" OR "Colbún" OR "Banco Bice" OR "Bicecorp" OR "Banco Security" OR "Bice Vida" OR "Arauco" when:2d', "fo_watchlist"),
 )
 
+# Celulosa: restringida a fuentes premium e industria especializada (no medios menores).
 GNEWS_QUERIES_CELULOSA: tuple[tuple[str, str], ...] = (
-    ('(celulosa OR pulp) (Suzano OR Klabin OR UPM OR "Stora Enso" OR precio OR demand OR China OR Brasil OR Europe) when:2d', "celulosa_global"),
+    ('(site:reuters.com OR site:bloomberg.com OR site:fastmarkets.com OR site:risiinfo.com OR site:bloomberglinea.com) (pulp OR celulosa OR Suzano OR Klabin OR "Stora Enso" OR UPM) when:3d', "celulosa_global"),
 )
 
 GNEWS_QUERIES_HISTORICO_7D: tuple[tuple[str, str], ...] = (
-    ("(IPC OR Imacec OR PIB OR \"Banco Central\" OR reforma) Chile when:7d", "hist_chile"),
-    ('("CPI" OR "Federal Reserve" OR "jobs report" OR GDP) "United States" when:7d', "hist_eeuu"),
+    (f"{_CL_SITES} (IPC OR Imacec OR PIB OR \"Banco Central\" OR TPM OR reforma) when:7d", "hist_chile"),
+    ('(site:reuters.com OR site:bloomberg.com OR site:cnbc.com OR site:wsj.com) ("CPI" OR "Federal Reserve" OR "jobs report" OR GDP OR PCE) when:7d', "hist_eeuu"),
 )
-
-# Estado del Market Trending (para detectar temas 🔴 en retirada vs días previos).
-TRENDING_STATE_FILENAME = "trending_state.json"
 
 # RSS de Apollo Academy: un único <item> con varias entradas embebidas en HTML (Torsten Slok).
 APOLLO_DAILY_SPARK_RSS = "https://www.apolloacademy.com/the-daily-spark/feed/"
@@ -1174,43 +1195,59 @@ def _gnews_rss_fetch(
     return items[:25], None
 
 
-GOOGLE_TRENDS_RSS_URLS: tuple[str, ...] = (
-    "https://trends.google.com/trending/rss?geo={geo}",
-    "https://trends.google.com/trends/trendingsearches/daily/rss?geo={geo}",
-)
-
-
-def fetch_google_trends(geos: tuple[str, ...] = ("US", "CL")) -> tuple[list[dict[str, Any]], list[str]]:
-    """Términos que lideran las búsquedas en Google ahora (RSS oficial, sin API key)."""
+def _premium_rss_fetch(url: str, fuente: str) -> tuple[list[dict[str, Any]], str | None]:
+    """Lee un RSS directo de una fuente premium (links limpios). Devuelve (items, error)."""
+    try:
+        resp = requests.get(url, timeout=25, headers={"User-Agent": "Mozilla/5.0"})
+        resp.raise_for_status()
+        root = ET.fromstring(resp.content)
+    except Exception as e:
+        return [], f"{fuente} RSS: {e}"
     items: list[dict[str, Any]] = []
+    for it in root.iter("item"):
+        title = (it.findtext("title") or "").strip()
+        link = (it.findtext("link") or "").strip()
+        pub = (it.findtext("pubDate") or "").strip()
+        if not title:
+            continue
+        items.append(
+            {
+                "titular": title,
+                "url": link,
+                "fuente": fuente,
+                "fecha": pub,
+                "intl_premium": True,
+            }
+        )
+    return items[:20], None
+
+
+def fetch_premium_intl_news() -> tuple[list[dict[str, Any]], list[str], dict[str, Any]]:
+    """Noticias internacionales SOLO de fuentes premium (RSS directo + Google News por dominio)."""
+    all_items: list[dict[str, Any]] = []
     errors: list[str] = []
-    for geo in geos:
-        ok = False
-        for tpl in GOOGLE_TRENDS_RSS_URLS:
-            try:
-                resp = requests.get(
-                    tpl.format(geo=geo),
-                    timeout=20,
-                    headers={"User-Agent": "Mozilla/5.0"},
-                )
-                resp.raise_for_status()
-                root = ET.fromstring(resp.content)
-            except Exception:
-                continue
-            for it in root.iter("item"):
-                term = (it.findtext("title") or "").strip()
-                traffic = ""
-                for child in it:
-                    if child.tag.endswith("approx_traffic"):
-                        traffic = (child.text or "").strip()
-                        break
-                if term:
-                    items.append({"termino": term, "trafico_aprox": traffic, "geo": geo})
-            ok = True
-            break
-        if not ok:
-            errors.append(f"Google Trends RSS ({geo}): sin respuesta en ningún endpoint")
-    return items[:40], errors
+    meta: dict[str, Any] = {}
+
+    for url, fuente in PREMIUM_INTL_RSS:
+        items, err = _premium_rss_fetch(url, fuente)
+        if err:
+            errors.append(err)
+            continue
+        all_items.extend(items)
+        meta[fuente] = meta.get(fuente, 0) + len(items)
+
+    for query, fuente in PREMIUM_INTL_GNEWS:
+        items, err = _gnews_rss_fetch(query, f"premium_{fuente}", lang="en-US", country="US")
+        if err:
+            errors.append(err)
+            continue
+        for it in items:
+            it["intl_premium"] = True
+            it["fuente"] = fuente  # forzamos el nombre limpio de la fuente
+        all_items.extend(items)
+        meta[fuente] = meta.get(fuente, 0) + len(items)
+
+    return all_items, errors, meta
 
 
 def fetch_flash_report_sources() -> tuple[list[dict[str, Any]], list[str], dict[str, Any]]:
@@ -1250,141 +1287,87 @@ def fetch_flash_report_sources() -> tuple[list[dict[str, Any]], list[str], dict[
     return all_items, errors, meta
 
 
-def load_trending_state(path: str = TRENDING_STATE_FILENAME) -> dict[str, Any]:
-    """Temas trending de días previos: {"fecha": "YYYY-MM-DD", "temas": ["...", ...]}."""
-    try:
-        with open(path, "r", encoding="utf-8") as fh:
-            data = json.load(fh)
-        if isinstance(data, dict):
-            return data
-    except FileNotFoundError:
-        pass
-    except Exception:
-        pass
-    return {"fecha": None, "temas": []}
-
-
-def save_trending_state(
-    temas: list[str], path: str = TRENDING_STATE_FILENAME
-) -> str | None:
-    try:
-        with open(path, "w", encoding="utf-8") as fh:
-            json.dump(
-                {
-                    "fecha": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-                    "temas": temas[:12],
-                },
-                fh,
-                ensure_ascii=False,
-                indent=2,
-            )
-        return None
-    except Exception as e:
-        return f"trending_state: {e}"
-
-
-_TRENDING_COMMENT_RE = re.compile(r"<!--\s*TRENDING_JSON:(.*?)-->", re.DOTALL)
-
-
-def extract_trending_topics_from_html(html_fragment: str) -> tuple[list[str], str]:
-    """
-    Extrae el comentario <!--TRENDING_JSON:[...]--> que Claude incluye al final
-    del HTML (lista de temas 🟢 de hoy) y devuelve (temas, html_sin_comentario).
-    """
-    temas: list[str] = []
-    m = _TRENDING_COMMENT_RE.search(html_fragment)
-    if m:
-        try:
-            parsed = json.loads(m.group(1).strip())
-            if isinstance(parsed, list):
-                temas = [str(t)[:80] for t in parsed if isinstance(t, (str, int, float))]
-        except json.JSONDecodeError:
-            temas = []
-    cleaned = _TRENDING_COMMENT_RE.sub("", html_fragment).strip()
-    return temas, cleaned
-
-
 def build_claude_prompt_news_only(
     news: list[dict[str, Any]],
     news_errors: list[str],
-    temas_previos: list[str] | None = None,
-    google_trends: list[dict[str, Any]] | None = None,
 ) -> str:
     """Prompt maestro del Flash Report: la tabla de indicadores la genera el script."""
     payload = {
-        "noticias": news[:110],
+        "noticias": news[:130],
         "errores_noticias": news_errors,
-        "google_trends_ahora": google_trends or [],
-        "temas_trending_dias_previos": temas_previos or [],
         "fecha_hoy": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
-    return f"""Actúa como un analista financiero y político de alto nivel. Con los titulares del JSON (campo "noticias") debes construir un "Flash Report" ejecutivo diario, hiper-scannable, para lectura rápida en pantalla (sin paredes de texto). No inventes noticias: usa solo lo que viene en el JSON.
+    return f"""Eres el editor de un briefing matinal de noticias económicas y financieras para un family office chileno sofisticado. Tu trabajo es SELECCIONAR y REDACTAR las noticias más relevantes del día a partir del JSON (campo "noticias"). Eres un editor con criterio, no un copista: decides qué entra y qué no. No inventes hechos: usa solo lo que viene en el JSON.
 
 {json.dumps(payload, ensure_ascii=False, indent=2)}
 
+=== PRINCIPIO RECTOR: NOTICIAS, NO COMENTARIOS ===
+Cada ítem DEBE comunicar un HECHO CONCRETO del día: una cifra publicada, una decisión tomada, una operación anunciada, un movimiento de precio, un evento ocurrido. Si una frase no contiene un hecho verificable y solo describe un clima o una tendencia, NO va.
+- PROHIBIDO (comentario vacío, esto NO es noticia): "La inflación en EE.UU. y su impacto en las tasas sigue siendo el factor dominante para los mercados de divisas." / "Las tendencias FX muestran que la inflación sigue siendo el driver principal." / "El mercado sigue los movimientos de oro y bonos ante la volatilidad."
+- CORRECTO (hecho + dato): "El <strong>IPC</strong> de mayo en EE.UU. subió 0,5% MoM, sobre el 0,3% esperado, por el alza de energía." / "El <strong>S&P 500</strong> cerró -1,0% tras el dato de inflación, su mayor caída en tres semanas."
+La redacción es editorial y fluida (no pegar el titular crudo), pero SIEMPRE anclada a un hecho con su cifra.
+
+=== SELECCIÓN Y CALIDAD DE FUENTES ===
+- INTERNACIONAL: usa EXCLUSIVAMENTE noticias con "intl_premium": true (Reuters, Bloomberg, CNBC, WSJ, MarketWatch, Yahoo Finance, Financial Times). JAMÁS uses una fuente chilena para una noticia internacional. Si una noticia internacional solo aparece en medios chilenos, descártala.
+- NACIONAL: usa las noticias con "nacional": true (medios chilenos reputados).
+- Descarta cualquier ítem cuyo hecho no entiendas o que no aporte información real.
+- Eres tú quien elige: prioriza lo que un inversor institucional necesita saber a primera hora, no rellenes con lo que sobra.
+
 === EXCLUSIONES (descarta ANTES de clasificar) ===
-- Apuestas deportivas, gambling, lifestyle financiero, consejos de inversión genéricos ("cómo invertir", "guía", "¿deberías comprar X?").
-- Opinión de pundits o celebridades sin hecho noticioso concreto; listas/rankings de acciones sin evento; clickbait sin hecho verificable.
-- Política partidista sin impacto demostrable en mercados, tasas, reformas económicas o regulación.
-- Beneficios estatales y trámites para personas: bonos (Bono por Hijo, bonos invierno, etc.), subsidios, "consulta con tu RUT", fechas de pago, requisitos de postulación, pensiones individuales. Descarta SIEMPRE.
-- Noticias de consumo u operativa cotidiana: medios de pago aceptados en transporte o comercios, promociones bancarias a clientes, concursos, lanzamientos de apps de consumo. Descarta.
-- En los sectores prioritarios (banca, seguros de vida, energía) solo entran noticias CORPORATIVAS: resultados, fusiones/adquisiciones, inversiones, emisiones de deuda, regulación con impacto en las empresas, nombramientos clave. Lo demás del sector se descarta.
-- EXCEPCIÓN ABSOLUTA: nunca descartes una noticia que mencione a {", ".join(FO_WATCHLIST)} — esas se incluyen SIEMPRE, sin importar su tamaño o relevancia aparente.
+- Apuestas deportivas, deportes, farándula, entretenimiento, cultura pop, lifestyle.
+- Consejos de inversión genéricos ("cómo invertir", "guía", "¿deberías comprar X?"), listas/rankings sin evento, clickbait.
+- Opinión de pundits sin hecho concreto; política partidista sin impacto en mercados/tasas/reformas/regulación.
+- Beneficios estatales y trámites para personas (bonos, subsidios, "consulta con tu RUT", fechas de pago, pensiones individuales). Descarta SIEMPRE.
+- Consumo y operativa cotidiana (medios de pago en transporte/comercio, promociones a clientes, concursos, apps de consumo).
+- En sectores prioritarios (banca, seguros de vida, energía) solo entra lo CORPORATIVO: resultados, M&A, inversiones, emisiones de deuda, regulación con impacto en empresas, nombramientos clave.
+- EXCEPCIÓN ABSOLUTA: nunca descartes una noticia que mencione a {", ".join(FO_WATCHLIST)} — esas se incluyen SIEMPRE.
 
-=== ESTRUCTURA OBLIGATORIA DEL HTML (en este orden exacto) ===
+=== ESTRUCTURA DEL HTML (en este orden exacto) ===
+(1) <h2>I. INTERNACIONAL</h2> con tres <h3>: Macroeconomía, Precios y Mercados, Política.
+(2) <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
+(3) <h2>II. NACIONAL</h2> con las mismas tres <h3>. Título "II. NACIONAL" a secas (sin "Chile").
 
-(1) TENDENCIAS GLOBALES
-<h2>📈 Tendencias Globales</h2> seguido de hasta 10 párrafos <p style="margin:0 0 10px 0;">, una sola línea de idea fuerza cada uno (sin "Título: Explicación", sin fuentes, sin links, sin viñetas). Esta sección refleja lo que el MUNDO está buscando en Google en este momento, NO las noticias del correo:
-- Fuente principal: "google_trends_ahora" (términos reales que lideran búsquedas, con tráfico aproximado y geo). Selecciona los relevantes en geopolítica, mercados, tecnología, cultura pop o eventos masivos, y redacta para cada uno una idea fuerza de una línea que explique POR QUÉ se busca.
-- Si "google_trends_ahora" viene vacío, infiere los temas desde el flujo GLOBAL de titulares.
-- La fuente de verdad es lo que el mundo busca, no el contenido del correo. Si un tema importante (macro, mercados, política internacional) domina las búsquedas Y también es noticia del día, DEBE aparecer aquí aunque se repita más abajo — esa coincidencia es natural. Lo prohibido es lo inverso: rellenar la sección con noticias del correo que NO están en las búsquedas.
-- Temas de Chile: solo entran si realmente aparecen en "google_trends_ahora" (geo CL cuenta). No asumas que una noticia chilena es tendencia por estar en el correo.
-- Redacta TEMAS de búsqueda con su porqué, no titulares de prensa.
-- 🟢 al inicio del <p> para temas en alza HOY.
-- 🔴 para temas de "temas_trending_dias_previos" que hoy desaparecieron de las búsquedas (en retirada). Incluye 2-3 si existen; si esa lista viene vacía, no inventes 🔴.
-Al FINAL de todo el HTML (después de la última sección), agrega en una sola línea el comentario: <!--TRENDING_JSON:["tema1","tema2",...]--> con los temas 🟢 de hoy (máximo 10, strings cortos). Es obligatorio para la memoria del sistema.
+=== QUÉ VA EN CADA SUBSECCIÓN ===
+- MACROECONOMÍA: el DATO en sí. Cifra publicada vs. lo esperado, decisiones e intervenciones de bancos centrales (Fed, BCE, Banco Central de Chile). Ej: "El <strong>IPC</strong> de EE.UU. subió 0,5% MoM, sobre el 0,3% previsto." Las señales/decisiones/discursos de Fed y BCE son tan o más importantes que los datos: inclúyelas aquí.
+- PRECIOS Y MERCADOS: la REACCIÓN de los activos a esos datos y los movimientos de mercado. Ej: "El <strong>dólar</strong> se debilitó frente a emergentes tras el dato de inflación; el peso chileno ganó terreno." Aquí van índices, acciones, commodities, divisas, tasas, resultados corporativos, hedge funds.
+- POLÍTICA: hechos políticos con impacto económico (reformas, leyes, decisiones de gobierno, geopolítica).
 
-(2) BLOQUE INTERNACIONAL
-<h2>I. INTERNACIONAL</h2> con tres subsecciones <h3>: Macroeconomía, Precios y Mercados, Política.
+=== REGLAS DE REDACCIÓN ===
+- Máximo DOS líneas por noticia (~200 caracteres). Idea fuerza de inmediato.
+- UNA SOLA palabra en negrita por noticia: la palabra clave de identificación rápida (el activo, el indicador o la entidad central). Nunca más de un <strong> por ítem. Ej: "El <strong>Banco Mundial</strong> recortó su proyección de crecimiento global a 2,5% por el impacto de la guerra en Irán."
+- PROHIBIDO el formato "Etiqueta: explicación" con negrita y dos puntos (MAL: "<strong>Banca:</strong> el sector sube"). Redacta la idea directa.
+- Datos económicos: SIEMPRE la métrica exacta + comparación contra lo esperado si está disponible.
+- Consolida dos noticias del mismo tema en un solo ítem.
+- Cada noticia es un <p style="margin:0 0 14px 0;line-height:1.55;">. NO uses viñetas salvo en el bloque de Celulosa (ver abajo).
+- FUENTE: al final de cada noticia, un único enlace cuyo TEXTO es el nombre de la fuente: <a href="URL_EXACTA_DEL_JSON" style="color:#1d4ed8;text-decoration:none;">Fuente</a>. Nunca muestres la URL cruda. Si "url" viene vacía, cierra con <span style="color:#6b7280;font-size:12px;">(Fuente)</span>.
 
-(3) BLOQUE NACIONAL
-<h2>II. NACIONAL</h2> con las mismas tres subsecciones <h3>. Usa las noticias con "nacional": true. El título es "II. NACIONAL" a secas (sin "Chile").
+=== MACROECONOMÍA INTERNACIONAL: ORDEN ===
+Agrupa por procedencia con prefijo en negrita, en este orden: <strong>EE.UU.:</strong>, <strong>China:</strong>, <strong>Europa:</strong> (o país específico como <strong>Alemania:</strong>). Lo que no calce con una geografía va al final SIN prefijo alguno. NUNCA escribas "Otros:" — ese prefijo está prohibido.
 
-=== REGLAS DE REDACCIÓN (aplican a todas las noticias) ===
-- PROHIBIDO el formato "Título: Explicación" o "Tema: detalle". NUNCA empieces una noticia con una etiqueta en negrita seguida de dos puntos (MAL: "<strong>Banco de Chile:</strong> se posiciona como marca más valiosa"). Redacta la idea fuerza directamente con las palabras clave en negrita DENTRO de la frase (BIEN: "<strong>Banco de Chile</strong> se posiciona como la marca más valiosa del país y acelera su financiamiento automotriz 100% digital").
-- ÚNICAS excepciones con prefijo permitido: los prefijos geográficos de Macroeconomía Internacional (<strong>EE.UU.:</strong>, <strong>China:</strong>, <strong>Europa:</strong> o país específico) y <strong>Celulosa:</strong>. Si una noticia macro no calza con una geografía específica, va al final SIN prefijo (nunca uses "Otros:"). Las frases de agenda van como oración natural sin etiqueta (BIEN: "Hoy se conocerá el IPP de mayo en EE.UU."; MAL: "<strong>Hoy:</strong> se conocerá…").
-- Máximo DOS líneas por noticia (~220 caracteres). Idea fuerza de inmediato.
-- Negritas <strong> en palabras clave de identificación rápida (dólar, IPC, Fed, CMPC, cobre…).
-- Datos económicos: SIEMPRE métrica exacta + comparación explícita contra expectativas si está disponible ("IPC subió 0,4% MoM vs 0,3% esperado").
-- Noticias corporativas: estilo directo con cifras concretas y dato prospectivo. Ejemplo de referencia: "Oracle cae más del 7% en la pre apertura, luego de que el gasto en centros de datos superara las estimaciones. La compañía prevé invertir ~US$70.000 millones en capex el año fiscal que termina en mayo 2027."
-- Consolidación: dos noticias del mismo activo/tema → un solo bullet.
-- Fuente: SOLO el hipervínculo, sin duplicar el nombre. El <li> termina con <a href="URL_EXACTA_DEL_JSON" style="color:#1d4ed8;">Fuente</a> usando el campo "fuente" como texto del link. Si "url" viene vacía, cierra con <span style="color:#6b7280;font-size:12px;">({{fuente}})</span>.
+=== PRECIOS Y MERCADOS INTERNACIONAL ===
+Es la subsección más rica del bloque internacional: puebla con índices, resultados corporativos, commodities, divisas, tasas y flujos (apunta a 4-6 noticias reales si el material existe). Orden: 1º EE.UU. de impacto sistémico (Fed, líderes, hedge funds); 2º corporativas/sectoriales EE.UU.; 3º Europa/Asia relevante; 4º Latinoamérica.
 
-=== AGENDA DEL DÍA (obligatoria si hay material) ===
-- En Macroeconomía (Internacional y Nacional): un párrafo inicial con los datos económicos que se publican hoy según los titulares, redactado como oración natural sin etiqueta (ej. "Hoy se conocerá el IPP de mayo en EE.UU. y las solicitudes semanales de desempleo."). Solo la frase, sin explicación.
-- Comentarios, decisiones o señales de la Fed y del BCE son IGUAL O MÁS relevantes que los datos: inclúyelos siempre en Macroeconomía Internacional con prioridad alta.
-- En Precios y Mercados Internacional: una oración natural con los resultados corporativos del día de las principales empresas del S&P 500, foco tech (ej. "Hoy reportan Adobe y Oracle."), si los titulares los mencionan. Sin etiqueta en negrita.
+=== CELULOSA (al final de Precios y Mercados Internacional) ===
+Las noticias con "celulosa_global": true van en un bloque propio que abre con <p style="margin:14px 0 4px 0;"><strong>Celulosa</strong></p> seguido de una <ul style="margin:0;padding-left:20px;"> donde cada noticia es un <li style="margin-bottom:6px;"> de UNA línea con su enlace de fuente inmediatamente después del texto. Si no hay noticias de celulosa, omite el bloque completo.
 
-=== PRIORIDAD Y ORDEN ===
-Precios y Mercados (Internacional): esta subsección debe ser la más rica del bloque internacional. Haz un esfuerzo deliberado por poblarla: revisa exhaustivamente el JSON buscando índices, resultados corporativos, tasas, commodities, divisas, hedge funds y flujos antes de darla por pobre; apunta a 4-6 noticias si el material existe. Orden estricto: 1º noticias EE.UU. de impacto sistémico (líderes, Fed, hedge funds relevantes); 2º corporativas/sectoriales EE.UU.; 3º Europa/Asia de alta relevancia (elimina lo genérico); 4º Latinoamérica; 5º AL FINAL los bloques sectoriales (Celulosa).
-Macroeconomía (Internacional): agrupa por procedencia con prefijo en negrita y este orden estricto: <strong>EE.UU.:</strong>, <strong>China:</strong>, <strong>Europa:</strong> (o país), <strong>Otros:</strong>.
-CELULOSA GLOBAL: las noticias con "celulosa_global": true (producción Brasil, demanda China/Europa, {", ".join(PULP_GLOBAL_WATCHLIST)}) van TODAS CONSOLIDADAS en UN SOLO párrafo al FINAL de Internacional > Precios y Mercados. El párrafo empieza con <strong>Celulosa:</strong> y une cada noticia como oración de UNA línea máximo separadas por punto seguido, con la empresa o lugar clave en negrita para distinguir cada tema (<strong>Suzano</strong>, <strong>Uruguay</strong>, <strong>Stora Enso</strong>…). Las fuentes de todas van juntas al final del párrafo como links separados por " · ". La celulosa NUNCA debe ocupar más de un párrafo ni desplazar a las noticias globales de mercados.
-NACIONAL: las noticias que mencionen a {", ".join(FO_WATCHLIST)} van PRIMERO dentro de su subsección. Después, prioridad alta para sectores banca, seguros de vida y energía. Clasifica cada noticia en la subsección que le corresponda por contenido (una declaración política de un ejecutivo va en Política; un resultado trimestral en Precios y Mercados).
-PRIORIDAD TRUMP ("trump_priority": true): declaraciones/órdenes con impacto en mercados van primero en su subsección internacional.
-Apollo Daily Spark y J.P. Morgan AM ("apollo_daily_spark"/"jpm_institutional": true): inclúyelos todos, clasificados donde corresponda.
+=== NACIONAL ===
+- Las noticias que mencionen a {", ".join(FO_WATCHLIST)} van PRIMERO en su subsección.
+- Prioridad alta a banca, seguros de vida y energía (solo corporativo).
+- Clasifica por contenido: declaración política de un ejecutivo → Política; resultado trimestral → Precios y Mercados.
+
+=== ANTICIPOS / AGENDA (AL FINAL de cada subsección, nunca al inicio) ===
+- Cierra Macroeconomía con una oración natural de lo que se publica hoy, si los titulares lo mencionan: "Hoy se conocerá el IPP de mayo en EE.UU. y las solicitudes semanales de desempleo." Sin etiqueta en negrita, sin dos puntos.
+- Cierra Precios y Mercados con los resultados corporativos del día (foco tech S&P 500), si aplica: "Hoy reportan Adobe y Oracle tras el cierre." Va AL FINAL, nunca como primera noticia.
 
 === HISTÓRICO ÚLTIMA SEMANA ===
-OBLIGATORIO: si en el JSON existen noticias con "historico_7d": true, DEBEN aparecer en el reporte. Al final de CADA subsección que tenga material histórico (noticias con "historico_7d": true o hechos de días previos muy relevantes: IPC, Imacec, PIB, reformas, CPI, jobs report), agrega:
-<blockquote style="border-left:3px solid #d1d5db;margin:8px 0 4px 0;padding:6px 12px;background:#f9fafb;"><em>📅 Última semana: [resumen consolidado en cursiva, máximo 3 líneas, con links si hay URL]</em></blockquote>
-Cada noticia histórica va en la subsección temática que le corresponde (un IPC pasado en Macroeconomía, no en Política). Si la noticia del día ya quedó vieja (ej. un IPC publicado hace 2+ días), va aquí y no como noticia del día. Si no hay material para una subsección, omite el blockquote.
-TEMPORAL (validación de diseño): si tras revisar todo el JSON no existe NINGÚN material histórico real en un bloque completo (Internacional o Nacional), genera UN blockquote de ejemplo en su subsección de Macroeconomía con contenido inventado verosímil que empiece exactamente con "(ejemplo de formato) " para que el lector sepa que no es real.
+Al final de CADA subsección que tenga material de días previos muy relevante (noticias con "historico_7d": true: IPC, Imacec, PIB, TPM, reformas, CPI, jobs report, decisiones de bancos centrales), agrega:
+<blockquote style="border-left:3px solid #d1d5db;margin:8px 0 4px 0;padding:6px 12px;background:#f9fafb;"><em>📅 Última semana: [resumen consolidado en cursiva, máximo 3 líneas, con enlaces de fuente]</em></blockquote>
+Cada hecho histórico va en su subsección temática (un IPC pasado en Macroeconomía, no en Política). Si una noticia del día ya quedó vieja (publicada hace 2+ días), va aquí, no como noticia del día. Usa el material real del JSON; si para un bloque completo no hay ninguno, omite el blockquote (no inventes).
 
 === FORMATO DE SALIDA ===
-- Devuelve ÚNICAMENTE el fragmento HTML (sin <!DOCTYPE>, <html>, <head>, <body>). Prohibido markdown y ```.
-- PROHIBIDO usar <ul>, <ol> o <li> en todo el reporte: cada noticia y cada tema del trending va en su propio <p style="margin:0 0 14px 0;line-height:1.55;">. La separación visual entre temas es el espacio entre párrafos, no viñetas.
-- Si una subsección queda vacía: <p><em>Sin titulares destacados.</em></p>.
-- Separa los bloques I y II con <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">.
-- No agregues preguntas, menús ni cierres al final del reporte; solo el comentario TRENDING_JSON."""
+- Devuelve ÚNICAMENTE el fragmento HTML (sin <!DOCTYPE>, <html>, <head>, <body>). Prohibido markdown y bloques de código.
+- Si una subsección queda sin noticias: <p><em>Sin titulares destacados.</em></p>.
+- No agregues preguntas, menús ni cierres al final del reporte."""
 
 def summarize_with_claude(api_key: str, user_prompt: str) -> tuple[str | None, str | None]:
     """Llama a Claude y devuelve (html_fragment, error_message)."""
@@ -1393,7 +1376,7 @@ def summarize_with_claude(api_key: str, user_prompt: str) -> tuple[str | None, s
         client = Anthropic(api_key=api_key)
         msg = client.messages.create(
             model=model,
-            max_tokens=8192,
+            max_tokens=20000,
             messages=[{"role": "user", "content": user_prompt}],
         )
     except Exception as e:
@@ -1559,8 +1542,17 @@ def run() -> int:
         for err in flash_errs:
             print(f"  [flash sources] {err}", file=sys.stderr)
     print(f"  OK: {len(flash_items)} titulares Flash Report ({json.dumps(flash_meta, ensure_ascii=False)}).")
+    print("Obteniendo noticias internacionales premium (Reuters, Bloomberg, CNBC, WSJ, MarketWatch, Yahoo, FT)…")
+    premium_items, premium_errs, premium_meta = fetch_premium_intl_news()
+    news_meta["premium_intl"] = premium_meta
+    if premium_errs:
+        news_errors = list(news_errors)
+        news_errors.extend(premium_errs)
+        for err in premium_errs:
+            print(f"  [premium intl] {err}", file=sys.stderr)
+    print(f"  OK: {len(premium_items)} titulares premium ({json.dumps(premium_meta, ensure_ascii=False)}).")
     # trump_items ya tienen trump_priority=True; van primero pero dedupe los quita si duplicados
-    news = apollo_items + trump_items + jpm_items + flash_items + news
+    news = apollo_items + trump_items + jpm_items + premium_items + flash_items + news
     if news_errors:
         for err in news_errors:
             print(f"  [noticias] {err}", file=sys.stderr)
@@ -1590,17 +1582,7 @@ def run() -> int:
 
     price_html = build_prices_table_html(prices, price_errors) if mode != "vespertino" else ""
 
-    trending_state = load_trending_state()
-    temas_previos = list(trending_state.get("temas") or [])
-    print(f"Temas trending previos ({trending_state.get('fecha')}): {temas_previos}")
-
-    print("Obteniendo Google Trends (RSS)…")
-    gtrends, gt_errs = fetch_google_trends()
-    for err in gt_errs:
-        print(f"  [google trends] {err}", file=sys.stderr)
-    print(f"  OK: {len(gtrends)} términos de búsqueda.")
-
-    prompt = build_claude_prompt_news_only(news, news_errors, temas_previos, gtrends)
+    prompt = build_claude_prompt_news_only(news, news_errors)
     api_key = env["ANTHROPIC_API_KEY"]
     preview = api_key[:20]
     print(
@@ -1620,13 +1602,6 @@ def run() -> int:
     else:
         normalized = normalize_claude_html_fragment(raw_claude or "")
         if normalized:
-            temas_hoy, normalized = extract_trending_topics_from_html(normalized)
-            if temas_hoy:
-                state_err = save_trending_state(temas_hoy)
-                if state_err:
-                    print(f"  [trending] {state_err}", file=sys.stderr)
-                else:
-                    print(f"  Trending de hoy guardado: {temas_hoy}")
             news_html = normalized
         else:
             print(
