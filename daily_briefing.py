@@ -122,14 +122,14 @@ PREMIUM_INTL_GNEWS: tuple[tuple[str, str], ...] = (
     ('site:ft.com (markets OR economy OR central bank OR equities) when:1d', "Financial Times"),
 )
 
-# Fuentes chilenas reputadas para noticia nacional (evita medios menores).
-_CL_SITES = "(site:df.cl OR site:latercera.com OR site:emol.com OR site:elmercurio.com OR site:bloomberglinea.com OR site:t13.cl OR site:elmostrador.cl)"
-
+# Queries chilenas geo-localizadas (gl=CL en _gnews_rss_fetch ya sesga a fuentes locales
+# reputadas: DF, La Tercera, Emol, etc.). No se usa site: porque Google News RSS lo combina
+# mal con múltiples dominios + when:Xd y devuelve casi nada.
 GNEWS_QUERIES_NACIONAL: tuple[tuple[str, str], ...] = (
     # (query, etiqueta para logs)
-    (f"{_CL_SITES} (economía OR mercados OR IPSA OR dólar OR Banco Central) when:1d", "chile_economia"),
-    (f"{_CL_SITES} (Senado OR gobierno OR Hacienda OR reforma OR Presupuesto) when:1d", "chile_politica"),
-    (f"{_CL_SITES} (banco OR banca OR \"seguros de vida\" OR eléctrica OR energía OR generadora) when:1d", "chile_sectores"),
+    ("(economía OR mercados OR IPSA OR dólar OR \"Banco Central\" OR inflación) Chile when:1d", "chile_economia"),
+    ("(Senado OR gobierno OR Hacienda OR reforma OR Presupuesto OR ministro) Chile when:1d", "chile_politica"),
+    ("(banco OR banca OR \"seguros de vida\" OR eléctrica OR energía OR generadora OR utilities) Chile when:1d", "chile_sectores"),
 )
 
 GNEWS_QUERIES_WATCHLIST: tuple[tuple[str, str], ...] = (
@@ -137,12 +137,14 @@ GNEWS_QUERIES_WATCHLIST: tuple[tuple[str, str], ...] = (
 )
 
 # Celulosa: restringida a fuentes premium e industria especializada (no medios menores).
+# Celulosa global en inglés (en-US sesga a prensa internacional/industria y reduce el ruido
+# en español que aparecía antes). Sin site: para no quedar en cero por la rigidez de Google News.
 GNEWS_QUERIES_CELULOSA: tuple[tuple[str, str], ...] = (
-    ('(site:reuters.com OR site:bloomberg.com OR site:fastmarkets.com OR site:risiinfo.com OR site:bloomberglinea.com) (pulp OR celulosa OR Suzano OR Klabin OR "Stora Enso" OR UPM) when:3d', "celulosa_global"),
+    ('(pulp prices OR "market pulp" OR BHKP OR hardwood pulp) (Suzano OR Klabin OR UPM OR "Stora Enso" OR China OR Brazil) when:4d', "celulosa_global"),
 )
 
 GNEWS_QUERIES_HISTORICO_7D: tuple[tuple[str, str], ...] = (
-    (f"{_CL_SITES} (IPC OR Imacec OR PIB OR \"Banco Central\" OR TPM OR reforma) when:7d", "hist_chile"),
+    ("(IPC OR Imacec OR PIB OR \"Banco Central\" OR TPM OR reforma tributaria) Chile when:7d", "hist_chile"),
     ('(site:reuters.com OR site:bloomberg.com OR site:cnbc.com OR site:wsj.com) ("CPI" OR "Federal Reserve" OR "jobs report" OR GDP OR PCE) when:7d', "hist_eeuu"),
 )
 
@@ -497,17 +499,37 @@ def load_env() -> dict[str, str]:
     return {k: os.environ[k] for k in keys}
 
 
+def _ref_close_before(closes, ref_date) -> float | None:
+    """Último cierre disponible en o antes de ref_date (para anclar MTD/YTD)."""
+    try:
+        sub = closes[closes.index.date <= ref_date]
+        if not sub.empty:
+            return float(sub.iloc[-1])
+    except Exception:
+        pass
+    return None
+
+
 def fetch_prices() -> tuple[list[dict[str, Any]], list[str]]:
     """
-    Obtiene precio reciente y variación % respecto al cierre anterior disponible en el histórico.
+    Precio reciente + variación % vs cierre previo, y anclas MTD/YTD:
+    - Para precios: variación % desde el cierre del último día del mes/año anterior.
+    - Para tasas: NIVEL (%) al cierre del último día del mes/año anterior.
     """
+    import datetime as _dt
+
     rows: list[dict[str, Any]] = []
     errors: list[str] = []
+
+    today = datetime.now(timezone.utc).date()
+    fin_mes_prev = today.replace(day=1) - _dt.timedelta(days=1)   # último día del mes anterior
+    fin_anio_prev = _dt.date(today.year - 1, 12, 31)              # 31-dic del año anterior
 
     for symbol, label in ASSETS:
         try:
             t = yf.Ticker(symbol)
-            hist = t.history(period="10d", auto_adjust=True)
+            # 400 días para cubrir el cierre de fin de año anterior con holgura.
+            hist = t.history(period="400d", auto_adjust=True)
             if hist is None or hist.empty:
                 errors.append(f"{label} ({symbol}): sin datos de histórico")
                 continue
@@ -518,19 +540,26 @@ def fetch_prices() -> tuple[list[dict[str, Any]], list[str]]:
                 continue
 
             last = float(closes.iloc[-1])
-            if len(closes) >= 2:
-                prev = float(closes.iloc[-2])
-            else:
-                prev = last
+            prev = float(closes.iloc[-2]) if len(closes) >= 2 else last
 
             es_tasa = symbol in YIELD_SYMBOLS_PCT
             if es_tasa:
-                # Para tasas la variación se expresa en puntos base, no en %.
-                pct = (last - prev) * 100.0
+                pct = (last - prev) * 100.0  # variación diaria en pb
             elif prev and prev != 0:
                 pct = (last - prev) / prev * 100.0
             else:
                 pct = 0.0
+
+            ref_mes = _ref_close_before(closes, fin_mes_prev)
+            ref_anio = _ref_close_before(closes, fin_anio_prev)
+
+            if es_tasa:
+                # Para tasas mostramos el NIVEL (%) en la fecha ancla, no la variación.
+                mtd_val = round(ref_mes, 6) if ref_mes is not None else None
+                ytd_val = round(ref_anio, 6) if ref_anio is not None else None
+            else:
+                mtd_val = round((last - ref_mes) / ref_mes * 100.0, 4) if ref_mes else None
+                ytd_val = round((last - ref_anio) / ref_anio * 100.0, 4) if ref_anio else None
 
             rows.append(
                 {
@@ -539,6 +568,8 @@ def fetch_prices() -> tuple[list[dict[str, Any]], list[str]]:
                     "precio": round(last, 6),
                     "variacion_pct": round(pct, 4),
                     "es_tasa": es_tasa,
+                    "mtd": mtd_val,
+                    "ytd": ytd_val,
                 }
             )
         except Exception as e:
@@ -1116,36 +1147,58 @@ def _format_price_display(p: float) -> str:
 
 
 def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str]) -> str:
-    """Bloque monoespaciado de indicadores (2 decimales; variaciones con color)."""
+    """Bloque monoespaciado de indicadores: precio, variación diaria, MTD y YTD.
+
+    - Precios (acciones, commodities, cripto): MTD/YTD como variación % acumulada.
+    - Tasas (Treasury 2A/10A): MTD/YTD como NIVEL (%) al cierre del mes/año anterior.
+    """
     if not rows:
         return ""
     ancho_activo = max(len(r["activo"]) for r in rows) + 2
 
-    lineas: list[str] = []
-    for r in rows:
+    def _fmt_diaria(r) -> tuple[str, float]:
         pct = float(r["variacion_pct"])
         if r.get("es_tasa"):
-            precio = f"{float(r['precio']):.2f}%"
             if abs(pct) < 0.5:
-                var_str, pct_signo = "=", 0.0
-            else:
-                var_str, pct_signo = f"{'+' if pct > 0 else ''}{pct:.0f} pb", pct
-        else:
-            precio = f"{float(r['precio']):,.2f}"
-            var_str, pct_signo = f"{'+' if pct > 0 else ''}{pct:.2f}%", pct
+                return "=", 0.0
+            return f"{'+' if pct > 0 else ''}{pct:.0f} pb", pct
+        return f"{'+' if pct > 0 else ''}{pct:.2f}%", pct
 
-        color = "#dc2626" if pct_signo < 0 else "#111111"
+    def _fmt_acum(r, key) -> tuple[str, float]:
+        """MTD/YTD: nivel para tasas, variación % para precios."""
+        val = r.get(key)
+        if val is None:
+            return "n/d", 0.0
+        if r.get("es_tasa"):
+            return f"{float(val):.2f}%", 0.0  # nivel; sin color
+        return f"{'+' if val > 0 else ''}{float(val):.2f}%", float(val)
+
+    # Encabezado de columnas
+    header = (
+        f"{'':<{ancho_activo}}|  {'Precio':>11}  |  {'Día':>9}  |  {'MTD':>9}  |  {'YTD':>9}"
+    )
+    sep = "-" * len(header)
+
+    lineas: list[str] = [html_module.escape(header), html_module.escape(sep)]
+    for r in rows:
+        precio = f"{float(r['precio']):.2f}%" if r.get("es_tasa") else f"{float(r['precio']):,.2f}"
+        dia_str, dia_signo = _fmt_diaria(r)
+        mtd_str, mtd_signo = _fmt_acum(r, "mtd")
+        ytd_str, ytd_signo = _fmt_acum(r, "ytd")
+
+        def _span(text, signo):
+            color = "#dc2626" if signo < 0 else "#111111"
+            return f'<span style="color:{color};font-weight:600;">{html_module.escape(f"{text:>9}")}</span>'
 
         activo = html_module.escape(f"{r['activo']:<{ancho_activo}}")
         precio_pad = html_module.escape(f"{precio:>11}")
-        var_pad = html_module.escape(f"{var_str:>9}")
         lineas.append(
-            f"{activo}|  {precio_pad}  |  "
-            f'<span style="color:{color};font-weight:600;">{var_pad}</span>'
+            f"{activo}|  {precio_pad}  |  {_span(dia_str, dia_signo)}  |  "
+            f"{_span(mtd_str, mtd_signo)}  |  {_span(ytd_str, ytd_signo)}"
         )
 
     parts = [
-        '<pre style="font-family:Consolas,Menlo,monospace;font-size:13.5px;'
+        '<pre style="font-family:Consolas,Menlo,monospace;font-size:12.5px;'
         'background:#f6f8fa;border:1px solid #e5e7eb;border-radius:8px;'
         'padding:14px 16px;overflow-x:auto;line-height:1.7;margin:0;">'
         + "\n".join(lineas)
@@ -1158,6 +1211,7 @@ def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str])
             + "</p>"
         )
     return "\n".join(parts)
+
 
 def _gnews_rss_fetch(
     query: str, label: str, lang: str = "es-419", country: str = "CL"
@@ -1308,7 +1362,7 @@ Cada ítem DEBE comunicar un HECHO CONCRETO del día: una cifra publicada, una d
 La redacción es editorial y fluida (no pegar el titular crudo), pero SIEMPRE anclada a un hecho con su cifra.
 
 === SELECCIÓN Y CALIDAD DE FUENTES ===
-- INTERNACIONAL: usa EXCLUSIVAMENTE noticias con "intl_premium": true (Reuters, Bloomberg, CNBC, WSJ, MarketWatch, Yahoo Finance, Financial Times). JAMÁS uses una fuente chilena para una noticia internacional. Si una noticia internacional solo aparece en medios chilenos, descártala.
+- INTERNACIONAL (Macro, Precios y Mercados, Política): usa EXCLUSIVAMENTE noticias con "intl_premium": true (Reuters, Bloomberg, CNBC, WSJ, MarketWatch, Yahoo Finance, Financial Times). JAMÁS uses una fuente chilena para una noticia internacional. Si una noticia internacional solo aparece en medios chilenos, descártala. ÚNICA excepción: el bloque de Celulosa usa las noticias con "celulosa_global": true (ver sección Celulosa).
 - NACIONAL: usa las noticias con "nacional": true (medios chilenos reputados).
 - Descarta cualquier ítem cuyo hecho no entiendas o que no aporte información real.
 - Eres tú quien elige: prioriza lo que un inversor institucional necesita saber a primera hora, no rellenes con lo que sobra.
@@ -1363,6 +1417,7 @@ Las noticias con "celulosa_global": true van en un bloque propio que abre con <p
 Al final de CADA subsección que tenga material de días previos muy relevante (noticias con "historico_7d": true: IPC, Imacec, PIB, TPM, reformas, CPI, jobs report, decisiones de bancos centrales), agrega:
 <blockquote style="border-left:3px solid #d1d5db;margin:8px 0 4px 0;padding:6px 12px;background:#f9fafb;"><em>📅 Última semana: [resumen consolidado en cursiva, máximo 3 líneas, con enlaces de fuente]</em></blockquote>
 Cada hecho histórico va en su subsección temática (un IPC pasado en Macroeconomía, no en Política). Si una noticia del día ya quedó vieja (publicada hace 2+ días), va aquí, no como noticia del día. Usa el material real del JSON; si para un bloque completo no hay ninguno, omite el blockquote (no inventes).
+- GEOGRAFÍA EN EL HISTÓRICO: cuando todos los datos de un blockquote internacional son del mismo país (típicamente EE.UU.), indícalo UNA SOLA VEZ al inicio y no lo repitas en cada oración. Ej: "📅 Última semana (EE.UU.): el PCE core de abril marcó 3,3% anual; las nóminas ADP crecieron 122.000; las ofertas de empleo treparon a 7,6 millones." Si hay datos de varios países, especifica el país solo en los que no sean del país dominante.
 
 === FORMATO DE SALIDA ===
 - Devuelve ÚNICAMENTE el fragmento HTML (sin <!DOCTYPE>, <html>, <head>, <body>). Prohibido markdown y bloques de código.
