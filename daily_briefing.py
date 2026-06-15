@@ -1405,9 +1405,9 @@ La redacción es editorial y fluida (no pegar el titular crudo), pero SIEMPRE an
 - EXCEPCIÓN ABSOLUTA: nunca descartes una noticia que mencione a {", ".join(FO_WATCHLIST)} — esas se incluyen SIEMPRE.
 
 === ESTRUCTURA DEL HTML (en este orden exacto) ===
-(1) <h2>I. INTERNACIONAL</h2> con tres <h3>: Macroeconomía, Precios y Mercados, Política.
+(1) <h2>I. INTERNACIONAL</h2> con tres <h3>: "Macroeconomía", "Precios y Mercados", "Política Internacional".
 (2) <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
-(3) <h2>II. NACIONAL</h2> con las mismas tres <h3>. Título "II. NACIONAL" a secas (sin "Chile").
+(3) <h2>II. NACIONAL</h2> con tres <h3>: "Macroeconomía", "Precios y Mercados", "Política Nacional". Título "II. NACIONAL" a secas (sin "Chile").
 
 === QUÉ VA EN CADA SUBSECCIÓN ===
 - MACROECONOMÍA: el DATO en sí. Cifra publicada vs. lo esperado, decisiones e intervenciones de bancos centrales (Fed, BCE, Banco Central de Chile). Ej: "El <strong>IPC</strong> de EE.UU. subió 0,5% MoM, sobre el 0,3% previsto." Las señales/decisiones/discursos de Fed y BCE son tan o más importantes que los datos: inclúyelas aquí.
