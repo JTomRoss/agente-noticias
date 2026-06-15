@@ -19,6 +19,7 @@ import sys
 import traceback
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from urllib.parse import urlparse
 from difflib import SequenceMatcher
 from email.mime.multipart import MIMEMultipart
@@ -128,6 +129,17 @@ PREMIUM_INTL_GNEWS: tuple[tuple[str, str], ...] = (
 # when:3d (no 1d): un lunes, when:1d solo captura el domingo —día sin prensa financiera CL—
 # y dejaba el bloque nacional vacío. 3 días cubre fin de semana y lunes; lo viejo (2+ días)
 # el prompt lo manda al bloque "última semana", así que no ensucia las noticias del día.
+# Big tech mega-caps: queries dedicadas restringidas a fuentes premium (US tech está
+# masivamente indexado, site: aquí sí devuelve resultados de sobra). Se marcan intl_premium.
+GNEWS_QUERIES_BIGTECH: tuple[tuple[str, str], ...] = (
+    ('(Nvidia OR Microsoft OR Apple OR Alphabet OR Google OR Amazon OR Meta OR OpenAI OR Anthropic OR Broadcom OR Tesla) (site:reuters.com OR site:bloomberg.com OR site:cnbc.com OR site:wsj.com OR site:marketwatch.com) when:2d', "bigtech"),
+)
+
+# Cripto: solo si hay noticia real (no se fuerza). Restringida a premium.
+GNEWS_QUERIES_CRYPTO: tuple[tuple[str, str], ...] = (
+    ('(bitcoin OR ethereum OR "crypto") (site:reuters.com OR site:bloomberg.com OR site:cnbc.com OR site:coindesk.com) when:1d', "crypto"),
+)
+
 GNEWS_QUERIES_NACIONAL: tuple[tuple[str, str], ...] = (
     # (query, etiqueta para logs) — forma original que devolvió ~25 ítems/consulta
     ("economía OR mercados OR IPSA OR dólar OR IPC Chile when:3d", "chile_economia"),
@@ -1304,6 +1316,19 @@ def fetch_premium_intl_news() -> tuple[list[dict[str, Any]], list[str], dict[str
         all_items.extend(items)
         meta[fuente] = meta.get(fuente, 0) + len(items)
 
+    # Big tech y cripto: mantienen el nombre real de la fuente (vienen de varios premium).
+    for queries, flag in ((GNEWS_QUERIES_BIGTECH, "bigtech"), (GNEWS_QUERIES_CRYPTO, "crypto")):
+        for query, label in queries:
+            items, err = _gnews_rss_fetch(query, label, lang="en-US", country="US")
+            if err:
+                errors.append(err)
+                continue
+            for it in items:
+                it["intl_premium"] = True
+                it[flag] = True
+            all_items.extend(items)
+            meta[label] = len(items)
+
     return all_items, errors, meta
 
 
@@ -1403,6 +1428,8 @@ Agrupa por procedencia con prefijo en negrita, en este orden: <strong>EE.UU.:</s
 
 === PRECIOS Y MERCADOS INTERNACIONAL ===
 Es la subsección más rica del bloque internacional: puebla con índices, resultados corporativos, commodities, divisas, tasas y flujos (apunta a 4-6 noticias reales si el material existe). Orden: 1º EE.UU. de impacto sistémico (Fed, líderes, hedge funds); 2º corporativas/sectoriales EE.UU.; 3º Europa/Asia relevante; 4º Latinoamérica.
+- BIG TECH (prioridad alta): incluye SIEMPRE que haya noticia relevante de las mega-caps tecnológicas —Nvidia, Microsoft, Apple, Alphabet/Google, Amazon, Meta, OpenAI, Anthropic, Broadcom, Tesla— por su peso en los índices. Son de las primeras en mostrarse dentro de las corporativas de EE.UU.
+- CRIPTO (sin forzar): incluye bitcoin/ethereum/cripto SOLO si hay un hecho noticioso concreto del día (movimiento relevante, regulación, operación). Si no hay noticia real de cripto, NO inventes ni rellenes con generalidades; simplemente omítela.
 
 === CELULOSA (al final de Precios y Mercados Internacional) ===
 Las noticias con "celulosa_global": true van en un bloque propio que abre con <p style="margin:14px 0 4px 0;"><strong>Celulosa</strong></p> seguido de una <ul style="margin:0;padding-left:20px;"> donde cada noticia es un <li style="margin-bottom:6px;"> de UNA línea con su enlace de fuente inmediatamente después del texto. Si no hay noticias de celulosa, omite el bloque completo.
@@ -1480,10 +1507,83 @@ def normalize_claude_html_fragment(raw: str) -> str | None:
     return s
 
 
+# Ventana del Mundial 2026 (11 jun - 19 jul). Fuera de estas fechas no se muestran partidos.
+WORLDCUP_START = datetime(2026, 6, 11, tzinfo=timezone.utc).date()
+WORLDCUP_END = datetime(2026, 7, 19, tzinfo=timezone.utc).date()
+SANTIAGO_TZ = ZoneInfo("America/Santiago")
+
+
+def fetch_worldcup_matches_today() -> tuple[list[dict[str, str]], str | None]:
+    """Partidos del Mundial de HOY con hora de Chile. Solo durante el torneo.
+
+    Usa football-data.org (competición WC). Requiere el secret FOOTBALL_DATA_KEY.
+    Defensivo: sin key, fuera de ventana, error o sin partidos -> ([], None/err) y no rompe nada.
+    """
+    today_cl = datetime.now(SANTIAGO_TZ).date()
+    if not (WORLDCUP_START <= today_cl <= WORLDCUP_END):
+        return [], None  # fuera del Mundial: nada que mostrar
+
+    key = os.environ.get("FOOTBALL_DATA_KEY", "").strip()
+    if not key:
+        return [], "FOOTBALL_DATA_KEY no configurada (no se muestran partidos)"
+
+    # Rango UTC amplio (un día CL cruza dos días UTC).
+    d_from = (today_cl - timedelta(days=1)).isoformat()
+    d_to = (today_cl + timedelta(days=1)).isoformat()
+    try:
+        resp = requests.get(
+            "https://api.football-data.org/v4/competitions/WC/matches",
+            params={"dateFrom": d_from, "dateTo": d_to},
+            headers={"X-Auth-Token": key},
+            timeout=20,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        return [], f"World Cup fixtures: {e}"
+
+    partidos: list[dict[str, str]] = []
+    for m in data.get("matches", []):
+        utc = m.get("utcDate")
+        if not utc:
+            continue
+        try:
+            dt_utc = datetime.fromisoformat(utc.replace("Z", "+00:00"))
+        except Exception:
+            continue
+        dt_cl = dt_utc.astimezone(SANTIAGO_TZ)
+        if dt_cl.date() != today_cl:
+            continue  # solo los de hoy en hora chilena
+        home = (m.get("homeTeam") or {}).get("name") or "Por definir"
+        away = (m.get("awayTeam") or {}).get("name") or "Por definir"
+        partidos.append({"hora": dt_cl.strftime("%H:%M"), "local": home, "visita": away})
+
+    partidos.sort(key=lambda p: p["hora"])
+    return partidos, None
+
+
+def build_worldcup_html(partidos: list[dict[str, str]]) -> str:
+    """Bloque compacto de partidos del día (hora de Chile). Vacío si no hay partidos."""
+    if not partidos:
+        return ""
+    filas = "".join(
+        f'<tr><td style="padding:2px 14px 2px 0;color:#6b7280;white-space:nowrap;">{html_module.escape(p["hora"])}</td>'
+        f'<td style="padding:2px 0;">{html_module.escape(p["local"])} <span style="color:#9ca3af;">vs</span> {html_module.escape(p["visita"])}</td></tr>'
+        for p in partidos
+    )
+    return (
+        '<div style="margin:14px 0 0 0;font-size:13.5px;">'
+        '<p style="margin:0 0 6px 0;font-weight:600;">⚽ Mundial — partidos de hoy (hora Chile)</p>'
+        f'<table style="border-collapse:collapse;">{filas}</table>'
+        "</div>"
+    )
+
+
 def compose_email_document(
     price_block: str,
     news_block: str,
     news_errors: list[str],
+    matches_block: str = "",
 ) -> str:
     """Documento HTML completo: tabla de precios (código) + bloque de noticias."""
     hr_block = '<hr style="margin:28px 0;border:none;border-top:1px solid #e5e7eb;" />' if price_block.strip() else ""
@@ -1505,6 +1605,7 @@ def compose_email_document(
 <body style="font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5;color:#111;max-width:800px;">
 {alert_block}
 {price_block}
+{matches_block}
 {hr_block}
 {news_block}
 <hr style="margin-top:2em;border:none;border-top:1px solid #ccc;" />
@@ -1643,6 +1744,16 @@ def run() -> int:
 
     price_html = build_prices_table_html(prices, price_errors) if mode != "vespertino" else ""
 
+    # Partidos del Mundial (solo durante el torneo; vacío el resto del año).
+    matches_html = ""
+    if mode != "vespertino":
+        partidos, wc_err = fetch_worldcup_matches_today()
+        if wc_err:
+            print(f"  [mundial] {wc_err}", file=sys.stderr)
+        if partidos:
+            print(f"  Mundial: {len(partidos)} partidos hoy.")
+            matches_html = build_worldcup_html(partidos)
+
     prompt = build_claude_prompt_news_only(news, news_errors)
     api_key = env["ANTHROPIC_API_KEY"]
     preview = api_key[:20]
@@ -1676,7 +1787,7 @@ def run() -> int:
         subject = f"Resumen vespertino — {subject_date}"
     else:
         subject = f"⚡ Flash Report — {subject_date}"
-    html = compose_email_document(price_html, news_html, news_errors)
+    html = compose_email_document(price_html, news_html, news_errors, matches_html)
 
     print("Enviando correo (HTML multipart)…")
     ok, smtp_err = send_email_html(
