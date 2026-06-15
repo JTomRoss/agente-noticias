@@ -16,6 +16,7 @@ import os
 import re
 import smtplib
 import sys
+import time
 import traceback
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -1513,34 +1514,34 @@ WORLDCUP_END = datetime(2026, 7, 19, tzinfo=timezone.utc).date()
 SANTIAGO_TZ = ZoneInfo("America/Santiago")
 
 
-def fetch_worldcup_matches_today() -> tuple[list[dict[str, str]], str | None]:
-    """Partidos del Mundial de HOY con hora de Chile. Solo durante el torneo.
-
-    Usa football-data.org (competición WC). Requiere el secret FOOTBALL_DATA_KEY.
-    Defensivo: sin key, fuera de ventana, error o sin partidos -> ([], None/err) y no rompe nada.
-    """
-    today_cl = datetime.now(SANTIAGO_TZ).date()
-    if not (WORLDCUP_START <= today_cl <= WORLDCUP_END):
-        return [], None  # fuera del Mundial: nada que mostrar
-
+def _wc_from_football_data(today_cl, d_from: str, d_to: str) -> tuple[list[dict[str, str]], str | None]:
+    """Intenta football-data.org con User-Agent y un reintento. (partidos, error)."""
     key = os.environ.get("FOOTBALL_DATA_KEY", "").strip()
     if not key:
-        return [], "FOOTBALL_DATA_KEY no configurada (no se muestran partidos)"
-
-    # Rango UTC amplio (un día CL cruza dos días UTC).
-    d_from = (today_cl - timedelta(days=1)).isoformat()
-    d_to = (today_cl + timedelta(days=1)).isoformat()
-    try:
-        resp = requests.get(
-            "https://api.football-data.org/v4/competitions/WC/matches",
-            params={"dateFrom": d_from, "dateTo": d_to},
-            headers={"X-Auth-Token": key},
-            timeout=20,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as e:
-        return [], f"World Cup fixtures: {e}"
+        return [], "FOOTBALL_DATA_KEY no configurada"
+    headers = {
+        "X-Auth-Token": key,
+        "User-Agent": "agente-noticias/1.0 (+https://github.com/JTomRoss/agente-noticias)",
+        "Accept": "application/json",
+    }
+    last_err = None
+    for intento in range(2):  # un reintento si la conexión se cae
+        try:
+            resp = requests.get(
+                "https://api.football-data.org/v4/competitions/WC/matches",
+                params={"dateFrom": d_from, "dateTo": d_to},
+                headers=headers,
+                timeout=25,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            break
+        except Exception as e:
+            last_err = e
+            if intento == 0:
+                time.sleep(2)
+            else:
+                return [], f"football-data.org: {e}"
 
     partidos: list[dict[str, str]] = []
     for m in data.get("matches", []):
@@ -1548,18 +1549,92 @@ def fetch_worldcup_matches_today() -> tuple[list[dict[str, str]], str | None]:
         if not utc:
             continue
         try:
-            dt_utc = datetime.fromisoformat(utc.replace("Z", "+00:00"))
+            dt_cl = datetime.fromisoformat(utc.replace("Z", "+00:00")).astimezone(SANTIAGO_TZ)
         except Exception:
             continue
-        dt_cl = dt_utc.astimezone(SANTIAGO_TZ)
         if dt_cl.date() != today_cl:
-            continue  # solo los de hoy en hora chilena
+            continue
         home = (m.get("homeTeam") or {}).get("name") or "Por definir"
         away = (m.get("awayTeam") or {}).get("name") or "Por definir"
         partidos.append({"hora": dt_cl.strftime("%H:%M"), "local": home, "visita": away})
-
-    partidos.sort(key=lambda p: p["hora"])
     return partidos, None
+
+
+def _wc_from_thesportsdb(today_cl) -> tuple[list[dict[str, str]], str | None]:
+    """Respaldo: TheSportsDB (sin key, plan libre 'key=3'). World Cup league id 4429."""
+    headers = {"User-Agent": "agente-noticias/1.0", "Accept": "application/json"}
+    # Consultamos el día CL y el día UTC siguiente, porque los partidos vienen en hora local del evento.
+    fechas = {today_cl.isoformat(), (today_cl + timedelta(days=1)).isoformat()}
+    partidos: list[dict[str, str]] = []
+    last_err = None
+    for fecha in sorted(fechas):
+        try:
+            resp = requests.get(
+                "https://www.thesportsdb.com/api/v1/json/3/eventsday.php",
+                params={"d": fecha, "l": "FIFA World Cup"},
+                headers=headers,
+                timeout=25,
+            )
+            resp.raise_for_status()
+            data = resp.json() or {}
+        except Exception as e:
+            last_err = e
+            continue
+        for ev in (data.get("events") or []):
+            ts = ev.get("strTimestamp")  # ISO UTC, ej "2026-06-15T19:00:00"
+            dt_cl = None
+            if ts:
+                try:
+                    dt_cl = datetime.fromisoformat(ts.replace("Z", "")).replace(tzinfo=timezone.utc).astimezone(SANTIAGO_TZ)
+                except Exception:
+                    dt_cl = None
+            if dt_cl is None:
+                continue
+            if dt_cl.date() != today_cl:
+                continue
+            home = ev.get("strHomeTeam") or "Por definir"
+            away = ev.get("strAwayTeam") or "Por definir"
+            partidos.append({"hora": dt_cl.strftime("%H:%M"), "local": home, "visita": away})
+    if not partidos and last_err is not None:
+        return [], f"TheSportsDB: {last_err}"
+    # Dedupe por (hora, local, visita)
+    vistos = set()
+    unicos = []
+    for p in partidos:
+        clave = (p["hora"], p["local"], p["visita"])
+        if clave not in vistos:
+            vistos.add(clave)
+            unicos.append(p)
+    return unicos, None
+
+
+def fetch_worldcup_matches_today() -> tuple[list[dict[str, str]], str | None]:
+    """Partidos del Mundial de HOY con hora de Chile. Solo durante el torneo.
+
+    Intenta football-data.org (con reintento) y, si falla o no trae partidos,
+    cae automáticamente a TheSportsDB (sin key). Defensivo: nunca rompe el briefing.
+    """
+    today_cl = datetime.now(SANTIAGO_TZ).date()
+    if not (WORLDCUP_START <= today_cl <= WORLDCUP_END):
+        return [], None  # fuera del Mundial
+
+    d_from = (today_cl - timedelta(days=1)).isoformat()
+    d_to = (today_cl + timedelta(days=1)).isoformat()
+
+    notas: list[str] = []
+    partidos, err = _wc_from_football_data(today_cl, d_from, d_to)
+    if err:
+        notas.append(err)
+    if partidos:
+        partidos.sort(key=lambda p: p["hora"])
+        return partidos, (" | ".join(notas) or None)
+
+    # Fallback automático a TheSportsDB
+    partidos, err2 = _wc_from_thesportsdb(today_cl)
+    if err2:
+        notas.append(err2)
+    partidos.sort(key=lambda p: p["hora"])
+    return partidos, (" | ".join(notas) or None)
 
 
 def build_worldcup_html(partidos: list[dict[str, str]]) -> str:
