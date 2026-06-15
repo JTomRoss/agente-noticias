@@ -512,7 +512,13 @@ def load_env() -> dict[str, str]:
         raise RuntimeError(
             f"Faltan variables de entorno (defínelas en .env): {', '.join(missing)}"
         )
-    return {k: os.environ[k] for k in keys}
+    env = {k: os.environ[k] for k in keys}
+    # Lista propia del briefing diario (independiente de alertas/swing/vespertino).
+    # Si no está definida, cae a EMAIL_DESTINO para no romper el envío.
+    env["EMAIL_DESTINO_BRIEFING"] = (
+        os.getenv("EMAIL_DESTINO_BRIEFING") or os.environ["EMAIL_DESTINO"]
+    ).strip()
+    return env
 
 
 def _ref_close_before(closes, ref_date) -> float | None:
@@ -1701,7 +1707,7 @@ def send_email_html(
         destinos = [d.strip() for d in destino.split(",") if d.strip()]
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = gmail_user
+        msg["From"] = f"Ecoterra Report <{gmail_user}>"
         msg["To"] = ", ".join(destinos)
 
         part_plain = MIMEText(
@@ -1857,18 +1863,21 @@ def run() -> int:
             )
             news_html = build_news_fallback_html_sections(news)
 
-    subject_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # Fecha en hora de Chile, formato "15 Jun 2026" con mes en español.
+    _MESES_ES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+    _hoy_cl = datetime.now(SANTIAGO_TZ)
+    subject_date = f"{_hoy_cl.day:02d} {_MESES_ES[_hoy_cl.month - 1]} {_hoy_cl.year}"
     if mode == "vespertino":
-        subject = f"Resumen vespertino — {subject_date}"
+        subject = f"Resumen vespertino | {subject_date}"
     else:
-        subject = f"⚡ Flash Report — {subject_date}"
+        subject = f"Morning Brief | {subject_date}"
     html = compose_email_document(price_html, news_html, news_errors, matches_html)
 
     print("Enviando correo (HTML multipart)…")
     ok, smtp_err = send_email_html(
         env["GMAIL_USER"],
         env["GMAIL_PASSWORD"],
-        env["EMAIL_DESTINO"],
+        env["EMAIL_DESTINO_BRIEFING"],
         subject,
         html,
     )

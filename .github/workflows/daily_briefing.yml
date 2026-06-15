@@ -31,6 +31,7 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
           EMAIL_DESTINO: ${{ secrets.EMAIL_DESTINO }}
+          EMAIL_DESTINO_BRIEFING: ${{ secrets.EMAIL_DESTINO_BRIEFING }}
           FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
           BRIEFING_MODE: diario
         run: python daily_briefing.py
