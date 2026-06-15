@@ -125,15 +125,18 @@ PREMIUM_INTL_GNEWS: tuple[tuple[str, str], ...] = (
 # Queries chilenas geo-localizadas (gl=CL en _gnews_rss_fetch ya sesga a fuentes locales
 # reputadas: DF, La Tercera, Emol, etc.). No se usa site: porque Google News RSS lo combina
 # mal con múltiples dominios + when:Xd y devuelve casi nada.
+# when:3d (no 1d): un lunes, when:1d solo captura el domingo —día sin prensa financiera CL—
+# y dejaba el bloque nacional vacío. 3 días cubre fin de semana y lunes; lo viejo (2+ días)
+# el prompt lo manda al bloque "última semana", así que no ensucia las noticias del día.
 GNEWS_QUERIES_NACIONAL: tuple[tuple[str, str], ...] = (
-    # (query, etiqueta para logs)
-    ("(economía OR mercados OR IPSA OR dólar OR \"Banco Central\" OR inflación) Chile when:1d", "chile_economia"),
-    ("(Senado OR gobierno OR Hacienda OR reforma OR Presupuesto OR ministro) Chile when:1d", "chile_politica"),
-    ("(banco OR banca OR \"seguros de vida\" OR eléctrica OR energía OR generadora OR utilities) Chile when:1d", "chile_sectores"),
+    # (query, etiqueta para logs) — forma original que devolvió ~25 ítems/consulta
+    ("economía OR mercados OR IPSA OR dólar OR IPC Chile when:3d", "chile_economia"),
+    ("(Senado OR gobierno OR Hacienda OR reforma OR Presupuesto) Chile when:3d", "chile_politica"),
+    ("(banco OR banca OR \"seguros de vida\" OR eléctrica OR energía) Chile when:3d", "chile_sectores"),
 )
 
 GNEWS_QUERIES_WATCHLIST: tuple[tuple[str, str], ...] = (
-    ('"CMPC" OR "Colbún" OR "Banco Bice" OR "Bicecorp" OR "Banco Security" OR "Bice Vida" OR "Arauco" when:2d', "fo_watchlist"),
+    ('"CMPC" OR "Colbún" OR "Banco Bice" OR "Bicecorp" OR "Banco Security" OR "Bice Vida" OR "Arauco" when:4d', "fo_watchlist"),
 )
 
 # Celulosa: restringida a fuentes premium e industria especializada (no medios menores).
@@ -1347,7 +1350,7 @@ def build_claude_prompt_news_only(
 ) -> str:
     """Prompt maestro del Flash Report: la tabla de indicadores la genera el script."""
     payload = {
-        "noticias": news[:130],
+        "noticias": news[:320],
         "errores_noticias": news_errors,
         "fecha_hoy": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
@@ -1607,7 +1610,10 @@ def run() -> int:
             print(f"  [premium intl] {err}", file=sys.stderr)
     print(f"  OK: {len(premium_items)} titulares premium ({json.dumps(premium_meta, ensure_ascii=False)}).")
     # trump_items ya tienen trump_priority=True; van primero pero dedupe los quita si duplicados
-    news = apollo_items + trump_items + jpm_items + premium_items + flash_items + news
+    # ORDEN IMPORTA: el payload se recorta (abajo), así que las fuentes escasas/clave
+    # (chilenas, watchlist, celulosa, históricos) van PRIMERO para no quedar truncadas
+    # detrás de las ~150 internacionales premium.
+    news = flash_items + apollo_items + trump_items + jpm_items + premium_items + news
     if news_errors:
         for err in news_errors:
             print(f"  [noticias] {err}", file=sys.stderr)
