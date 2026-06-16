@@ -1704,10 +1704,17 @@ def send_email_html(
 ) -> tuple[bool, str | None]:
     """Envía correo multipart/alternative: texto plano mínimo + HTML (charset UTF-8)."""
     try:
-        destinos = [d.strip() for d in destino.split(",") if d.strip()]
+        # Separar por coma, punto y coma o saltos de línea, y limpiar cada dirección.
+        # Esto evita el error 'folded header contains newline' cuando el secret trae
+        # un salto de línea o espacios colados al pegarlo en GitHub.
+        import re as _re
+        crudos = _re.split(r"[,;\n\r]+", destino or "")
+        destinos = [d.strip() for d in crudos if d.strip()]
+        if not destinos:
+            return False, "Sin destinatarios válidos (EMAIL_DESTINO vacío o mal formado)."
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"Ecoterra Report <{gmail_user}>"
+        msg["Subject"] = subject.replace("\n", " ").replace("\r", " ").strip()
+        msg["From"] = f"Ecoterra Report <{gmail_user.strip()}>"
         msg["To"] = ", ".join(destinos)
 
         part_plain = MIMEText(

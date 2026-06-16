@@ -1,11 +1,12 @@
-# Briefing de mañana: lunes-viernes a las 11:00 UTC (≈08:00 Chile).
+# Briefing de mañana: lunes-viernes a las 12:00 UTC (≈08:00 Chile en horario de invierno UTC-4).
+# Nota: cuando Chile vuelva a UTC-3 (verano austral, ~sept), 8am Chile = 11:00 UTC; habría que ajustar.
 # Los lunes el script usa 72 h de noticias para cubrir el fin de semana.
 
 name: Daily briefing
 
 on:
   schedule:
-    - cron: "0 11 * * 1-5"
+    - cron: "0 12 * * 1-5"
   workflow_dispatch:
 
 jobs:
