@@ -1,12 +1,12 @@
-# Resumen vespertino: lunes-viernes a las 22:00 UTC (≈18:00 Chile UTC-4 / 19:00 Chile UTC-3).
-# Usa los últimos 11 h de noticias para cubrir desde el briefing de mañana.
-# Sin tabla de precios. Sin vigilancia JPM (solo se hace una vez al día en el briefing de mañana).
+# DESACTIVADO (16-jun-2026): el resumen vespertino ya no se usa.
+# Se deja el archivo por si se quiere reactivar: descomentar el bloque "schedule".
+# Para reactivar manualmente: Actions -> Resumen vespertino (DESACTIVADO) -> Run workflow.
 
-name: Resumen vespertino
+name: Resumen vespertino (DESACTIVADO)
 
 on:
-  schedule:
-    - cron: "0 22 * * 1-5"
+  # schedule:
+  #   - cron: "0 22 * * 1-5"
   workflow_dispatch:
 
 jobs:
