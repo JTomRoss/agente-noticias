@@ -1,12 +1,14 @@
-# Briefing de mañana: lunes-viernes a las 12:00 UTC (≈08:00 Chile en horario de invierno UTC-4).
-# Nota: cuando Chile vuelva a UTC-3 (verano austral, ~sept), 8am Chile = 11:00 UTC; habría que ajustar.
+# Briefing de mañana: lunes-viernes a las 10:50 UTC (≈06:50 Chile invierno UTC-4).
+# Objetivo: que el correo LLEGUE ~07:00 Chile, descontando ~10 min de procesamiento.
+# OJO 1: GitHub Actions encola los cron y puede retrasarlos 10-45 min en horas de carga; la hora de llegada variará.
+# OJO 2: cuando Chile pase a UTC-3 (verano austral, ~sept), restar 1h: 10:50 -> 09:50 UTC.
 # Los lunes el script usa 72 h de noticias para cubrir el fin de semana.
 
 name: Daily briefing
 
 on:
   schedule:
-    - cron: "0 12 * * 1-5"
+    - cron: "50 10 * * 1-5"
   workflow_dispatch:
 
 jobs:
