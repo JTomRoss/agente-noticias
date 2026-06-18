@@ -1668,14 +1668,10 @@ def compose_email_document(
 ) -> str:
     """Documento HTML completo: tabla de precios (código) + bloque de noticias."""
     hr_block = '<hr style="margin:28px 0;border:none;border-top:1px solid #e5e7eb;" />' if price_block.strip() else ""
-    alerts: list[str] = []
-    if news_errors:
-        esc = html_module.escape("\n".join(news_errors))
-        alerts.append(
-            f"<p style='background:#fffbeb;border:1px solid #fcd34d;padding:12px;border-radius:8px;'>"
-            f"<strong>Avisos NewsAPI:</strong><br>{esc.replace(chr(10), '<br>')}</p>"
-        )
-    alert_block = "\n".join(alerts)
+    # Los avisos técnicos (fuentes que fallan, ventana de NewsAPI) NO van en el correo:
+    # son ruido para los lectores. Quedan registrados en el log de GitHub (stderr), que
+    # solo revisa el administrador. Así el correo sale siempre limpio para todos.
+    alert_block = ""
     return f"""<!DOCTYPE html>
 <html lang="es">
 <head>
