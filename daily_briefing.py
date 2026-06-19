@@ -38,7 +38,7 @@ DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6"
 ASSETS: list[tuple[str, str]] = [
     ("ES=F", "Futuros S&P 500"),
     ("NQ=F", "Futuros Nasdaq"),
-    ("USDCLP=X", "Dólar vs Peso Chileno"),
+    ("USDCLP=X", "USD/CLP"),
     ("CL=F", "Petróleo WTI"),
     ("BZ=F", "Petróleo Brent"),
     ("HG=F", "Cobre"),
@@ -1169,70 +1169,102 @@ def _format_price_display(p: float) -> str:
 
 
 def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str]) -> str:
-    """Bloque monoespaciado de indicadores: precio, variación diaria, MTD y YTD.
+    """Tabla HTML responsiva de indicadores (se ve bien en celular y desktop).
 
-    - Precios (acciones, commodities, cripto): MTD/YTD como variación % acumulada.
-    - Tasas (Treasury 2A/10A): MTD/YTD como NIVEL (%) al cierre del mes/año anterior.
+    Reglas de formato:
+    - Precios: cobre con 2 decimales; el resto con 1 decimal.
+    - Tasas (Treasury 2A/10A): nivel con 2 decimales; cambio diario en pb; MTD/YTD = nivel.
+    - Retornos (Día/MTD/YTD de precios): 1 decimal. Negativos en rojo.
+    Estilos en línea conservadores para máxima compatibilidad con Gmail.
     """
     if not rows:
         return ""
-    ancho_activo = max(len(r["activo"]) for r in rows) + 2
 
-    def _fmt_diaria(r) -> tuple[str, float]:
+    COBRE_TICKERS = {"HG=F"}  # único precio que mantiene 2 decimales
+
+    def _fmt_precio(r) -> str:
+        precio = float(r["precio"])
+        if r.get("es_tasa"):
+            return f"{precio:.2f}%"
+        dec = 2 if r.get("ticker") in COBRE_TICKERS else 1
+        return f"{precio:,.{dec}f}"
+
+    def _fmt_diaria(r) -> tuple[str, bool]:
+        """Devuelve (texto, es_negativo)."""
         pct = float(r["variacion_pct"])
         if r.get("es_tasa"):
             if abs(pct) < 0.5:
-                return "=", 0.0
-            return f"{'+' if pct > 0 else ''}{pct:.0f} pb", pct
-        return f"{'+' if pct > 0 else ''}{pct:.2f}%", pct
+                return "=", False
+            return f"{'+' if pct > 0 else ''}{pct:.0f} pb", pct < 0
+        return f"{'+' if pct > 0 else ''}{pct:.1f}%", pct < 0
 
-    def _fmt_acum(r, key) -> tuple[str, float]:
-        """MTD/YTD: nivel para tasas, variación % para precios."""
+    def _fmt_acum(r, key) -> tuple[str, bool]:
+        """MTD/YTD: nivel para tasas (sin color), variación % 1 decimal para precios."""
         val = r.get(key)
         if val is None:
-            return "n/d", 0.0
+            return "n/d", False
         if r.get("es_tasa"):
-            return f"{float(val):.2f}%", 0.0  # nivel; sin color
-        return f"{'+' if val > 0 else ''}{float(val):.2f}%", float(val)
+            return f"{float(val):.2f}%", False  # nivel, sin color
+        v = float(val)
+        return f"{'+' if v > 0 else ''}{v:.1f}%", v < 0
 
-    # Encabezado de columnas
-    header = (
-        f"{'':<{ancho_activo}}|  {'Precio':>11}  |  {'Día':>9}  |  {'MTD':>9}  |  {'YTD':>9}"
+    ROJO = "#c0392b"
+    NEGRO = "#111111"
+
+    def _celda_num(text: str, negativo: bool, pad_right: int) -> str:
+        color = ROJO if negativo else NEGRO
+        return (
+            f'<td align="right" style="padding:11px {pad_right}px;font-size:12px;'
+            f'color:{color};white-space:nowrap;border-bottom:1px solid #eef0f2;">'
+            f"{html_module.escape(text)}</td>"
+        )
+
+    th = (
+        'style="text-align:right;padding:10px 7px;font-weight:500;'
+        'color:#6b7280;font-size:10.5px;border-bottom:1px solid #e1e4e8;"'
     )
-    sep = "-" * len(header)
-
-    lineas: list[str] = [html_module.escape(header), html_module.escape(sep)]
-    for r in rows:
-        precio = f"{float(r['precio']):.2f}%" if r.get("es_tasa") else f"{float(r['precio']):,.2f}"
-        dia_str, dia_signo = _fmt_diaria(r)
-        mtd_str, mtd_signo = _fmt_acum(r, "mtd")
-        ytd_str, ytd_signo = _fmt_acum(r, "ytd")
-
-        def _span(text, signo):
-            color = "#dc2626" if signo < 0 else "#111111"
-            return f'<span style="color:{color};font-weight:600;">{html_module.escape(f"{text:>9}")}</span>'
-
-        activo = html_module.escape(f"{r['activo']:<{ancho_activo}}")
-        precio_pad = html_module.escape(f"{precio:>11}")
-        lineas.append(
-            f"{activo}|  {precio_pad}  |  {_span(dia_str, dia_signo)}  |  "
-            f"{_span(mtd_str, mtd_signo)}  |  {_span(ytd_str, ytd_signo)}"
-        )
-
-    parts = [
-        '<pre style="font-family:Consolas,Menlo,monospace;font-size:12.5px;'
-        'background:#f6f8fa;border:1px solid #e5e7eb;border-radius:8px;'
-        'padding:14px 16px;overflow-x:auto;line-height:1.7;margin:0;">'
-        + "\n".join(lineas)
-        + "</pre>"
+    filas = [
+        '<tr>'
+        f'<th style="text-align:left;padding:10px 12px;font-weight:500;color:#6b7280;'
+        f'font-size:10.5px;border-bottom:1px solid #e1e4e8;">Activo</th>'
+        f'<th {th}>Precio</th><th {th}>Día</th><th {th}>MTD</th>'
+        f'<th style="text-align:right;padding:10px 12px;font-weight:500;color:#6b7280;'
+        f'font-size:10.5px;border-bottom:1px solid #e1e4e8;">YTD</th>'
+        '</tr>'
     ]
-    if price_errors:
-        parts.append(
-            "<p style='margin-top:10px;font-size:13px;color:#92400e;'><strong>Avisos:</strong> "
-            + html_module.escape(" | ".join(price_errors))
-            + "</p>"
+
+    for r in rows:
+        dia_str, dia_neg = _fmt_diaria(r)
+        mtd_str, mtd_neg = _fmt_acum(r, "mtd")
+        ytd_str, ytd_neg = _fmt_acum(r, "ytd")
+        activo = html_module.escape(str(r["activo"]))
+        precio = html_module.escape(_fmt_precio(r))
+        filas.append(
+            "<tr>"
+            f'<td align="left" style="padding:11px 12px;font-size:12px;color:#111111;'
+            f'border-bottom:1px solid #eef0f2;">{activo}</td>'
+            f'<td align="right" style="padding:11px 7px;font-size:12px;color:#111111;'
+            f'white-space:nowrap;border-bottom:1px solid #eef0f2;">{precio}</td>'
+            + _celda_num(dia_str, dia_neg, 7)
+            + _celda_num(mtd_str, mtd_neg, 7)
+            + _celda_num(ytd_str, ytd_neg, 12)
+            + "</tr>"
         )
-    return "\n".join(parts)
+
+    tabla = (
+        '<div style="background:#fbfcfd;border:1px solid #eceef0;border-radius:10px;'
+        'padding:6px 0;overflow:hidden;">'
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+        'style="width:100%;border-collapse:collapse;'
+        'font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
+        + "".join(filas)
+        + "</table></div>"
+    )
+
+    if price_errors:
+        # Los errores de precios quedan registrados pero NO se muestran en el correo.
+        return tabla
+    return tabla
 
 
 def _gnews_rss_fetch(
