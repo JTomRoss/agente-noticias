@@ -536,7 +536,7 @@ def fetch_prices() -> tuple[list[dict[str, Any]], list[str]]:
     """
     Precio reciente + variación % vs cierre previo, y anclas MTD/YTD:
     - Para precios: variación % desde el cierre del último día del mes/año anterior.
-    - Para tasas: NIVEL (%) al cierre del último día del mes/año anterior.
+    - Para tasas: cambio en pb (Día/MTD/YTD) respecto al cierre previo correspondiente.
     """
     import datetime as _dt
 
@@ -576,9 +576,10 @@ def fetch_prices() -> tuple[list[dict[str, Any]], list[str]]:
             ref_anio = _ref_close_before(closes, fin_anio_prev)
 
             if es_tasa:
-                # Para tasas mostramos el NIVEL (%) en la fecha ancla, no la variación.
-                mtd_val = round(ref_mes, 6) if ref_mes is not None else None
-                ytd_val = round(ref_anio, 6) if ref_anio is not None else None
+                # MTD/YTD de tasas = cambio en PUNTOS BASE desde el cierre del mes/año
+                # anterior (nivel actual - nivel ancla). last y ref ya están en % (ej. 4.46).
+                mtd_val = round((last - ref_mes) * 100.0, 2) if ref_mes is not None else None
+                ytd_val = round((last - ref_anio) * 100.0, 2) if ref_anio is not None else None
             else:
                 mtd_val = round((last - ref_mes) / ref_mes * 100.0, 4) if ref_mes else None
                 ytd_val = round((last - ref_anio) / ref_anio * 100.0, 4) if ref_anio else None
@@ -1173,7 +1174,7 @@ def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str])
 
     Reglas de formato:
     - Precios: cobre con 2 decimales; el resto con 1 decimal.
-    - Tasas (Treasury 2A/10A): nivel con 2 decimales; cambio diario en pb; MTD/YTD = nivel.
+    - Tasas (Treasury 2A/10A): nivel con 2 decimales; cambios (Día/MTD/YTD) en pb.
     - Retornos (Día/MTD/YTD de precios): 1 decimal. Negativos en rojo.
     Estilos en línea conservadores para máxima compatibilidad con Gmail.
     """
@@ -1199,12 +1200,15 @@ def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str])
         return f"{'+' if pct > 0 else ''}{pct:.1f}%", pct < 0
 
     def _fmt_acum(r, key) -> tuple[str, bool]:
-        """MTD/YTD: nivel para tasas (sin color), variación % 1 decimal para precios."""
+        """MTD/YTD: cambio en pb para tasas, variación % 1 decimal para precios."""
         val = r.get(key)
         if val is None:
             return "n/d", False
         if r.get("es_tasa"):
-            return f"{float(val):.2f}%", False  # nivel, sin color
+            pb = float(val)  # ya viene en puntos base
+            if abs(pb) < 0.5:
+                return "=", False
+            return f"{'+' if pb > 0 else ''}{pb:.0f} pb", pb < 0
         v = float(val)
         return f"{'+' if v > 0 else ''}{v:.1f}%", v < 0
 
