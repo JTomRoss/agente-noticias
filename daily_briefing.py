@@ -1393,6 +1393,7 @@ def build_claude_prompt_news_only(
 === PRINCIPIO RECTOR: NOTICIAS, NO COMENTARIOS ===
 Cada ítem DEBE comunicar un HECHO CONCRETO del día: una cifra publicada, una decisión tomada, una operación anunciada, un movimiento de precio, un evento ocurrido. Si una frase no contiene un hecho verificable y solo describe un clima o una tendencia, NO va.
 - PROHIBIDO (comentario vacío, esto NO es noticia): "La inflación en EE.UU. y su impacto en las tasas sigue siendo el factor dominante para los mercados de divisas." / "Las tendencias FX muestran que la inflación sigue siendo el driver principal." / "El mercado sigue los movimientos de oro y bonos ante la volatilidad."
+- PROHIBIDO TAMBIÉN: columnas de opinión, análisis, editoriales, ensayos y "papers". Si el ítem describe que un medio "analiza", "examina", "reflexiona sobre", "identifica brechas en" o "plantea un debate sobre" un tema —en lugar de reportar un hecho ocurrido ese día— NO va, aunque venga de una fuente seria. Ejemplo de lo que NO debe entrar: "El eslabón débil del gobierno corporativo es analizado en [medio]: el texto identifica brechas en los directorios..." Eso es análisis, no noticia. Solo entra si hay un HECHO nuevo (una empresa nombró un director, un regulador emitió una norma, una compañía reportó un resultado).
 - CORRECTO (hecho + dato): "El <strong>IPC</strong> de mayo en EE.UU. subió 0,5% MoM, sobre el 0,3% esperado, por el alza de energía." / "El <strong>S&P 500</strong> cerró -1,0% tras el dato de inflación, su mayor caída en tres semanas."
 La redacción es editorial y fluida (no pegar el titular crudo), pero SIEMPRE anclada a un hecho con su cifra.
 
@@ -1439,7 +1440,11 @@ Es la subsección más rica del bloque internacional: puebla con índices, resul
 - CRIPTO (sin forzar): incluye bitcoin/ethereum/cripto SOLO si hay un hecho noticioso concreto del día (movimiento relevante, regulación, operación). Si no hay noticia real de cripto, NO inventes ni rellenes con generalidades; simplemente omítela.
 
 === CELULOSA (al final de Precios y Mercados Internacional) ===
-Las noticias con "celulosa_global": true van en un bloque propio que abre con <p style="margin:14px 0 4px 0;"><strong>Celulosa</strong></p> seguido de una <ul style="margin:0;padding-left:20px;"> donde cada noticia es un <li style="margin-bottom:6px;"> de UNA línea con su enlace de fuente inmediatamente después del texto. Si no hay noticias de celulosa, omite el bloque completo.
+Las noticias con "celulosa_global": true van EXCLUSIVAMENTE en un bloque propio. Reglas estrictas:
+- UMBRAL: el bloque solo se genera si hay AL MENOS 3 noticias de celulosa con hecho concreto. Si hay 2 o menos, OMITE el bloque por completo (no lo muestres, no las pongas en otra parte).
+- CONTENCIÓN: toda noticia de celulosa (UPM, Stora Enso, Suzano, Klabin, CMPC en su faceta de celulosa, precios de pulpa, etc.) va ÚNICAMENTE dentro de este bloque. JAMÁS la pongas también como párrafo suelto en Precios y Mercados ni en otra sección. Una noticia de celulosa aparece UNA sola vez, en el bloque, nunca duplicada.
+- FORMATO: abre con <p style="margin:14px 0 4px 0;"><strong>Celulosa</strong></p> seguido de una <ul style="margin:0;padding-left:20px;"> donde cada noticia es un <li style="margin-bottom:6px;"> de UNA línea con su enlace de fuente inmediatamente después del texto.
+- SIN REPETIR: no incluyas dos ítems que cuenten el mismo hecho (ej. el mismo cierre de planta de UPM reportado por dos medios) — consolida en uno.
 
 === NACIONAL ===
 - Las noticias que mencionen a {", ".join(FO_WATCHLIST)} van PRIMERO en su subsección.
