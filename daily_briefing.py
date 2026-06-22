@@ -18,6 +18,7 @@ import smtplib
 import sys
 import time
 import traceback
+import unicodedata
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -25,6 +26,7 @@ from urllib.parse import urlparse
 from difflib import SequenceMatcher
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import parsedate_to_datetime
 from typing import Any
 
 import requests
@@ -187,15 +189,205 @@ _JPM_SLUG_LABELS: dict[str, str] = {
 
 
 def _parse_news_datetime(value: str) -> datetime | None:
+    """Parsea una fecha de noticia a datetime UTC tz-aware.
+
+    Soporta dos formatos:
+    - ISO 8601 (NewsAPI, Apollo, JPM, ítems generados por el script).
+    - RFC 822 (pubDate de RSS, p.ej. "Mon, 15 Jun 2026 10:30:00 GMT").
+    Devuelve None si no se puede parsear.
+    """
     if not value or not value.strip():
         return None
     s = value.strip()
-    if s.endswith("Z"):
-        s = s[:-1] + "+00:00"
+
+    dt: datetime | None = None
+    # ISO 8601
+    iso = s[:-1] + "+00:00" if s.endswith("Z") else s
     try:
-        return datetime.fromisoformat(s)
+        dt = datetime.fromisoformat(iso)
     except ValueError:
+        dt = None
+    # RFC 822 (RSS) si ISO falló
+    if dt is None:
+        try:
+            dt = parsedate_to_datetime(s)
+        except (TypeError, ValueError, IndexError):
+            dt = None
+    if dt is None:
         return None
+
+    # Normalizar a UTC tz-aware (fechas naive se asumen UTC).
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    else:
+        dt = dt.astimezone(timezone.utc)
+    return dt
+
+
+# ---------------------------------------------------------------------------
+# Frescura: corte DURO aplicado en código sobre TODO el pool de noticias.
+# El prompt ya NO decide qué es "reciente": lo garantiza el código.
+# ---------------------------------------------------------------------------
+FRESHNESS_DAILY_H = 48      # ítems "del día" (mar-vie: noticia fresca)
+FRESHNESS_MONDAY_H = 96     # lunes: jue/vie siguen siendo lo más fresco (sin prensa fin de semana)
+FRESHNESS_CARRYOVER_H = 96  # mar-vie: banda 48-96 h → arrastre mid-week (blockquote, no noticia del día)
+FRESHNESS_HISTORICO_H = 168  # ítems historico_7d → recuadro "semana pasada" (solo lunes)
+
+
+def es_lunes_cl(ahora_utc: datetime | None = None) -> bool:
+    """True si en hora de Chile hoy es lunes (define modo semanal del correo)."""
+    if ahora_utc is None:
+        return datetime.now(SANTIAGO_TZ).weekday() == 0
+    return ahora_utc.astimezone(SANTIAGO_TZ).weekday() == 0
+
+
+def filtrar_por_frescura(
+    news: list[dict[str, Any]], *, ahora_utc: datetime | None = None
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, int]]]:
+    """Aplica el corte de frescura y clasifica el arrastre, antes de armar el prompt.
+
+    Lunes (hora de Chile):
+    - ``historico_7d``: ventana de 7 días → alimenta el recuadro "semana pasada".
+    - Resto: ≤96 h, todo como noticia fresca (jue/vie son lo más reciente tras el finde).
+    Martes a viernes:
+    - ``historico_7d``: se descarta (el recuadro semanal solo va los lunes).
+    - Resto ≤48 h: noticia fresca del día.
+    - Resto 48-96 h: se marca ``arrastre=True`` (blockquote de días previos, no del día).
+    - Resto >96 h: se descarta.
+    Sin fecha parseable: se DESCARTA siempre (garantía en código).
+
+    Devuelve (noticias_filtradas, descartes) con conteos por fuente para los logs.
+    """
+    ahora = ahora_utc or datetime.now(timezone.utc)
+    lunes = es_lunes_cl(ahora)
+    cutoff_fresco = ahora - timedelta(hours=FRESHNESS_MONDAY_H if lunes else FRESHNESS_DAILY_H)
+    cutoff_carryover = ahora - timedelta(hours=FRESHNESS_CARRYOVER_H)
+    cutoff_hist = ahora - timedelta(hours=FRESHNESS_HISTORICO_H)
+
+    kept: list[dict[str, Any]] = []
+    drop_viejo: dict[str, int] = {}
+    drop_sin_fecha: dict[str, int] = {}
+
+    for it in news:
+        dt = _parse_news_datetime((it.get("fecha") or "").strip())
+        fuente = (it.get("fuente") or "?").strip() or "?"
+        if dt is None:
+            drop_sin_fecha[fuente] = drop_sin_fecha.get(fuente, 0) + 1
+            continue
+
+        it.pop("arrastre", None)  # limpieza defensiva
+
+        if it.get("historico_7d"):
+            # Material de la semana: solo sobrevive los lunes (y dentro de 7 días).
+            if lunes and dt >= cutoff_hist:
+                kept.append(it)
+            else:
+                drop_viejo[fuente] = drop_viejo.get(fuente, 0) + 1
+            continue
+
+        if dt >= cutoff_fresco:
+            kept.append(it)  # noticia fresca del día
+        elif not lunes and dt >= cutoff_carryover:
+            it["arrastre"] = True  # mar-vie: días previos relevantes
+            kept.append(it)
+        else:
+            drop_viejo[fuente] = drop_viejo.get(fuente, 0) + 1
+
+    return kept, {"viejo": drop_viejo, "sin_fecha": drop_sin_fecha}
+
+
+# ---------------------------------------------------------------------------
+# Confiabilidad de fuentes: whitelist aplicada a los streams temáticos (nacional,
+# watchlist, histórico), donde Google News sin site: deja entrar medios dudosos.
+# El lado internacional premium ya está curado por construcción (no se toca).
+# CALIBRACIÓN: estos nombres deben coincidir con el <source> real del RSS; ajustar
+# con el log "Descartes por fuente" tras las primeras corridas en producción.
+# ---------------------------------------------------------------------------
+FUENTES_CONFIABLES: frozenset[str] = frozenset({
+    # Internacional (para histórico EE.UU. y citas premium en bloques temáticos)
+    "reuters", "bloomberg", "cnbc", "wall street journal", "wsj", "marketwatch",
+    "yahoo finance", "financial times", "coindesk",
+    # Chile — prensa económica y general reputada
+    "diario financiero", "df", "dfsud", "df mas", "pulso", "la tercera",
+    "el mercurio", "emol", "economia y negocios", "la segunda", "estrategia",
+    "america economia", "funds society", "biobiochile", "bio bio", "cooperativa",
+    "t13", "tele 13", "cnn chile", "el mostrador", "ex-ante", "ex ante",
+    "el libero", "la nacion", "diario sustentable",
+})
+
+# Sector celulosa: nicho con prensa especializada que el usuario tolera.
+# Estos ítems quedan EXENTOS de la whitelist (solo les aplica la blacklist).
+FUENTES_CELULOSA_OK: frozenset[str] = frozenset({"lesprom"})
+
+# Bloqueo explícito (nombradas como dudosas): se descartan SIEMPRE, en cualquier bloque.
+FUENTES_BLOQUEADAS: frozenset[str] = frozenset({"xataka", "ad hoc news", "adhoc news"})
+
+# Flags de streams temáticos a los que SÍ se aplica la whitelist.
+_TOPIC_FLAGS_WHITELIST: tuple[str, ...] = ("nacional", "fo_watchlist", "historico_7d")
+
+
+def _norm_fuente(s: str | None) -> str:
+    """Normaliza un nombre de fuente: minúsculas, sin acentos, espacios colapsados."""
+    s = (s or "").strip().lower()
+    s = "".join(c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c))
+    s = re.sub(r"[^\w\s.\-]", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def _fuente_en(fuente_norm: str, permitidas_norm: set[str]) -> bool:
+    """True si la fuente coincide (exacta o por contención para nombres ≥5 chars)."""
+    if not fuente_norm:
+        return False
+    for w in permitidas_norm:
+        if w == fuente_norm:
+            return True
+        if len(w) >= 5 and (w in fuente_norm or fuente_norm in w):
+            return True
+    return False
+
+
+def filtrar_por_fuente(
+    news: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, int]]]:
+    """Descarta fuentes no confiables en los bloques temáticos (y las bloqueadas en todos).
+
+    - Blacklist global: Xataka, AD HOC NEWS → fuera siempre.
+    - Whitelist: solo a ítems nacional/watchlist/histórico (donde entra el ruido).
+      El internacional premium y los streams curados (JPM, Apollo, Trump) pasan.
+    - Celulosa: exenta de whitelist (sector nicho); solo le aplica la blacklist.
+    - Kill-switch: FUENTES_FILTRO_OFF=1 desactiva todo el filtro.
+
+    Devuelve (noticias, descartes) con conteos por fuente para los logs.
+    """
+    if (os.getenv("FUENTES_FILTRO_OFF") or "").strip().lower() in ("1", "true", "yes"):
+        return news, {"bloqueada": {}, "no_whitelist": {}}
+
+    confiables = {_norm_fuente(x) for x in FUENTES_CONFIABLES}
+    bloqueadas = {_norm_fuente(x) for x in FUENTES_BLOQUEADAS}
+
+    kept: list[dict[str, Any]] = []
+    drop_block: dict[str, int] = {}
+    drop_nowl: dict[str, int] = {}
+
+    for it in news:
+        fuente = (it.get("fuente") or "").strip()
+        fn = _norm_fuente(fuente)
+        etiqueta = fuente or "?"
+
+        # 1) Blacklist global (incluye celulosa).
+        if _fuente_en(fn, bloqueadas):
+            drop_block[etiqueta] = drop_block.get(etiqueta, 0) + 1
+            continue
+
+        # 2) Whitelist solo en streams temáticos no-celulosa.
+        if not it.get("celulosa_global") and any(it.get(f) for f in _TOPIC_FLAGS_WHITELIST):
+            if not _fuente_en(fn, confiables):
+                drop_nowl[etiqueta] = drop_nowl.get(etiqueta, 0) + 1
+                continue
+
+        kept.append(it)
+
+    return kept, {"bloqueada": drop_block, "no_whitelist": drop_nowl}
 
 
 # Subtítulos fijos (mismo texto en prompt, HTML de Claude y fallback)
@@ -1388,12 +1580,15 @@ def fetch_flash_report_sources() -> tuple[list[dict[str, Any]], list[str], dict[
     errors: list[str] = []
     meta: dict[str, Any] = {}
 
-    grupos: tuple[tuple[tuple[tuple[str, str], ...], dict[str, Any], str, str], ...] = (
+    grupos: list[tuple[tuple[tuple[str, str], ...], dict[str, Any], str, str]] = [
         (GNEWS_QUERIES_NACIONAL, {"nacional": True}, "es-419", "CL"),
         (GNEWS_QUERIES_WATCHLIST, {"nacional": True, "fo_watchlist": True}, "es-419", "CL"),
         (GNEWS_QUERIES_CELULOSA, {"celulosa_global": True}, "en-US", "US"),
-        (GNEWS_QUERIES_HISTORICO_7D, {"historico_7d": True}, "es-419", "CL"),
-    )
+    ]
+    # El material de "semana pasada" solo se usa los lunes; el resto de la semana
+    # no se consulta (ahorra llamadas y evita que ítems de 7 días lleguen al pool).
+    if es_lunes_cl():
+        grupos.append((GNEWS_QUERIES_HISTORICO_7D, {"historico_7d": True}, "es-419", "CL"))
 
     for queries, flags, lang, country in grupos:
         for q, label in queries:
@@ -1417,11 +1612,52 @@ def build_claude_prompt_news_only(
     news_errors: list[str],
 ) -> str:
     """Prompt maestro del Flash Report: la tabla de indicadores la genera el script."""
+    lunes = es_lunes_cl()
     payload = {
         "noticias": news[:320],
         "errores_noticias": news_errors,
         "fecha_hoy": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "es_lunes": lunes,
     }
+
+    # Mar-vie: arrastre inline de días previos. Lunes: recuadro semanal al final.
+    bloque_arrastre = "" if lunes else """=== ARRASTRE DE DÍAS PREVIOS (regla de hoy) ===
+Algunas noticias vienen con "arrastre": true: son hechos de hace 2-3 días que siguen siendo relevantes pero NO son del día. Trátalas así:
+- Cada una va como blockquote AL FINAL de la subsección temática que le corresponde (un IPC de hace 2 días en Macroeconomía, no en Política).
+- Formato: <blockquote style="border-left:3px solid #d1d5db;margin:8px 0 4px 0;padding:6px 12px;background:#f9fafb;"><em>📅 Días previos: [idea fuerza en cursiva, máximo 3 líneas, con enlaces de fuente]</em></blockquote>
+- NO-REPETIR: una misma historia aparece UNA sola vez. Si un hecho ya está como noticia fresca del día, NO lo repitas en el arrastre; y si va en el arrastre, no lo dupliques como noticia del día.
+- Si una subsección no tiene ítems con "arrastre": true, omite el blockquote (no inventes).
+- GEOGRAFÍA: si todos los datos de un blockquote internacional son del mismo país (típicamente EE.UU.), indícalo UNA SOLA VEZ al inicio y no lo repitas en cada oración.
+"""
+
+    bloque_semanal = """=== RESUMEN DE LA SEMANA PASADA (HOY ES LUNES — VA AL FINAL DE TODO EL CORREO) ===
+Cierra el correo, DESPUÉS de II. NACIONAL, con un único recuadro que prioriza las principales noticias de la semana previa (lunes a viernes). Usa SOLO las noticias con "historico_7d": true.
+- NO es un consolidado de todo lo de la semana: SELECCIONA y PRIORIZA lo que un inversor institucional debería recordar.
+- Topes ESTRICTOS: máximo 5 internacionales y máximo 4 nacionales.
+- Lectura LIGHT: idea fuerza + breve explicación; no exige cifra dura como el resto del correo. UNA sola línea por bullet.
+- NO-REPETIR: no incluyas aquí nada que ya hayas puesto como noticia del día más arriba.
+- CLASIFICACIÓN: Internacional = ítems con "gnews_label": "hist_eeuu"; Nacional = ítems con "gnews_label": "hist_chile".
+- Mantén TODO en cursiva (estilo del recuadro gris). Formato EXACTO (omite el grupo que no tenga material; si no hay nada, no muestres el recuadro):
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
+<blockquote style="border-left:3px solid #d1d5db;margin:8px 0;padding:10px 14px;background:#f9fafb;">
+<p style="margin:0 0 8px 0;"><em><strong>📅 Resumen de la semana pasada</strong></em></p>
+<p style="margin:0 0 2px 0;"><em>Internacional</em></p>
+<ul style="margin:0 0 8px 0;padding-left:20px;">
+<li style="margin-bottom:4px;"><em>[idea fuerza en una línea] <a href="URL_DEL_JSON" style="color:#1d4ed8;text-decoration:none;">Fuente</a></em></li>
+</ul>
+<p style="margin:0 0 2px 0;"><em>Nacional</em></p>
+<ul style="margin:0;padding-left:20px;">
+<li style="margin-bottom:4px;"><em>[idea fuerza en una línea] <a href="URL_DEL_JSON" style="color:#1d4ed8;text-decoration:none;">Fuente</a></em></li>
+</ul>
+</blockquote>
+""" if lunes else ""
+
+    nota_estructura_lunes = (
+        '(4) HOY ES LUNES: tras II. NACIONAL, cierra con el recuadro "Resumen de la semana pasada" (ver su sección).'
+        if lunes
+        else ""
+    )
+
     return f"""Eres el editor de un briefing matinal de noticias económicas y financieras para un family office chileno sofisticado. Tu trabajo es SELECCIONAR y REDACTAR las noticias más relevantes del día a partir del JSON (campo "noticias"). Eres un editor con criterio, no un copista: decides qué entra y qué no. No inventes hechos: usa solo lo que viene en el JSON.
 
 {json.dumps(payload, ensure_ascii=False, indent=2)}
@@ -1452,6 +1688,7 @@ La redacción es editorial y fluida (no pegar el titular crudo), pero SIEMPRE an
 (1) <h2>I. INTERNACIONAL</h2> con tres <h3>: "Macroeconomía", "Precios y Mercados", "Política Internacional".
 (2) <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
 (3) <h2>II. NACIONAL</h2> con tres <h3>: "Macroeconomía", "Precios y Mercados", "Política Nacional". Título "II. NACIONAL" a secas (sin "Chile").
+{nota_estructura_lunes}
 
 === QUÉ VA EN CADA SUBSECCIÓN ===
 - MACROECONOMÍA: el DATO en sí. Cifra publicada vs. lo esperado, decisiones e intervenciones de bancos centrales (Fed, BCE, Banco Central de Chile). Ej: "El <strong>IPC</strong> de EE.UU. subió 0,5% MoM, sobre el 0,3% previsto." Las señales/decisiones/discursos de Fed y BCE son tan o más importantes que los datos: inclúyelas aquí.
@@ -1491,12 +1728,7 @@ Las noticias con "celulosa_global": true van EXCLUSIVAMENTE en un bloque propio.
 - Cierra Macroeconomía con una oración natural de lo que se publica hoy, si los titulares lo mencionan: "Hoy se conocerá el IPP de mayo en EE.UU. y las solicitudes semanales de desempleo." Sin etiqueta en negrita, sin dos puntos.
 - Cierra Precios y Mercados con los resultados corporativos del día (foco tech S&P 500), si aplica: "Hoy reportan Adobe y Oracle tras el cierre." Va AL FINAL, nunca como primera noticia.
 
-=== HISTÓRICO ÚLTIMA SEMANA ===
-Al final de CADA subsección que tenga material de días previos muy relevante (noticias con "historico_7d": true: IPC, Imacec, PIB, TPM, reformas, CPI, jobs report, decisiones de bancos centrales), agrega:
-<blockquote style="border-left:3px solid #d1d5db;margin:8px 0 4px 0;padding:6px 12px;background:#f9fafb;"><em>📅 Última semana: [resumen consolidado en cursiva, máximo 3 líneas, con enlaces de fuente]</em></blockquote>
-Cada hecho histórico va en su subsección temática (un IPC pasado en Macroeconomía, no en Política). Si una noticia del día ya quedó vieja (publicada hace 2+ días), va aquí, no como noticia del día. Usa el material real del JSON; si para un bloque completo no hay ninguno, omite el blockquote (no inventes).
-- GEOGRAFÍA EN EL HISTÓRICO: cuando todos los datos de un blockquote internacional son del mismo país (típicamente EE.UU.), indícalo UNA SOLA VEZ al inicio y no lo repitas en cada oración. Ej: "📅 Última semana (EE.UU.): el PCE core de abril marcó 3,3% anual; las nóminas ADP crecieron 122.000; las ofertas de empleo treparon a 7,6 millones." Si hay datos de varios países, especifica el país solo en los que no sean del país dominante.
-
+{bloque_arrastre}{bloque_semanal}
 === FORMATO DE SALIDA ===
 - Devuelve ÚNICAMENTE el fragmento HTML (sin <!DOCTYPE>, <html>, <head>, <body>). Prohibido markdown y bloques de código.
 - Si una subsección queda sin noticias: <p><em>Sin titulares destacados.</em></p>.
@@ -1849,6 +2081,34 @@ def run() -> int:
         f"Apollo Daily Spark: {len(apollo_items)}; JPM AM: {len(jpm_items)} nuevos)."
     )
     print(f"  Meta NewsAPI: {json.dumps(news_meta, ensure_ascii=False)}")
+
+    # Corte DURO de frescura sobre todo el pool (no se delega al prompt).
+    pre_fresh = len(news)
+    news, descartes_fresh = filtrar_por_frescura(news)
+    n_viejo = sum(descartes_fresh["viejo"].values())
+    n_sin_fecha = sum(descartes_fresh["sin_fecha"].values())
+    print(
+        f"  Tras filtro de frescura: {len(news)} (antes {pre_fresh}; "
+        f"descartados {n_viejo} por antigüedad, {n_sin_fecha} sin fecha)."
+    )
+    if descartes_fresh["viejo"]:
+        print(f"    Viejos por fuente: {json.dumps(descartes_fresh['viejo'], ensure_ascii=False)}")
+    if descartes_fresh["sin_fecha"]:
+        print(f"    Sin fecha por fuente: {json.dumps(descartes_fresh['sin_fecha'], ensure_ascii=False)}")
+
+    # Confiabilidad de fuente (whitelist en bloques temáticos + blacklist global).
+    pre_fuente = len(news)
+    news, descartes_fuente = filtrar_por_fuente(news)
+    n_block = sum(descartes_fuente["bloqueada"].values())
+    n_nowl = sum(descartes_fuente["no_whitelist"].values())
+    print(
+        f"  Tras filtro de fuente: {len(news)} (antes {pre_fuente}; "
+        f"bloqueadas {n_block}, fuera de whitelist {n_nowl})."
+    )
+    if descartes_fuente["bloqueada"]:
+        print(f"    Bloqueadas por fuente: {json.dumps(descartes_fuente['bloqueada'], ensure_ascii=False)}")
+    if descartes_fuente["no_whitelist"]:
+        print(f"    Fuera de whitelist por fuente: {json.dumps(descartes_fuente['no_whitelist'], ensure_ascii=False)}")
 
     pre_lang = len(news)
     news = filter_news_en_es_titles(news)
