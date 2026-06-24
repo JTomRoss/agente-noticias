@@ -22,7 +22,7 @@ import unicodedata
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from difflib import SequenceMatcher
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -148,6 +148,28 @@ GNEWS_QUERIES_NACIONAL: tuple[tuple[str, str], ...] = (
     ("economía OR mercados OR IPSA OR dólar OR IPC Chile when:3d", "chile_economia"),
     ("(Senado OR gobierno OR Hacienda OR reforma OR Presupuesto) Chile when:3d", "chile_politica"),
     ("(banco OR banca OR \"seguros de vida\" OR eléctrica OR energía) Chile when:3d", "chile_sectores"),
+)
+
+# PORTADAS económico-financieras: una query site: por diario (UN solo dominio cada una,
+# para no caer en el problema de site: multi-dominio + when que devolvía casi nada).
+# Es la aproximación "Opción B": lo reciente de cada medio, no su portada editorial literal.
+# Se marcan portada=true para que el prompt LIDERE el bloque nacional con ellas.
+GNEWS_QUERIES_PORTADAS: tuple[tuple[str, str], ...] = (
+    ("site:df.cl when:2d", "portada_df"),
+    ("(economía OR mercados OR empresas) site:emol.com when:2d", "portada_emol"),
+    ("site:economiaynegocios.cl when:2d", "portada_eyn"),
+    ("(economía OR mercados OR empresas OR IPSA) site:latercera.com when:2d", "portada_lt"),
+    ("(economía OR mercados OR empresas OR IPSA) site:biobiochile.cl when:2d", "portada_biobio"),
+)
+
+# Scrape best-effort de las home económicas (extra opt-in: PORTADAS_SCRAPE=1).
+# Selectores genéricos; probablemente requieran ajuste tras ver el output real.
+PORTADAS_SITES: tuple[tuple[str, str], ...] = (
+    ("Diario Financiero", "https://www.df.cl/"),
+    ("Economía y Negocios", "https://www.economiaynegocios.cl/"),
+    ("Pulso", "https://www.latercera.com/pulso/"),
+    ("Emol", "https://www.emol.com/economia/"),
+    ("BioBioChile", "https://www.biobiochile.cl/lista/categorias/economia"),
 )
 
 GNEWS_QUERIES_WATCHLIST: tuple[tuple[str, str], ...] = (
@@ -627,61 +649,91 @@ def _fallback_news_bucket(title: str) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Diseño del correo: el CSS vive AQUÍ (copiado de la maqueta morning_brief_final).
+# Claude emite markup con CLASES; el script las convierte a estilos inline (Gmail-safe).
+# Así el diseño queda bloqueado en código y no deriva con cada redacción de Claude.
+# ---------------------------------------------------------------------------
+_SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif"
+_SERIF = "Georgia,'Times New Roman',serif"
+EMAIL_CSS: dict[str, str] = {
+    "turn": "margin:20px 0 0;font-size:14.5px;line-height:1.5;color:#1a1a1a;border-top:1px solid #e3e3e0;padding-top:16px;",
+    "turn-b": "font-weight:700;color:#0f3d2e;",
+    "brief": "margin:16px 0 0;border-left:3px solid #0f3d2e;background:#eef3f0;padding:14px 18px 16px;border-radius:0 4px 4px 0;",
+    "brief-lbl": "font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#0f3d2e;font-weight:700;margin:0 0 8px 0;",
+    "brief-ol": "margin:0;padding-left:18px;",
+    "brief-li": "margin:0 0 7px 0;font-size:14px;line-height:1.5;",
+    "watch": "margin:12px 0 0;border:1px solid #cfcfca;border-top:3px solid #7a4a00;padding:13px 18px 14px;border-radius:0 0 4px 4px;",
+    "watch-lbl": "font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#7a4a00;font-weight:700;margin:0 0 8px 0;",
+    "watch-ul": "margin:0;padding-left:18px;",
+    "watch-li": "font-size:14px;line-height:1.45;margin:0 0 5px 0;",
+    "part": f"font-family:{_SERIF};font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#1a1a1a;margin:34px 0 0 0;padding-bottom:8px;border-bottom:1px solid #1a1a1a;font-weight:700;",
+    "sec": "margin:24px 0 0;",
+    "eyebrow": "font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#0f3d2e;font-weight:700;margin:0 0 10px 0;",
+    "item": "margin:0 0 14px 0;font-size:14.5px;line-height:1.55;color:#1a1a1a;",
+    "lead-item": "margin:0 0 14px 0;font-size:15px;line-height:1.55;color:#1a1a1a;",
+    "src": "font-size:12.5px;color:#1a56c4;text-decoration:none;",
+    "bin": "margin:6px 0 0;padding-left:16px;",
+    "bin-bullet": "margin:0 0 9px 0;font-size:13.5px;line-height:1.5;color:#1a1a1a;",
+    "prev": "margin:14px 0 2px 0;border-left:2px solid #cfcfca;padding:2px 0 2px 14px;font-size:12.5px;line-height:1.5;color:#5f6368;font-style:italic;",
+    "prev-tag": "font-style:normal;font-weight:700;color:#80868b;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:3px;",
+}
+
+
+def inline_email_classes(html: str) -> str:
+    """Convierte class="x y" en style="..." según EMAIL_CSS (Gmail-safe).
+
+    Además: <b>/<strong> sin estilo → negrita; <a> sin estilo → color de link.
+    Las clases desconocidas se descartan. Un style propio existente se conserva.
+    """
+    def _repl_class(m: re.Match) -> str:
+        clases = m.group(1).split()
+        estilo = "".join(EMAIL_CSS.get(c, "") for c in clases)
+        return f'style="{estilo}"' if estilo else ""
+
+    out = re.sub(r'class="([^"]*)"', _repl_class, html)
+    out = re.sub(r"<(b|strong)>", r'<\1 style="font-weight:700;">', out)
+    out = re.sub(
+        r'<a (?![^>]*style=)([^>]*?)>',
+        r'<a style="color:#1a56c4;text-decoration:none;" \1>',
+        out,
+    )
+    return out
+
+
 def build_news_fallback_html_sections(news: list[dict[str, Any]]) -> str:
-    """Misma estructura de 5 bloques que pide el prompt, con heurística local."""
-    parts: list[str] = [
-        '<h2 style="margin:24px 0 12px 0;font-size:1.25em;">Noticias (respaldo automático)</h2>'
-    ]
-    if not news:
-        for _key, heading in NEWS_SECTION_HEADINGS:
-            parts.append(
-                f'<h3 style="margin:18px 0 8px 0;font-size:1.1em;color:#1e3a5f;">'
-                f"{html_module.escape(heading)}</h3>"
-            )
-            parts.append("<p><em>Sin titulares destacados en esta categoría.</em></p>")
-        return "\n".join(parts)
+    """Respaldo cuando Claude falla: estructura simple alineada al rediseño (modo degradado)."""
+    def _item(n: dict[str, Any]) -> str:
+        t = html_module.escape(n.get("titular") or "")
+        url = n.get("url") or ""
+        src = html_module.escape(n.get("fuente") or "Fuente")
+        if url:
+            link = html_module.escape(url, quote=True)
+            fuente = f' <a class="src" href="{link}">{src}</a>'
+        else:
+            fuente = f' <span style="color:#80868b;font-size:12px;">({src})</span>'
+        return f'<p class="item">{t}{fuente}</p>'
 
-    buckets: list[list[dict[str, Any]]] = [[] for _ in NEWS_SECTION_HEADINGS]
+    intl, nac, cel = [], [], []
     for n in news:
-        idx = _fallback_news_bucket(n.get("titular") or "")
-        buckets[idx].append(n)
-    for i, (_key, heading) in enumerate(NEWS_SECTION_HEADINGS):
-        parts.append(
-            f'<h3 style="margin:18px 0 8px 0;font-size:1.1em;color:#1e3a5f;">'
-            f"{html_module.escape(heading)}</h3>"
-        )
-        group = buckets[i]
-        if not group:
-            parts.append("<p><em>Sin titulares destacados en esta categoría.</em></p>")
+        if n.get("celulosa_global"):
+            cel.append(n)
+        elif n.get("nacional"):
+            nac.append(n)
+        else:
+            intl.append(n)
+
+    parts: list[str] = []
+    for titulo, grupo in (("Internacional", intl), ("Nacional · Chile", nac), ("Celulosa", cel)):
+        if not grupo:
             continue
-        def _fallback_inst_order(x: dict[str, Any]) -> tuple[int, str]:
-            if x.get("apollo_daily_spark"):
-                return (0, "")
-            if x.get("trump_priority"):
-                return (1, "")
-            if x.get("jpm_institutional"):
-                return (2, "")
-            return (3, x.get("titular") or "")
-
-        group_sorted = sorted(group, key=_fallback_inst_order)
-        parts.append('<ul style="margin:0 0 12px 0;padding-left:1.2em;line-height:1.55;">')
-        for n in group_sorted[:25]:
-            titular = n["titular"]
-            t_esc = html_module.escape(titular)
-            url = n.get("url") or ""
-            if url:
-                link = html_module.escape(url, quote=True)
-                t_html = (
-                    f'<a href="{link}" style="color:#1d4ed8;text-decoration:underline;">{t_esc}</a>'
-                )
-            else:
-                t_html = t_esc
-            src = html_module.escape(n.get("fuente") or "")
-            meta = f" <span style='color:#6b7280;font-size:12px;'>({src})</span>" if src else ""
-            parts.append(f"<li style='margin-bottom:8px;'>{t_html}{meta}</li>")
-        parts.append("</ul>")
-    return "\n".join(parts)
-
+        parts.append(f'<div class="part">{html_module.escape(titulo)}</div>')
+        parts.append('<div class="sec">')
+        parts.extend(_item(n) for n in grupo[:25])
+        parts.append("</div>")
+    if not parts:
+        parts.append('<p class="item"><em>Sin titulares destacados.</em></p>')
+    return inline_email_classes("\n".join(parts))
 
 
 def get_briefing_mode() -> str:
@@ -1382,84 +1434,75 @@ def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str])
         dec = 2 if r.get("ticker") in COBRE_TICKERS else 1
         return f"{precio:,.{dec}f}"
 
-    def _fmt_diaria(r) -> tuple[str, bool]:
-        """Devuelve (texto, es_negativo)."""
+    def _fmt_diaria(r) -> tuple[str, int]:
+        """Devuelve (texto, signo) con signo -1/0/+1."""
         pct = float(r["variacion_pct"])
         if r.get("es_tasa"):
             if abs(pct) < 0.5:
-                return "=", False
-            return f"{'+' if pct > 0 else ''}{pct:.0f} pb", pct < 0
-        return f"{'+' if pct > 0 else ''}{pct:.1f}%", pct < 0
+                return "=", 0
+            return f"{'+' if pct > 0 else ''}{pct:.0f} pb", (1 if pct > 0 else -1)
+        if abs(pct) < 0.05:
+            return "0,0%".replace(".", ","), 0
+        return f"{'+' if pct > 0 else ''}{pct:.1f}%".replace(".", ","), (1 if pct > 0 else -1)
 
-    def _fmt_acum(r, key) -> tuple[str, bool]:
+    def _fmt_acum(r, key) -> tuple[str, int]:
         """MTD/YTD: cambio en pb para tasas, variación % 1 decimal para precios."""
         val = r.get(key)
         if val is None:
-            return "n/d", False
+            return "n/d", 0
         if r.get("es_tasa"):
-            pb = float(val)  # ya viene en puntos base
+            pb = float(val)
             if abs(pb) < 0.5:
-                return "=", False
-            return f"{'+' if pb > 0 else ''}{pb:.0f} pb", pb < 0
+                return "=", 0
+            return f"{'+' if pb > 0 else ''}{pb:.0f} pb", (1 if pb > 0 else -1)
         v = float(val)
-        return f"{'+' if v > 0 else ''}{v:.1f}%", v < 0
+        if abs(v) < 0.05:
+            return "0,0%", 0
+        return f"{'+' if v > 0 else ''}{v:.1f}%".replace(".", ","), (1 if v > 0 else -1)
 
-    ROJO = "#c0392b"
-    NEGRO = "#111111"
-
-    def _celda_num(text: str, negativo: bool, pad_right: int) -> str:
-        color = ROJO if negativo else NEGRO
+    def _celda_num(text: str, signo: int) -> str:
+        color = "#137333" if signo > 0 else ("#c5221f" if signo < 0 else "#1a1a1a")
         return (
-            f'<td align="right" style="padding:11px {pad_right}px;font-size:12px;'
-            f'color:{color};white-space:nowrap;border-bottom:1px solid #eef0f2;">'
+            '<td align="right" style="padding:7px 0;font-size:13.5px;border-bottom:1px solid #e3e3e0;'
+            f'color:{color};white-space:nowrap;font-variant-numeric:tabular-nums;">'
             f"{html_module.escape(text)}</td>"
         )
 
-    th = (
-        'style="text-align:right;padding:10px 7px;font-weight:500;'
-        'color:#6b7280;font-size:10.5px;border-bottom:1px solid #e1e4e8;"'
-    )
+    th_r = ('style="text-align:right;padding:6px 0;font-weight:600;color:#80868b;'
+            'font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #cfcfca;"')
+    th_l = ('style="text-align:left;padding:6px 0;font-weight:600;color:#80868b;'
+            'font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #cfcfca;"')
     filas = [
-        '<tr>'
-        f'<th style="text-align:left;padding:10px 12px;font-weight:500;color:#6b7280;'
-        f'font-size:10.5px;border-bottom:1px solid #e1e4e8;">Activo</th>'
-        f'<th {th}>Precio</th><th {th}>Día</th><th {th}>MTD</th>'
-        f'<th style="text-align:right;padding:10px 12px;font-weight:500;color:#6b7280;'
-        f'font-size:10.5px;border-bottom:1px solid #e1e4e8;">YTD</th>'
-        '</tr>'
+        "<tr>"
+        f"<th {th_l}>Activo</th><th {th_r}>Precio</th><th {th_r}>Día</th>"
+        f"<th {th_r}>MTD</th><th {th_r}>YTD</th>"
+        "</tr>"
     ]
 
     for r in rows:
-        dia_str, dia_neg = _fmt_diaria(r)
-        mtd_str, mtd_neg = _fmt_acum(r, "mtd")
-        ytd_str, ytd_neg = _fmt_acum(r, "ytd")
+        dia_str, dia_s = _fmt_diaria(r)
+        mtd_str, mtd_s = _fmt_acum(r, "mtd")
+        ytd_str, ytd_s = _fmt_acum(r, "ytd")
         activo = html_module.escape(str(r["activo"]))
         precio = html_module.escape(_fmt_precio(r))
         filas.append(
             "<tr>"
-            f'<td align="left" style="padding:11px 12px;font-size:12px;color:#111111;'
-            f'border-bottom:1px solid #eef0f2;">{activo}</td>'
-            f'<td align="right" style="padding:11px 7px;font-size:12px;color:#111111;'
-            f'white-space:nowrap;border-bottom:1px solid #eef0f2;">{precio}</td>'
-            + _celda_num(dia_str, dia_neg, 7)
-            + _celda_num(mtd_str, mtd_neg, 7)
-            + _celda_num(ytd_str, ytd_neg, 12)
+            '<td align="left" style="padding:7px 0;font-size:13.5px;color:#1a1a1a;'
+            f'font-weight:600;border-bottom:1px solid #e3e3e0;">{activo}</td>'
+            '<td align="right" style="padding:7px 0;font-size:13.5px;color:#1a1a1a;'
+            f'white-space:nowrap;font-variant-numeric:tabular-nums;border-bottom:1px solid #e3e3e0;">{precio}</td>'
+            + _celda_num(dia_str, dia_s)
+            + _celda_num(mtd_str, mtd_s)
+            + _celda_num(ytd_str, ytd_s)
             + "</tr>"
         )
 
     tabla = (
-        '<div style="background:#fbfcfd;border:1px solid #eceef0;border-radius:10px;'
-        'padding:6px 0;overflow:hidden;">'
         '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
-        'style="width:100%;border-collapse:collapse;'
-        'font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
+        f'style="width:100%;border-collapse:collapse;margin:18px 0 4px 0;font-family:{_SANS};">'
         + "".join(filas)
-        + "</table></div>"
+        + "</table>"
     )
-
-    if price_errors:
-        # Los errores de precios quedan registrados pero NO se muestran en el correo.
-        return tabla
     return tabla
 
 
@@ -1497,6 +1540,60 @@ def _gnews_rss_fetch(
             }
         )
     return items[:25], None
+
+
+def fetch_portadas_scrape() -> tuple[list[dict[str, Any]], list[str]]:
+    """Scrape best-effort de las home económicas (extra opt-in: PORTADAS_SCRAPE=1).
+
+    Genérico, conservador y BLINDADO: cualquier fallo por sitio se registra y se sigue;
+    nunca rompe el run. Marca portada=true y scraped=true. El dedupe por similitud de
+    título (en run) elimina lo que repita lo que ya trajeron las queries site:.
+    NOTA: los selectores son genéricos y probablemente requieran ajuste tras ver el
+    output real (este entorno no tiene red para validarlos).
+    """
+    if (os.getenv("PORTADAS_SCRAPE") or "").strip().lower() not in ("1", "true", "yes"):
+        return [], []
+    items: list[dict[str, Any]] = []
+    errors: list[str] = []
+    ahora_iso = datetime.now(timezone.utc).isoformat()
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; EcoterraBrief/1.0)"}
+    descartar = ("suscrí", "iniciar sesión", "newsletter", "cookies", "podcast",
+                 "ver más", "lee también", "regístrate", "menú")
+    vistos: set[str] = set()
+    for fuente, url in PORTADAS_SITES:
+        try:
+            resp = requests.get(url, headers=headers, timeout=20)
+            resp.raise_for_status()
+            page = resp.text
+        except Exception as e:
+            errors.append(f"Scrape portada {fuente}: {e}")
+            continue
+        n = 0
+        for m in re.finditer(r'<a\b[^>]*href="([^"]+)"[^>]*>(.*?)</a>', page, re.I | re.S):
+            href, inner = m.group(1), _strip_tags(m.group(2))
+            if not (35 <= len(inner) <= 150):
+                continue
+            low = inner.lower()
+            if any(x in low for x in descartar):
+                continue
+            clave = low[:60]
+            if clave in vistos:
+                continue
+            vistos.add(clave)
+            full = href if href.startswith("http") else urljoin(url, href)
+            items.append({
+                "titular": inner,
+                "url": full,
+                "fuente": fuente,
+                "fecha": ahora_iso,
+                "nacional": True,
+                "portada": True,
+                "scraped": True,
+            })
+            n += 1
+            if n >= 4:
+                break
+    return items, errors
 
 
 def _premium_rss_fetch(url: str, fuente: str) -> tuple[list[dict[str, Any]], str | None]:
@@ -1582,6 +1679,7 @@ def fetch_flash_report_sources() -> tuple[list[dict[str, Any]], list[str], dict[
 
     grupos: list[tuple[tuple[tuple[str, str], ...], dict[str, Any], str, str]] = [
         (GNEWS_QUERIES_NACIONAL, {"nacional": True}, "es-419", "CL"),
+        (GNEWS_QUERIES_PORTADAS, {"nacional": True, "portada": True}, "es-419", "CL"),
         (GNEWS_QUERIES_WATCHLIST, {"nacional": True, "fo_watchlist": True}, "es-419", "CL"),
         (GNEWS_QUERIES_CELULOSA, {"celulosa_global": True}, "en-US", "US"),
     ]
@@ -1604,59 +1702,58 @@ def fetch_flash_report_sources() -> tuple[list[dict[str, Any]], list[str], dict[
             meta[label] = len(items)
             all_items.extend(items)
 
+    # Extra opt-in: scrape de las home económicas (best-effort, blindado).
+    scrape_items, scrape_errs = fetch_portadas_scrape()
+    if scrape_items:
+        meta["portada_scrape"] = len(scrape_items)
+        all_items.extend(scrape_items)
+    errors.extend(scrape_errs)
+
     return all_items, errors, meta
 
 
 def build_claude_prompt_news_only(
     news: list[dict[str, Any]],
     news_errors: list[str],
+    memoria_previos: list[str] | None = None,
 ) -> str:
-    """Prompt maestro del Flash Report: la tabla de indicadores la genera el script."""
+    """Prompt maestro del Flash Report: la tabla de indicadores la genera el script.
+
+    ``memoria_previos`` es la memoria móvil de los últimos correos (paso 1b); si llega
+    vacía, "En contexto" infiere el viraje desde el propio pool.
+    """
     lunes = es_lunes_cl()
     payload = {
         "noticias": news[:320],
         "errores_noticias": news_errors,
         "fecha_hoy": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "es_lunes": lunes,
+        "memoria_briefings": memoria_previos or [],
     }
 
-    # Mar-vie: arrastre inline de días previos. Lunes: recuadro semanal al final.
-    bloque_arrastre = "" if lunes else """=== ARRASTRE DE DÍAS PREVIOS (regla de hoy) ===
-Algunas noticias vienen con "arrastre": true: son hechos de hace 2-3 días que siguen siendo relevantes pero NO son del día. Trátalas así:
-- Cada una va como blockquote AL FINAL de la subsección temática que le corresponde (un IPC de hace 2 días en Macroeconomía, no en Política).
-- Formato: <blockquote style="border-left:3px solid #d1d5db;margin:8px 0 4px 0;padding:6px 12px;background:#f9fafb;"><em>📅 Días previos: [idea fuerza en cursiva, máximo 3 líneas, con enlaces de fuente]</em></blockquote>
-- NO-REPETIR: una misma historia aparece UNA sola vez. Si un hecho ya está como noticia fresca del día, NO lo repitas en el arrastre; y si va en el arrastre, no lo dupliques como noticia del día.
-- Si una subsección no tiene ítems con "arrastre": true, omite el blockquote (no inventes).
-- GEOGRAFÍA: si todos los datos de un blockquote internacional son del mismo país (típicamente EE.UU.), indícalo UNA SOLA VEZ al inicio y no lo repitas en cada oración.
+    # Mar-vie: cajas "Días previos" al cierre de las secciones. Lunes: recuadro semanal al final.
+    bloque_arrastre = "" if lunes else """=== DÍAS PREVIOS (cajas de continuidad, regla de hoy) ===
+Algunas noticias vienen con "arrastre": true: hechos de hace 2-3 días que siguen siendo relevantes pero NO son del día. Trátalas así:
+- Van como una caja "Días previos" (la clase <div class="prev"> indicada arriba) AL CIERRE de la sección narrativa que les corresponde (Internacional, Nacional o Celulosa), no como noticia del día.
+- NO-REPETIR: una historia aparece UNA sola vez. Si ya está como noticia fresca, NO la repitas aquí; y si va aquí, no la dupliques como noticia del día.
+- Si una sección no tiene ítems con "arrastre": true, omite su caja (no inventes).
+- GEOGRAFÍA: si todos los datos de una caja internacional son del mismo país (típicamente EE.UU.), indícalo UNA SOLA VEZ al inicio.
 """
 
     bloque_semanal = """=== RESUMEN DE LA SEMANA PASADA (HOY ES LUNES — VA AL FINAL DE TODO EL CORREO) ===
-Cierra el correo, DESPUÉS de II. NACIONAL, con un único recuadro que prioriza las principales noticias de la semana previa (lunes a viernes). Usa SOLO las noticias con "historico_7d": true.
+Cierra el correo, DESPUÉS de "También, en breve", con un único recuadro (clase "brief") que prioriza las principales noticias de la semana previa (lunes a viernes). Usa SOLO las noticias con "historico_7d": true.
 - NO es un consolidado de todo lo de la semana: SELECCIONA y PRIORIZA lo que un inversor institucional debería recordar.
-- Topes ESTRICTOS: máximo 5 internacionales y máximo 4 nacionales.
-- Lectura LIGHT: idea fuerza + breve explicación; no exige cifra dura como el resto del correo. UNA sola línea por bullet.
+- Topes ESTRICTOS: máximo 5 internacionales y máximo 4 nacionales. UNA sola línea por bullet, lectura LIGHT.
 - NO-REPETIR: no incluyas aquí nada que ya hayas puesto como noticia del día más arriba.
 - CLASIFICACIÓN: Internacional = ítems con "gnews_label": "hist_eeuu"; Nacional = ítems con "gnews_label": "hist_chile".
-- Mantén TODO en cursiva (estilo del recuadro gris). Formato EXACTO (omite el grupo que no tenga material; si no hay nada, no muestres el recuadro):
-<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
-<blockquote style="border-left:3px solid #d1d5db;margin:8px 0;padding:10px 14px;background:#f9fafb;">
-<p style="margin:0 0 8px 0;"><em><strong>📅 Resumen de la semana pasada</strong></em></p>
-<p style="margin:0 0 2px 0;"><em>Internacional</em></p>
-<ul style="margin:0 0 8px 0;padding-left:20px;">
-<li style="margin-bottom:4px;"><em>[idea fuerza en una línea] <a href="URL_DEL_JSON" style="color:#1d4ed8;text-decoration:none;">Fuente</a></em></li>
-</ul>
-<p style="margin:0 0 2px 0;"><em>Nacional</em></p>
-<ul style="margin:0;padding-left:20px;">
-<li style="margin-bottom:4px;"><em>[idea fuerza en una línea] <a href="URL_DEL_JSON" style="color:#1d4ed8;text-decoration:none;">Fuente</a></em></li>
-</ul>
-</blockquote>
+- Formato EXACTO (omite el grupo sin material; si no hay nada, no muestres el recuadro):
+<div class="brief"><div class="brief-lbl">Resumen de la semana pasada</div>
+<div class="eyebrow">Internacional</div>
+<ul class="watch-ul"><li class="watch-li">[idea fuerza en una línea] <a class="src" href="URL">Fuente</a></li></ul>
+<div class="eyebrow">Nacional</div>
+<ul class="watch-ul"><li class="watch-li">[idea fuerza en una línea] <a class="src" href="URL">Fuente</a></li></ul>
+</div>
 """ if lunes else ""
-
-    nota_estructura_lunes = (
-        '(4) HOY ES LUNES: tras II. NACIONAL, cierra con el recuadro "Resumen de la semana pasada" (ver su sección).'
-        if lunes
-        else ""
-    )
 
     return f"""Eres el editor de un briefing matinal de noticias económicas y financieras para un family office chileno sofisticado. Tu trabajo es SELECCIONAR y REDACTAR las noticias más relevantes del día a partir del JSON (campo "noticias"). Eres un editor con criterio, no un copista: decides qué entra y qué no. No inventes hechos: usa solo lo que viene en el JSON.
 
@@ -1670,68 +1767,88 @@ Cada ítem DEBE comunicar un HECHO CONCRETO del día: una cifra publicada, una d
 La redacción es editorial y fluida (no pegar el titular crudo), pero SIEMPRE anclada a un hecho con su cifra.
 
 === SELECCIÓN Y CALIDAD DE FUENTES ===
-- INTERNACIONAL (Macro, Precios y Mercados, Política): usa EXCLUSIVAMENTE noticias con "intl_premium": true (Reuters, Bloomberg, CNBC, WSJ, MarketWatch, Yahoo Finance, Financial Times). JAMÁS uses una fuente chilena para una noticia internacional. Si una noticia internacional solo aparece en medios chilenos, descártala. ÚNICA excepción: el bloque de Celulosa usa las noticias con "celulosa_global": true (ver sección Celulosa).
-- NACIONAL: usa las noticias con "nacional": true (medios chilenos reputados).
+- INTERNACIONAL: usa EXCLUSIVAMENTE noticias con "intl_premium": true (Reuters, Bloomberg, CNBC, WSJ, MarketWatch, Yahoo Finance, Financial Times). JAMÁS uses una fuente chilena para una noticia internacional. ÚNICA excepción: el bloque de Celulosa usa las noticias con "celulosa_global": true.
+- NACIONAL: usa las noticias con "nacional": true (portadas económico-financieras de la prensa chilena).
 - Descarta cualquier ítem cuyo hecho no entiendas o que no aporte información real.
-- Eres tú quien elige: prioriza lo que un inversor institucional necesita saber a primera hora, no rellenes con lo que sobra.
 
-=== EXCLUSIONES (descarta ANTES de clasificar) ===
+=== EXCLUSIONES (descarta ANTES de redactar) ===
 - Apuestas deportivas, deportes, farándula, entretenimiento, cultura pop, lifestyle.
 - Consejos de inversión genéricos ("cómo invertir", "guía", "¿deberías comprar X?"), listas/rankings sin evento, clickbait.
 - Opinión de pundits sin hecho concreto; política partidista sin impacto en mercados/tasas/reformas/regulación.
 - Beneficios estatales y trámites para personas (bonos, subsidios, "consulta con tu RUT", fechas de pago, pensiones individuales). Descarta SIEMPRE.
 - Consumo y operativa cotidiana (medios de pago en transporte/comercio, promociones a clientes, concursos, apps de consumo).
 - En sectores prioritarios (banca, seguros de vida, energía) solo entra lo CORPORATIVO: resultados, M&A, inversiones, emisiones de deuda, regulación con impacto en empresas, nombramientos clave.
-- EXCEPCIÓN ABSOLUTA: nunca descartes una noticia que mencione a {", ".join(FO_WATCHLIST)} — esas se incluyen SIEMPRE.
+- WATCHLIST (family office): si hay un HECHO CONCRETO y reciente sobre {", ".join(FO_WATCHLIST)} (resultado, operación, regulación, movimiento), inclúyelo SIEMPRE y ponlo primero en su sección. PERO si NO hay noticia real de esas entidades en el JSON, NO inventes, NO fuerces un comentario ni rellenes con generalidades ("CMPC sigue atenta al mercado…"): simplemente NO menciones la entidad ese día. La regla es "no descartar un hecho real", no "mencionar la entidad sí o sí".
 
-=== ESTRUCTURA DEL HTML (en este orden exacto) ===
-(1) <h2>I. INTERNACIONAL</h2> con tres <h3>: "Macroeconomía", "Precios y Mercados", "Política Internacional".
-(2) <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
-(3) <h2>II. NACIONAL</h2> con tres <h3>: "Macroeconomía", "Precios y Mercados", "Política Nacional". Título "II. NACIONAL" a secas (sin "Chile").
-{nota_estructura_lunes}
+=== JERARQUÍA Y SÍNTESIS (lo más importante de este correo) ===
+El correo se lee POR CAPAS: quien tiene 30 segundos saca lo esencial sin bajar; quien tiene 10 minutos profundiza. Tu trabajo es CONSTRUIR el big picture, no salpicar noticias sueltas del mismo peso.
+- AGRUPA POR NARRATIVA, no por taxonomía. Noticias con un MISMO motor van JUNTAS en un solo párrafo, no como ítems separados. Ej: si el dólar fuerte hizo caer oro, cobre, BTC y peso → UNA frase, no cuatro.
+- JERARQUIZA Y RECORTA: "interesante" ≠ "importante". Test para cada noticia: ¿esto cambia cómo un family office piensa sobre el mundo o el portafolio? Si no, va a "También, en breve" (el bin) o se elimina. No borres cobertura: COMPRÍMELA en el bin.
+- Lo regulatorio o de mercado que toca el portafolio NUNCA se sepulta (ej. investigación de la SEC a fondos de private equity = core, porque la oficina invierte en PE/secundarios).
+- Objetivo: ~18-22 ítems desarrollados fuera del bin, NO ~40.
 
-=== QUÉ VA EN CADA SUBSECCIÓN ===
-- MACROECONOMÍA: el DATO en sí. Cifra publicada vs. lo esperado, decisiones e intervenciones de bancos centrales (Fed, BCE, Banco Central de Chile). Ej: "El <strong>IPC</strong> de EE.UU. subió 0,5% MoM, sobre el 0,3% previsto." Las señales/decisiones/discursos de Fed y BCE son tan o más importantes que los datos: inclúyelas aquí.
-- PRECIOS Y MERCADOS: la REACCIÓN de los activos a esos datos y los movimientos de mercado. Ej: "El <strong>dólar</strong> se debilitó frente a emergentes tras el dato de inflación; el peso chileno ganó terreno." Aquí van índices, acciones, commodities, divisas, tasas, resultados corporativos, hedge funds.
-- POLÍTICA: hechos políticos con impacto económico (reformas, leyes, decisiones de gobierno, geopolítica).
+=== ESTRUCTURA DEL HTML — USA EXACTAMENTE ESTAS CLASES (el sistema les aplica el estilo) ===
+Genera SOLO de "En contexto" hacia abajo (la tabla de activos y los partidos del Mundial los inserta el sistema, no los generes).
+NO escribas atributos style="..."; usa SOLO las clases indicadas. Para la negrita usa <b>. Fuentes: <a class="src" href="URL">Fuente</a>; varias se separan con " · ".
 
-=== REGLAS DE REDACCIÓN ===
-- Máximo DOS líneas por noticia (~200 caracteres). Idea fuerza de inmediato.
-- UNA SOLA palabra en negrita por noticia: la palabra clave de identificación rápida (el activo, el indicador o la entidad central). Nunca más de un <strong> por ítem. Ej: "El <strong>Banco Mundial</strong> recortó su proyección de crecimiento global a 2,5% por el impacto de la guerra en Irán."
-- PROHIBIDO el formato "Etiqueta: explicación" con negrita y dos puntos (MAL: "<strong>Banca:</strong> el sector sube"). Redacta la idea directa.
-- Datos económicos: SIEMPRE la métrica exacta + comparación contra lo esperado si está disponible.
-- Consolida dos noticias del mismo tema en un solo ítem.
-- Cada noticia es un <p style="margin:0 0 14px 0;line-height:1.55;">. NO uses viñetas salvo en el bloque de Celulosa (ver abajo).
-- FUENTE: al final de cada noticia, un único enlace cuyo TEXTO es el nombre de la fuente: <a href="URL_EXACTA_DEL_JSON" style="color:#1d4ed8;text-decoration:none;">Fuente</a>. Nunca muestres la URL cruda. Si "url" viene vacía, cierra con <span style="color:#6b7280;font-size:12px;">(Fuente)</span>.
+(1) EN CONTEXTO — una sola frase de continuidad con el reporte de ayer (qué cambió o dónde se movió el foco):
+<p class="turn"><b class="turn-b">En contexto —</b> [una frase].</p>
+- Si "memoria_briefings" trae contenido, úsalo para el contraste con días previos; si está vacío, infiere el viraje desde las noticias frescas vs. las "arrastre".
+- CRÍTICO: describe solo un cambio REAL. En día plano, dilo explícito ("sin grandes cambios, sigue mandando la Fed"); NUNCA inventes una rotación.
 
-=== MACROECONOMÍA INTERNACIONAL: ORDEN ===
-Agrupa por procedencia con prefijo en negrita, en este orden: <strong>EE.UU.:</strong>, <strong>China:</strong>, <strong>Europa:</strong> (o país específico como <strong>Alemania:</strong>). Lo que no calce con una geografía va al final SIN prefijo alguno. NUNCA escribas "Otros:" — ese prefijo está prohibido.
+(2) EL DÍA EN TRES LÍNEAS — EXACTAMENTE 3 viñetas, cada una sintetiza un eje del día (resumen ejecutivo):
+<div class="brief"><div class="brief-lbl">El día en tres líneas</div>
+<ol class="brief-ol">
+<li class="brief-li"><b>[idea fuerza]</b> [resto].</li>
+</ol></div>
 
-=== PRECIOS Y MERCADOS INTERNACIONAL ===
-Es la subsección más rica del bloque internacional: puebla con índices, resultados corporativos, commodities, divisas, tasas y flujos (apunta a 4-6 noticias reales si el material existe). Orden: 1º EE.UU. de impacto sistémico (Fed, líderes, hedge funds); 2º corporativas/sectoriales EE.UU.; 3º Europa/Asia relevante; 4º Latinoamérica.
-- BIG TECH (prioridad alta): incluye SIEMPRE que haya noticia relevante de las mega-caps tecnológicas —Nvidia, Microsoft, Apple, Alphabet/Google, Amazon, Meta, OpenAI, Anthropic, Broadcom, Tesla— por su peso en los índices. Son de las primeras en mostrarse dentro de las corporativas de EE.UU.
-- CRIPTO (sin forzar): incluye bitcoin/ethereum/cripto SOLO si hay un hecho noticioso concreto del día (movimiento relevante, regulación, operación). Si no hay noticia real de cripto, NO inventes ni rellenes con generalidades; simplemente omítela.
+(3) QUÉ MIRAR HOY — MÁXIMO 3 bullets de eventos/datos del DÍA EN CURSO (reportes/datos de hoy), extraídos de las menciones del JSON. Si no hay, pon menos u omite la caja:
+<div class="watch"><div class="watch-lbl">Qué mirar hoy</div>
+<ul class="watch-ul">
+<li class="watch-li">[evento de hoy].</li>
+</ul></div>
 
-=== CELULOSA (al final de Precios y Mercados Internacional) ===
-Las noticias con "celulosa_global": true van EXCLUSIVAMENTE en un bloque propio. Reglas estrictas:
-- UMBRAL: el bloque solo se genera si hay AL MENOS 3 noticias de celulosa con hecho concreto. Si hay 2 o menos, OMITE el bloque por completo (no lo muestres, no las pongas en otra parte).
-- CONTENCIÓN: toda noticia de celulosa (UPM, Stora Enso, Suzano, Klabin, CMPC en su faceta de celulosa, precios de pulpa, etc.) va ÚNICAMENTE dentro de este bloque. JAMÁS la pongas también como párrafo suelto en Precios y Mercados ni en otra sección. Una noticia de celulosa aparece UNA sola vez, en el bloque, nunca duplicada.
-- FORMATO: abre con <p style="margin:14px 0 4px 0;"><strong>Celulosa</strong></p> seguido de una <ul style="margin:0;padding-left:20px;"> donde cada noticia es un <li style="margin-bottom:6px;"> de UNA línea con su enlace de fuente inmediatamente después del texto.
-- SIN REPETIR: no incluyas dos ítems que cuenten el mismo hecho (ej. el mismo cierre de planta de UPM reportado por dos medios) — consolida en uno.
+(4) LA HISTORIA DEL DÍA — bloque narrativo, MÁXIMO 3 párrafos; une en un mismo párrafo las noticias del mismo motor; lo que es solo "color" baja al bin:
+<div class="part">La historia del día</div>
+<div class="sec"><p class="lead-item"><b>[qué pasó]</b> [desarrollo]. <a class="src" href="URL">Fuente</a></p> ... (hasta 3)</div>
 
-=== NACIONAL ===
-- Las noticias que mencionen a {", ".join(FO_WATCHLIST)} van PRIMERO en su subsección.
-- Prioridad alta a banca, seguros de vida y energía (solo corporativo).
-- Clasifica por contenido: declaración política de un ejecutivo → Política; resultado trimestral → Precios y Mercados.
+(5) INTERNACIONAL — agrupa en 1-3 eyebrows temáticos que TÚ eliges según la narrativa del día (NO categorías fijas; ej. "Irán, energía y geopolítica", "Corporativo y regulatorio"). Filtra agresivamente. Big tech con peso en índices, prioridad; cripto solo con hecho real:
+<div class="part">Internacional</div>
+<div class="sec"><div class="eyebrow">[Tema]</div><p class="item"><b>[qué pasó]</b> [desarrollo]. <a class="src" href="URL">Fuente</a></p> ...</div>
+(repite <div class="sec"> por cada eyebrow). Cierra con la caja "Días previos" si hay arrastre.
 
-=== ANTICIPOS / AGENDA (AL FINAL de cada subsección, nunca al inicio) ===
-- Cierra Macroeconomía con una oración natural de lo que se publica hoy, si los titulares lo mencionan: "Hoy se conocerá el IPP de mayo en EE.UU. y las solicitudes semanales de desempleo." Sin etiqueta en negrita, sin dos puntos.
-- Cierra Precios y Mercados con los resultados corporativos del día (foco tech S&P 500), si aplica: "Hoy reportan Adobe y Oracle tras el cierre." Va AL FINAL, nunca como primera noticia.
+(6) NACIONAL · CHILE — un solo eyebrow "Portadas económico-financieras". Refleja los titulares económico-financieros que abren la prensa nacional (Diario Financiero, Economía y Negocios de El Mercurio, Pulso de La Tercera y principales diarios). LIDERA con las noticias marcadas "portada": true; luego complementa con el resto de "nacional": true. Las menciones a {", ".join(FO_WATCHLIST)} van PRIMERO. Cierra con "Días previos" si hay arrastre:
+<div class="part">Nacional · Chile</div>
+<div class="sec"><div class="eyebrow">Portadas económico-financieras</div><p class="item">...</p> ...</div>
 
-{bloque_arrastre}{bloque_semanal}
-=== FORMATO DE SALIDA ===
-- Devuelve ÚNICAMENTE el fragmento HTML (sin <!DOCTYPE>, <html>, <head>, <body>). Prohibido markdown y bloques de código.
-- Si una subsección queda sin noticias: <p><em>Sin titulares destacados.</em></p>.
+(7) CELULOSA — sección CORE (no relleno).
+- UMBRAL: solo si hay AL MENOS 3 noticias de celulosa con hecho concreto; si hay 2 o menos, OMITE la sección.
+- CONTENCIÓN: la celulosa va ÚNICAMENTE aquí, nunca duplicada. Párrafos autocontenidos (NO viñetas de una frase). Cierra con "Días previos" si hay arrastre:
+<div class="part">Celulosa</div>
+<div class="sec"><p class="item">...</p> ...</div>
+
+(8) TAMBIÉN, EN BREVE — el bin: one-liners para lo secundario (informativo pero que no cambia la tesis). Permite filtrar sin perder cobertura:
+<div class="part">También, en breve</div>
+<ul class="bin">
+<li class="bin-bullet"><b>[qué pasó]</b> [una línea]. <a class="src" href="URL">Fuente</a></li>
+</ul>
+{bloque_semanal}
+=== CAJA "DÍAS PREVIOS" (cuando corresponda) ===
+<div class="prev"><span class="prev-tag">Días previos</span>[idea fuerza, con <a class="src" href="URL">Fuente</a>]</div>
+
+=== REGLA DE NEGRITA (clave del rediseño) ===
+La negrita (<b>) es el QUÉ PASÓ, no la entidad. Negrita la IDEA/ACCIÓN (puede ser una frase), para que quien escanee solo las negritas lea las noticias, no un índice de nombres.
+- MAL: "<b>Alphabet</b> fue añadida al Dow." → BIEN: "<b>Alphabet entra al Dow</b> en reemplazo de Verizon."
+- Un solo <b> por ítem, la idea fuerza al inicio. PROHIBIDO el patrón "<b>Etiqueta:</b> explicación".
+
+=== REDACCIÓN ===
+- Texto AUTOCONTENIDO: párrafos breves y explicativos que se entienden sin clickear. NADA de bullets de una frase en las secciones desarrolladas (sí en la capa ejecutiva y en el bin).
+- Datos económicos: métrica exacta + comparación vs. lo esperado si está disponible.
+- FUENTE: cada noticia cierra con su(s) enlace(s) <a class="src">; el texto del enlace es el nombre de la fuente. Si "url" viene vacía: <span style="color:#80868b;font-size:12px;">(Fuente)</span>.
+
+{bloque_arrastre}=== FORMATO DE SALIDA ===
+- Devuelve ÚNICAMENTE el fragmento HTML con las CLASES indicadas (sin <!DOCTYPE>, <html>, <head>, <body>, sin atributos style). Prohibido markdown y bloques de código.
+- Si una sección queda sin material, OMÍTELA por completo (no muestres títulos vacíos).
 - No agregues preguntas, menús ni cierres al final del reporte."""
 
 def summarize_with_claude(api_key: str, user_prompt: str) -> tuple[str | None, str | None]:
@@ -1917,18 +2034,18 @@ def fetch_worldcup_matches_today() -> tuple[list[dict[str, str]], str | None]:
 
 
 def build_worldcup_html(partidos: list[dict[str, str]]) -> str:
-    """Bloque compacto de partidos del día (hora de Chile). Vacío si no hay partidos."""
+    """Bloque de partidos del día (hora de Chile), estilo .fix del mockup. Vacío si no hay."""
     if not partidos:
         return ""
     filas = "".join(
-        f'<tr><td style="padding:2px 14px 2px 0;color:#6b7280;white-space:nowrap;">{html_module.escape(p["hora"])}</td>'
-        f'<td style="padding:2px 0;">{html_module.escape(p["local"])} <span style="color:#9ca3af;">vs</span> {html_module.escape(p["visita"])}</td></tr>'
+        f'<tr><td style="width:48px;color:#80868b;font-size:13px;padding:2px 0;font-variant-numeric:tabular-nums;">{html_module.escape(p["hora"])}</td>'
+        f'<td style="font-size:13px;padding:2px 0;color:#1a1a1a;">{html_module.escape(p["local"])} <span style="color:#80868b;">vs</span> {html_module.escape(p["visita"])}</td></tr>'
         for p in partidos
     )
     return (
-        '<div style="margin:14px 0 0 0;font-size:13.5px;">'
-        '<p style="margin:0 0 6px 0;font-weight:600;">⚽ Mundial — partidos de hoy (hora Chile)</p>'
-        f'<table style="border-collapse:collapse;">{filas}</table>'
+        '<div style="margin:18px 0 0;border-top:1px solid #e3e3e0;padding-top:14px;">'
+        '<div style="font-size:12px;font-weight:700;color:#5f6368;margin-bottom:6px;">Mundial — partidos de hoy (hora Chile)</div>'
+        f'<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">{filas}</table>'
         "</div>"
     )
 
@@ -1939,27 +2056,61 @@ def compose_email_document(
     news_errors: list[str],
     matches_block: str = "",
 ) -> str:
-    """Documento HTML completo: tabla de precios (código) + bloque de noticias."""
-    hr_block = '<hr style="margin:28px 0;border:none;border-top:1px solid #e5e7eb;" />' if price_block.strip() else ""
-    # Los avisos técnicos (fuentes que fallan, ventana de NewsAPI) NO van en el correo:
-    # son ruido para los lectores. Quedan registrados en el log de GitHub (stderr), que
-    # solo revisa el administrador. Así el correo sale siempre limpio para todos.
-    alert_block = ""
+    """Documento HTML email-safe que replica la maqueta (shell 640px, masthead, footer).
+
+    El fragmento de Claude viene con CLASES; aquí se inlinean (Gmail-safe) y se
+    insertan los partidos justo antes de "La historia del día".
+    """
+    _DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+    _MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+              "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+    hoy = datetime.now(SANTIAGO_TZ)
+    fecha_larga = f"{_DIAS[hoy.weekday()]} {hoy.day} de {_MESES[hoy.month - 1]} de {hoy.year}"
+
+    cuerpo = inline_email_classes(news_block)
+    if matches_block:
+        idx = cuerpo.find("La historia del día")
+        if idx == -1:
+            idx = cuerpo.find("La historia del dia")
+        if idx != -1:
+            start = cuerpo.rfind("<", 0, idx)
+            start = start if start != -1 else idx
+            cuerpo = cuerpo[:start] + matches_block + "\n" + cuerpo[start:]
+        else:
+            cuerpo = matches_block + "\n" + cuerpo
+
+    mast = (
+        '<div style="padding:24px 28px 16px;border-bottom:2px solid #1a1a1a;">'
+        '<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5f6368;">Ecoterra Report</div>'
+        f'<div style="font-family:{_SERIF};font-size:27px;font-weight:700;margin:4px 0 2px;letter-spacing:-.01em;color:#1a1a1a;">Morning Brief</div>'
+        f'<div style="font-size:13px;color:#5f6368;">{fecha_larga}</div>'
+        "</div>"
+    )
+    foot = (
+        '<div style="padding:24px 28px 32px;color:#80868b;font-size:11.5px;'
+        'border-top:1px solid #e3e3e0;margin-top:30px;">'
+        "Ecoterra Report · Morning Brief — boletín informativo interno. "
+        "Cada noticia enlaza a su fuente original para profundizar."
+        "</div>"
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daily briefing</title>
+  <title>Morning Brief</title>
 </head>
-<body style="font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5;color:#111;max-width:800px;">
-{alert_block}
-{price_block}
-{matches_block}
-{hr_block}
-{news_block}
-<hr style="margin-top:2em;border:none;border-top:1px solid #ccc;" />
-<p style="font-size:0.85em;color:#666;">Generado: {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}</p>
+<body style="margin:0;padding:0;background:#f3f2ee;color:#1a1a1a;font-family:{_SANS};font-size:15px;line-height:1.55;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f2ee;">
+<tr><td align="center" style="padding:16px 0;">
+<table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;background:#ffffff;">
+<tr><td>{mast}</td></tr>
+<tr><td style="padding:0 28px;">{price_block}{cuerpo}</td></tr>
+<tr><td>{foot}</td></tr>
+</table>
+</td></tr>
+</table>
 </body>
 </html>"""
 
@@ -2007,6 +2158,75 @@ def send_email_html(
         return True, None
     except Exception as e:
         return False, f"SMTP: {e}\n{traceback.format_exc()}"
+
+
+# ---------------------------------------------------------------------------
+# Memoria móvil: guarda la síntesis ("El día en tres líneas") de los últimos
+# correos para que "En contexto" detecte el cambio de foco vs. días previos.
+# El Action commitea el archivo de vuelta (ver workflow). Nunca rompe el envío.
+# ---------------------------------------------------------------------------
+MEMORIA_PATH = "briefings_memoria.json"
+MEMORIA_MAX = 3
+
+
+def _strip_tags(s: str) -> str:
+    txt = re.sub(r"<[^>]+>", " ", s or "")
+    txt = html_module.unescape(txt)
+    return re.sub(r"\s+", " ", txt).strip()
+
+
+def _extraer_tres_lineas(html_fragment: str) -> list[str]:
+    """Extrae las 3 viñetas de la caja 'El día en tres líneas' del HTML generado."""
+    if not html_fragment:
+        return []
+    m = re.search(r"El d[íi]a en tres l[íi]neas.*?<ol[^>]*>(.*?)</ol>", html_fragment, re.I | re.S)
+    if not m:
+        return []
+    lis = re.findall(r"<li[^>]*>(.*?)</li>", m.group(1), re.I | re.S)
+    return [t for t in (_strip_tags(li) for li in lis) if t][:3]
+
+
+def cargar_memoria_briefings() -> list[str]:
+    """Lee la memoria y la devuelve como líneas listas para el prompt (reciente primero)."""
+    try:
+        with open(MEMORIA_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        out: list[str] = []
+        for b in reversed(data.get("briefings", [])[-MEMORIA_MAX:]):
+            lineas = " | ".join(b.get("lineas", []))
+            if lineas:
+                out.append(f"{b.get('fecha', '?')}: {lineas}")
+        return out
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return []
+
+
+def guardar_memoria_briefing(html_fragment: str, news: list[dict[str, Any]]) -> None:
+    """Agrega la síntesis de hoy a la memoria, conservando los últimos MEMORIA_MAX."""
+    try:
+        lineas = _extraer_tres_lineas(html_fragment)
+        if not lineas:  # fallback: titulares líderes del pool enviado
+            lineas = [
+                (it.get("titular") or "").strip()
+                for it in news
+                if (it.get("intl_premium") or it.get("nacional")) and (it.get("titular") or "").strip()
+            ][:4]
+        if not lineas:
+            return
+        fecha = datetime.now(SANTIAGO_TZ).strftime("%d-%m")
+        try:
+            with open(MEMORIA_PATH, encoding="utf-8") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            data = {"version": 1, "briefings": []}
+        briefings = [b for b in data.get("briefings", []) if b.get("fecha") != fecha]
+        briefings.append({"fecha": fecha, "lineas": lineas})
+        data["briefings"] = briefings[-MEMORIA_MAX:]
+        with open(MEMORIA_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"  Memoria de briefings actualizada ({len(data['briefings'])} guardados).")
+    except Exception as e:  # nunca debe tumbar el envío
+        print(f"  [memoria] no se pudo guardar: {e}", file=sys.stderr)
 
 
 def run() -> int:
@@ -2139,7 +2359,10 @@ def run() -> int:
             print(f"  Mundial: {len(partidos)} partidos hoy.")
             matches_html = build_worldcup_html(partidos)
 
-    prompt = build_claude_prompt_news_only(news, news_errors)
+    memoria_previos = cargar_memoria_briefings()
+    if memoria_previos:
+        print(f"  Memoria: {len(memoria_previos)} briefing(s) previos para 'En contexto'.")
+    prompt = build_claude_prompt_news_only(news, news_errors, memoria_previos)
     api_key = env["ANTHROPIC_API_KEY"]
     preview = api_key[:20]
     print(
@@ -2190,6 +2413,7 @@ def run() -> int:
         return 1
 
     print("Correo enviado correctamente.")
+    guardar_memoria_briefing(news_html, news)
     return 0
 
 
