@@ -1,4 +1,30 @@
 {
   "version": 1,
-  "urls": {}
+  "urls": {
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/monthly-market-review": {
+      "signature": "8a2360c60b011c66fc8f8e118e44624b908d4a6b02e0dc1e95f68bc69b0c79a5",
+      "headline": "Review of markets over May 2026",
+      "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/monthly-market-review/"
+    },
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/fixed-income-views": {
+      "signature": "adbc2b8edaf5f26dbfc7edf54c1263aa9433974db8418efd96d0b7a5519531cd",
+      "headline": "Global Fixed Income Views 2Q 2026",
+      "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/fixed-income-views/"
+    },
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/equity-views": {
+      "signature": "f9c6a5a5e0fc8d73ba5b98eb072ae5bc38c04419cb0ddeae136f347943fd8060",
+      "headline": "Global Equity Views 2Q 2026",
+      "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/equity-views/"
+    },
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/the-weekly-brief": {
+      "signature": "cf60f7ac6a9f23f5a831f07f35174046cb917dc27ca2500b55a638c11247aff0",
+      "headline": "The Weekly Brief",
+      "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/the-weekly-brief/"
+    },
+    "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/asset-allocation-views": {
+      "signature": "5ca54724c1a608ac9750804f7d99bc52e366ad23f9c2631ee755a1e645bdb4ad",
+      "headline": "Global Asset Allocation Views 2Q 2026",
+      "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/asset-allocation-views/"
+    }
+  }
 }
