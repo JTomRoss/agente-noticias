@@ -1852,30 +1852,46 @@ La negrita (<b>) es el QUÉ PASÓ, no la entidad. Negrita la IDEA/ACCIÓN (puede
 - No agregues preguntas, menús ni cierres al final del reporte."""
 
 def summarize_with_claude(api_key: str, user_prompt: str) -> tuple[str | None, str | None]:
-    """Llama a Claude y devuelve (html_fragment, error_message)."""
+    """Llama a Claude con reintentos y devuelve (html_fragment, error_message).
+
+    Reintenta ante cualquier fallo de la API o respuesta vacía (timeouts, 429,
+    500/529, etc.), que son la causa más probable de que un día funcione y otro no.
+    Registra cada fallo en stdout *y* stderr para que la causa nunca quede oculta.
+    """
     model = os.getenv("ANTHROPIC_MODEL", DEFAULT_CLAUDE_MODEL)
-    try:
-        client = Anthropic(api_key=api_key)
-        msg = client.messages.create(
-            model=model,
-            max_tokens=20000,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-    except Exception as e:
-        return None, f"Claude API: {e}\n{traceback.format_exc()}"
+    intentos = int(os.getenv("CLAUDE_MAX_INTENTOS", "3"))
+    backoffs = [5, 20, 45]  # segundos de espera antes de cada reintento
+    ultimo_error = "Claude: error desconocido."
 
-    parts: list[str] = []
-    try:
-        for block in msg.content:
-            if hasattr(block, "text") and block.text:
-                parts.append(block.text)
-    except Exception as e:
-        return None, f"Claude respuesta inesperada: {e}"
+    for intento in range(1, intentos + 1):
+        try:
+            client = Anthropic(api_key=api_key)
+            msg = client.messages.create(
+                model=model,
+                max_tokens=20000,
+                messages=[{"role": "user", "content": user_prompt}],
+            )
+            parts: list[str] = []
+            for block in msg.content:
+                if hasattr(block, "text") and block.text:
+                    parts.append(block.text)
+            text = "\n".join(parts).strip()
+            if not text:
+                raise ValueError("Claude devolvió contenido vacío.")
+            if intento > 1:
+                print(f"  Claude: éxito en el intento {intento}/{intentos}.")
+            return text, None
+        except Exception as e:
+            ultimo_error = f"Claude (intento {intento}/{intentos}): {e}\n{traceback.format_exc()}"
+            linea = f"  Claude falló (intento {intento}/{intentos}): {e}"
+            print(linea, file=sys.stderr)
+            print(linea)  # también a stdout: que no vuelva a quedar 'escondido' en el log
+            if intento < intentos:
+                espera = backoffs[min(intento - 1, len(backoffs) - 1)]
+                print(f"  Reintentando en {espera}s…")
+                time.sleep(espera)
 
-    text = "\n".join(parts).strip()
-    if not text:
-        return None, "Claude devolvió contenido vacío."
-    return text, None
+    return None, ultimo_error
 
 
 def normalize_claude_html_fragment(raw: str) -> str | None:
@@ -2229,6 +2245,33 @@ def guardar_memoria_briefing(html_fragment: str, news: list[dict[str, Any]]) -> 
         print(f"  [memoria] no se pudo guardar: {e}", file=sys.stderr)
 
 
+def notificar_fallo_generacion(
+    gmail_user: str, gmail_password: str, destino: str, error_msg: str
+) -> None:
+    """Avisa SOLO al responsable que el brief NO se generó ni se envió.
+
+    Nunca va a la oficina: usa EMAIL_ALERTA si está definido, si no el propio
+    GMAIL_USER. El objetivo es que un fallo no produzca un silencio inexplicado,
+    sin mandar jamás un correo degradado a los lectores.
+    """
+    hoy = datetime.now(SANTIAGO_TZ)
+    fecha = f"{hoy.day:02d}/{hoy.month:02d}/{hoy.year} {hoy.strftime('%H:%M')}"
+    subject = f"[ALERTA] Morning Brief NO enviado — {fecha}"
+    cuerpo = (
+        "<p style=\"font-family:sans-serif;font-size:14px;color:#1a1a1a;\">"
+        "El Morning Brief de hoy <b>no se envió</b>: la generación del resumen falló "
+        "tras los reintentos. No se mandó ningún correo degradado a la oficina.</p>"
+        "<p style=\"font-family:sans-serif;font-size:13px;color:#5f6368;\">Causa registrada:</p>"
+        "<pre style=\"font-family:monospace;font-size:12px;color:#c5221f;white-space:pre-wrap;\">"
+        f"{html_module.escape(error_msg)}</pre>"
+    )
+    ok, smtp_err = send_email_html(gmail_user, gmail_password, destino, subject, cuerpo)
+    if ok:
+        print(f"  Aviso de fallo enviado a {destino}.")
+    else:
+        print(f"  No se pudo enviar el aviso de fallo: {smtp_err}", file=sys.stderr)
+
+
 def run() -> int:
     try:
         env = load_env()
@@ -2371,24 +2414,33 @@ def run() -> int:
     )
     print("Generando resumen de noticias con Claude…")
     raw_claude, claude_err = summarize_with_claude(api_key, prompt)
-    news_html: str
+    news_html: str | None = None
+    fallo_generacion: str | None = None
+
     if claude_err:
-        print(claude_err, file=sys.stderr)
-        news_html = (
-            "<p style='color:#92400e;margin:0 0 12px 0;'>No se pudo generar el resumen con Claude; "
-            "se muestran los titulares agrupados automáticamente.</p>"
-            + build_news_fallback_html_sections(news)
-        )
+        fallo_generacion = claude_err
     else:
         normalized = normalize_claude_html_fragment(raw_claude or "")
         if normalized:
             news_html = normalized
         else:
-            print(
-                "Claude devolvió contenido no HTML (p. ej. JSON); usando listado de titulares.",
-                file=sys.stderr,
+            fallo_generacion = (
+                "Claude devolvió contenido no usable (p. ej. JSON o vacío tras normalizar)."
             )
-            news_html = build_news_fallback_html_sections(news)
+
+    if news_html is None:
+        # Falla de generación tras los reintentos: NO se envía a la oficina.
+        # Se avisa solo al responsable y se corta con código de error (run rojo en Actions).
+        msg_err = fallo_generacion or "Falla de generación desconocida."
+        print(msg_err, file=sys.stderr)
+        aviso = "No se envía el correo: la capa editorial falló tras los reintentos."
+        print(aviso, file=sys.stderr)
+        print(aviso)
+        destino_alerta = os.getenv("EMAIL_ALERTA", "").strip() or env["GMAIL_USER"]
+        notificar_fallo_generacion(
+            env["GMAIL_USER"], env["GMAIL_PASSWORD"], destino_alerta, msg_err
+        )
+        return 1
 
     # Fecha en hora de Chile, formato "15 Jun 2026" con mes en español.
     _MESES_ES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
