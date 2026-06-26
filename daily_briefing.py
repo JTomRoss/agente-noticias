@@ -1817,6 +1817,7 @@ Esta es la tabla que el lector verá ARRIBA del correo (la inserta el sistema; N
 
 === PRECISIÓN Y DATOS (INNEGOCIABLE — en un producto financiero un error mata la credibilidad) ===
 - La tabla de arriba es la ÚNICA verdad para cualquier número de esos activos (precio, Día, MTD, YTD y dirección). NUNCA escribas algo que la contradiga: si la tabla dice que el cobre SUBE +3,4%, no escribas "el cobre bajó".
+- PROHIBIDO usar un comodín en lugar de una cifra que no tienes: nada de "US$X", "N", "XX%", "[cifra]", "___" ni similares. Si la noticia dice que hubo un monto o una variación pero NO trae el número, redacta SIN la cifra (ej.: "registró una salida neta significativa", no "US$X miles de millones") o deja la frase fuera. Una cifra a medias o inventada es peor que no ponerla.
 - Si una noticia describe la SESIÓN DE AYER y la tabla es el dato de HOY, dilo explícito para que no haya contradicción aparente (ej.: "el cobre cerró ayer bajo US$6/lb; hoy rebota +3,4%"). No mezcles ambos sin aclararlo.
 - SUPERLATIVOS de rango ("máximo desde [fecha]", "mínimos de N meses", "el mayor en N años", "por primera vez en X"): SOLO si la frase aparece TEXTUAL en la noticia del JSON que tienes a la vista Y no contradice la tabla. Si no está en la fuente, OMÍTELO. No lo deduzcas de tu memoria ni lo estimes.
 - Nunca inventes récords, máximos/mínimos temporales ni comparaciones históricas. Ante la duda, se omite el dato. La precisión tiene prioridad sobre la riqueza narrativa.
