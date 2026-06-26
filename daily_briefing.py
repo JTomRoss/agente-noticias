@@ -31,11 +31,15 @@ from typing import Any
 
 import requests
 import yfinance as yf
-from anthropic import Anthropic
+from anthropic import Anthropic, APIStatusError
 from dotenv import load_dotenv
 
 # Modelo solicitado; alias documentado por Anthropic para Haiku 4.5
 DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6"
+
+# Errores de API que NO se arreglan reintentando (saldo, API key, permisos,
+# request inválido o modelo inexistente). Reintentar solo gasta tiempo.
+CLAUDE_NO_RETRY_STATUS = frozenset({400, 401, 403, 404, 422})
 
 ASSETS: list[tuple[str, str]] = [
     ("ES=F", "Futuros S&P 500"),
@@ -1925,8 +1929,8 @@ La negrita (<b>) es el QUÉ PASÓ, no la entidad. Negrita la IDEA/ACCIÓN (puede
 def summarize_with_claude(api_key: str, user_prompt: str) -> tuple[str | None, str | None]:
     """Llama a Claude con reintentos y devuelve (html_fragment, error_message).
 
-    Reintenta ante cualquier fallo de la API o respuesta vacía (timeouts, 429,
-    500/529, etc.), que son la causa más probable de que un día funcione y otro no.
+    Reintenta solo en errores transitorios (timeouts, 429, 500/529) y respuestas
+    vacías; corta de inmediato en errores permanentes (4xx: saldo, key, permisos).
     Registra cada fallo en stdout *y* stderr para que la causa nunca quede oculta.
     """
     model = os.getenv("ANTHROPIC_MODEL", DEFAULT_CLAUDE_MODEL)
@@ -1957,6 +1961,15 @@ def summarize_with_claude(api_key: str, user_prompt: str) -> tuple[str | None, s
             linea = f"  Claude falló (intento {intento}/{intentos}): {e}"
             print(linea, file=sys.stderr)
             print(linea)  # también a stdout: que no vuelva a quedar 'escondido' en el log
+            if isinstance(e, APIStatusError) and e.status_code in CLAUDE_NO_RETRY_STATUS:
+                permanente = (
+                    f"  Error permanente de la API (HTTP {e.status_code}): no se "
+                    "reintenta. Causa típica: saldo agotado, API key inválida, "
+                    "permisos o request mal formado. Revisa Plans & Billing / la key."
+                )
+                print(permanente, file=sys.stderr)
+                print(permanente)
+                return None, ultimo_error
             if intento < intentos:
                 espera = backoffs[min(intento - 1, len(backoffs) - 1)]
                 print(f"  Reintentando en {espera}s…")
