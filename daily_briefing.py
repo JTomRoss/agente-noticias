@@ -1426,6 +1426,16 @@ def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str])
         return ""
 
     COBRE_TICKERS = {"HG=F"}  # único precio que mantiene 2 decimales
+    # Etiquetas compactas para que la tabla quepa en móvil (clave = etiqueta original).
+    # Las que no estén aquí se muestran tal cual.
+    LABEL_CORTO = {
+        "Futuros S&P 500": "S&P 500",
+        "Futuros Nasdaq": "Nasdaq",
+        "Petróleo WTI": "WTI",
+        "Petróleo Brent": "Brent",
+        "Treasury 2 años": "Treasury 2A",
+        "Treasury 10 años": "Treasury 10A",
+    }
 
     def _fmt_precio(r) -> str:
         precio = float(r["precio"])
@@ -1463,15 +1473,15 @@ def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str])
     def _celda_num(text: str, signo: int) -> str:
         color = "#137333" if signo > 0 else ("#c5221f" if signo < 0 else "#1a1a1a")
         return (
-            '<td align="right" style="padding:7px 0;font-size:13.5px;border-bottom:1px solid #e3e3e0;'
+            '<td align="right" style="padding:7px 0 7px 10px;font-size:11px;border-bottom:1px solid #e3e3e0;'
             f'color:{color};white-space:nowrap;font-variant-numeric:tabular-nums;">'
             f"{html_module.escape(text)}</td>"
         )
 
-    th_r = ('style="text-align:right;padding:6px 0;font-weight:600;color:#80868b;'
-            'font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #cfcfca;"')
+    th_r = ('style="text-align:right;padding:6px 0 6px 10px;font-weight:600;color:#80868b;'
+            'font-size:10px;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid #cfcfca;"')
     th_l = ('style="text-align:left;padding:6px 0;font-weight:600;color:#80868b;'
-            'font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #cfcfca;"')
+            'font-size:10px;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid #cfcfca;"')
     filas = [
         "<tr>"
         f"<th {th_l}>Activo</th><th {th_r}>Precio</th><th {th_r}>Día</th>"
@@ -1483,13 +1493,13 @@ def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str])
         dia_str, dia_s = _fmt_diaria(r)
         mtd_str, mtd_s = _fmt_acum(r, "mtd")
         ytd_str, ytd_s = _fmt_acum(r, "ytd")
-        activo = html_module.escape(str(r["activo"]))
+        activo = html_module.escape(LABEL_CORTO.get(str(r["activo"]), str(r["activo"])))
         precio = html_module.escape(_fmt_precio(r))
         filas.append(
             "<tr>"
-            '<td align="left" style="padding:7px 0;font-size:13.5px;color:#1a1a1a;'
-            f'font-weight:600;border-bottom:1px solid #e3e3e0;">{activo}</td>'
-            '<td align="right" style="padding:7px 0;font-size:13.5px;color:#1a1a1a;'
+            '<td align="left" style="padding:7px 0;font-size:12px;color:#1a1a1a;'
+            f'font-weight:600;white-space:nowrap;border-bottom:1px solid #e3e3e0;">{activo}</td>'
+            '<td align="right" style="padding:7px 0 7px 10px;font-size:11px;color:#1a1a1a;'
             f'white-space:nowrap;font-variant-numeric:tabular-nums;border-bottom:1px solid #e3e3e0;">{precio}</td>'
             + _celda_num(dia_str, dia_s)
             + _celda_num(mtd_str, mtd_s)
@@ -1712,10 +1722,51 @@ def fetch_flash_report_sources() -> tuple[list[dict[str, Any]], list[str], dict[
     return all_items, errors, meta
 
 
+def _tabla_indicadores_texto(rows: list[dict[str, Any]]) -> str:
+    """Versión en texto de la tabla de indicadores para anclar al modelo a la verdad
+    determinista (que el relato NO contradiga la tabla, p. ej. 'el cobre bajó' cuando
+    la tabla muestra +3,4%). El modelo NO genera la tabla; esto es solo lectura."""
+    if not rows:
+        return "(sin datos de mercado disponibles)"
+
+    def _acum(val, es_tasa: bool) -> str:
+        if val is None:
+            return "n/d"
+        v = float(val)
+        if es_tasa:
+            return "=" if abs(v) < 0.5 else f"{'+' if v > 0 else ''}{v:.0f} pb"
+        return "0,0%" if abs(v) < 0.05 else (f"{'+' if v > 0 else ''}{v:.1f}%").replace(".", ",")
+
+    lineas = ["Activo | Precio | Día | MTD | YTD | Dirección del día"]
+    for r in rows:
+        es_tasa = bool(r.get("es_tasa"))
+        precio = float(r["precio"])
+        pct = float(r["variacion_pct"])
+        if es_tasa:
+            precio_s = f"{precio:.2f}%"
+            dia_s = "=" if abs(pct) < 0.5 else f"{'+' if pct > 0 else ''}{pct:.0f} pb"
+            umbral = 0.5
+        else:
+            dec = 2 if r.get("ticker") == "HG=F" else 1
+            precio_s = f"{precio:,.{dec}f}"
+            dia_s = "0,0%" if abs(pct) < 0.05 else (f"{'+' if pct > 0 else ''}{pct:.1f}%").replace(".", ",")
+            umbral = 0.05
+        if abs(pct) < umbral:
+            direccion = "sin cambio"
+        else:
+            direccion = "SUBE" if pct > 0 else "BAJA"
+        lineas.append(
+            f"{r['activo']} | {precio_s} | {dia_s} | "
+            f"{_acum(r.get('mtd'), es_tasa)} | {_acum(r.get('ytd'), es_tasa)} | {direccion}"
+        )
+    return "\n".join(lineas)
+
+
 def build_claude_prompt_news_only(
     news: list[dict[str, Any]],
     news_errors: list[str],
     memoria_previos: list[str] | None = None,
+    prices: list[dict[str, Any]] | None = None,
 ) -> str:
     """Prompt maestro del Flash Report: la tabla de indicadores la genera el script.
 
@@ -1723,6 +1774,7 @@ def build_claude_prompt_news_only(
     vacía, "En contexto" infiere el viraje desde el propio pool.
     """
     lunes = es_lunes_cl()
+    tabla_txt = _tabla_indicadores_texto(prices or [])
     payload = {
         "noticias": news[:320],
         "errores_noticias": news_errors,
@@ -1759,6 +1811,16 @@ Cierra el correo, DESPUÉS de "También, en breve", con un único recuadro (clas
 
 {json.dumps(payload, ensure_ascii=False, indent=2)}
 
+=== TABLA DE INDICADORES (VERDAD DETERMINISTA — NO LA CONTRADIGAS) ===
+Esta es la tabla que el lector verá ARRIBA del correo (la inserta el sistema; NO la generes). Son los datos de mercado de HOY:
+{tabla_txt}
+
+=== PRECISIÓN Y DATOS (INNEGOCIABLE — en un producto financiero un error mata la credibilidad) ===
+- La tabla de arriba es la ÚNICA verdad para cualquier número de esos activos (precio, Día, MTD, YTD y dirección). NUNCA escribas algo que la contradiga: si la tabla dice que el cobre SUBE +3,4%, no escribas "el cobre bajó".
+- Si una noticia describe la SESIÓN DE AYER y la tabla es el dato de HOY, dilo explícito para que no haya contradicción aparente (ej.: "el cobre cerró ayer bajo US$6/lb; hoy rebota +3,4%"). No mezcles ambos sin aclararlo.
+- SUPERLATIVOS de rango ("máximo desde [fecha]", "mínimos de N meses", "el mayor en N años", "por primera vez en X"): SOLO si la frase aparece TEXTUAL en la noticia del JSON que tienes a la vista Y no contradice la tabla. Si no está en la fuente, OMÍTELO. No lo deduzcas de tu memoria ni lo estimes.
+- Nunca inventes récords, máximos/mínimos temporales ni comparaciones históricas. Ante la duda, se omite el dato. La precisión tiene prioridad sobre la riqueza narrativa.
+
 === PRINCIPIO RECTOR: NOTICIAS, NO COMENTARIOS ===
 Cada ítem DEBE comunicar un HECHO CONCRETO del día: una cifra publicada, una decisión tomada, una operación anunciada, un movimiento de precio, un evento ocurrido. Si una frase no contiene un hecho verificable y solo describe un clima o una tendencia, NO va.
 - PROHIBIDO (comentario vacío, esto NO es noticia): "La inflación en EE.UU. y su impacto en las tasas sigue siendo el factor dominante para los mercados de divisas." / "Las tendencias FX muestran que la inflación sigue siendo el driver principal." / "El mercado sigue los movimientos de oro y bonos ante la volatilidad."
@@ -1785,7 +1847,14 @@ El correo se lee POR CAPAS: quien tiene 30 segundos saca lo esencial sin bajar; 
 - AGRUPA POR NARRATIVA, no por taxonomía. Noticias con un MISMO motor van JUNTAS en un solo párrafo, no como ítems separados. Ej: si el dólar fuerte hizo caer oro, cobre, BTC y peso → UNA frase, no cuatro.
 - JERARQUIZA Y RECORTA: "interesante" ≠ "importante". Test para cada noticia: ¿esto cambia cómo un family office piensa sobre el mundo o el portafolio? Si no, va a "También, en breve" (el bin) o se elimina. No borres cobertura: COMPRÍMELA en el bin.
 - Lo regulatorio o de mercado que toca el portafolio NUNCA se sepulta (ej. investigación de la SEC a fondos de private equity = core, porque la oficina invierte en PE/secundarios).
-- Objetivo: ~18-22 ítems desarrollados fuera del bin, NO ~40.
+- EXTENSIÓN (topes duros — este correo se lee COMPLETO en 5-6 minutos; mejor explicar pocas cosas bien que muchas a medias):
+  · La historia del día: hasta 3 párrafos, 2-4 frases cada uno.
+  · Internacional: 4-5 noticias EN TOTAL (no por eyebrow), 2-3 frases cada una.
+  · Nacional · Chile: 4-5 noticias, 2-3 frases cada una.
+  · Celulosa: 3-4 noticias (ver umbral en su sección).
+  · "También, en breve": MÁXIMO 5-6 ítems, UNA sola frase cada uno.
+  · "El día en tres líneas": 3 viñetas de 1-2 frases.
+- Estos números son GRAVEDAD, no cuota: si hay menos material real pon menos, y si una sección no tiene noticia real OMÍTELA; nunca rellenes para llegar al número. Pero NO superes los topes: lo que no entra desarrollado se comprime al bin o se elimina.
 
 === ESTRUCTURA DEL HTML — USA EXACTAMENTE ESTAS CLASES (el sistema les aplica el estilo) ===
 Genera SOLO de "En contexto" hacia abajo (la tabla de activos y los partidos del Mundial los inserta el sistema, no los generes).
@@ -1808,7 +1877,7 @@ NO escribas atributos style="..."; usa SOLO las clases indicadas. Para la negrit
 <li class="watch-li">[evento de hoy].</li>
 </ul></div>
 
-(4) LA HISTORIA DEL DÍA — bloque narrativo, MÁXIMO 3 párrafos; une en un mismo párrafo las noticias del mismo motor; lo que es solo "color" baja al bin:
+(4) LA HISTORIA DEL DÍA — bloque narrativo, MÁXIMO 3 párrafos; cada párrafo de 2-4 frases (NO columnas tipo Bloomberg); une en un mismo párrafo las noticias del mismo motor; lo que es solo "color" baja al bin:
 <div class="part">La historia del día</div>
 <div class="sec"><p class="lead-item"><b>[qué pasó]</b> [desarrollo]. <a class="src" href="URL">Fuente</a></p> ... (hasta 3)</div>
 
@@ -1827,7 +1896,7 @@ NO escribas atributos style="..."; usa SOLO las clases indicadas. Para la negrit
 <div class="part">Celulosa</div>
 <div class="sec"><p class="item">...</p> ...</div>
 
-(8) TAMBIÉN, EN BREVE — el bin: one-liners para lo secundario (informativo pero que no cambia la tesis). Permite filtrar sin perder cobertura:
+(8) TAMBIÉN, EN BREVE — el bin: one-liners para lo secundario (informativo pero que no cambia la tesis). MÁXIMO 5-6 ítems, UNA frase cada uno; lo secundario se comprime, no se acumula. Permite filtrar sin perder cobertura:
 <div class="part">También, en breve</div>
 <ul class="bin">
 <li class="bin-bullet"><b>[qué pasó]</b> [una línea]. <a class="src" href="URL">Fuente</a></li>
@@ -1842,6 +1911,7 @@ La negrita (<b>) es el QUÉ PASÓ, no la entidad. Negrita la IDEA/ACCIÓN (puede
 - Un solo <b> por ítem, la idea fuerza al inicio. PROHIBIDO el patrón "<b>Etiqueta:</b> explicación".
 
 === REDACCIÓN ===
+- HECHOS, NO RECOMENDACIONES: reporta el hecho y, a lo más, UNA frase de significado (causa/efecto/contexto). NUNCA recomiendes qué hacer con la cartera ni sugieras implicancias de portafolio ("conviene monitorear la exposición a…", "se recomienda…"). Es un newsletter informativo, no un advisor de inversiones.
 - Texto AUTOCONTENIDO: párrafos breves y explicativos que se entienden sin clickear. NADA de bullets de una frase en las secciones desarrolladas (sí en la capa ejecutiva y en el bin).
 - Datos económicos: métrica exacta + comparación vs. lo esperado si está disponible.
 - FUENTE: cada noticia cierra con su(s) enlace(s) <a class="src">; el texto del enlace es el nombre de la fuente. Si "url" viene vacía: <span style="color:#80868b;font-size:12px;">(Fuente)</span>.
@@ -2405,7 +2475,7 @@ def run() -> int:
     memoria_previos = cargar_memoria_briefings()
     if memoria_previos:
         print(f"  Memoria: {len(memoria_previos)} briefing(s) previos para 'En contexto'.")
-    prompt = build_claude_prompt_news_only(news, news_errors, memoria_previos)
+    prompt = build_claude_prompt_news_only(news, news_errors, memoria_previos, prices)
     api_key = env["ANTHROPIC_API_KEY"]
     preview = api_key[:20]
     print(
