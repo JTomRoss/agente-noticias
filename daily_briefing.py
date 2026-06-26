@@ -1408,6 +1408,12 @@ def fetch_jpm_am_watch_updates() -> tuple[list[dict[str, Any]], list[str], dict[
     return new_items, errors, meta
 
 
+def _num_es_cl(x: float, dec: int) -> str:
+    """Formatea al estilo es-CL: punto de miles, coma decimal (p. ej. 7.414,2).
+    Hace el swap , <-> . en una sola pasada con translate."""
+    return f"{x:,.{dec}f}".translate(str.maketrans({",": ".", ".": ","}))
+
+
 def _format_price_display(p: float) -> str:
     ax = abs(p)
     if ax >= 1000:
@@ -1444,9 +1450,9 @@ def build_prices_table_html(rows: list[dict[str, Any]], price_errors: list[str])
     def _fmt_precio(r) -> str:
         precio = float(r["precio"])
         if r.get("es_tasa"):
-            return f"{precio:.2f}%"
+            return f"{_num_es_cl(precio, 2)}%"
         dec = 2 if r.get("ticker") in COBRE_TICKERS else 1
-        return f"{precio:,.{dec}f}"
+        return _num_es_cl(precio, dec)
 
     def _fmt_diaria(r) -> tuple[str, int]:
         """Devuelve (texto, signo) con signo -1/0/+1."""
@@ -1747,12 +1753,12 @@ def _tabla_indicadores_texto(rows: list[dict[str, Any]]) -> str:
         precio = float(r["precio"])
         pct = float(r["variacion_pct"])
         if es_tasa:
-            precio_s = f"{precio:.2f}%"
+            precio_s = f"{_num_es_cl(precio, 2)}%"
             dia_s = "=" if abs(pct) < 0.5 else f"{'+' if pct > 0 else ''}{pct:.0f} pb"
             umbral = 0.5
         else:
             dec = 2 if r.get("ticker") == "HG=F" else 1
-            precio_s = f"{precio:,.{dec}f}"
+            precio_s = _num_es_cl(precio, dec)
             dia_s = "0,0%" if abs(pct) < 0.05 else (f"{'+' if pct > 0 else ''}{pct:.1f}%").replace(".", ",")
             umbral = 0.05
         if abs(pct) < umbral:
