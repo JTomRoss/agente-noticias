@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "24-06",
-      "lineas": [
-        "La Fed hawkish y el dólar en máximos de 13 meses aplastaron commodities y monedas emergentes: el cobre cayó bajo US$6/lb por primera vez en meses, el oro perforó los US$4.000/oz, el Bitcoin tocó mínimos de 20 meses cerca de US$60.000, y el peso chileno superó los $920 antes de cerrar bajo $915.",
-        "Micron salvó la narrativa IA al reportar ganancias +1.400% con una escasez de memoria que cuadruplica ingresos, impulsando futuros del Nasdaq tras el cierre; Qualcomm añadió otro catalizador al casi doblar su proyección de ingresos no-móviles para 2029 y anunciar la compra de Modular por US$3.900 millones.",
-        "En Chile, el acuerdo Codelco–Anglo American para operar conjuntamente Los Bronces y Andina abre potencialmente millones de toneladas de cobre adicionales, mientras la megarreforma tributaria de Kast inició su votación en general en el Senado en medio de un quiebre en la oposición y con el gran empresariado pidiendo preservar la invariabilidad tributaria."
-      ]
-    },
-    {
       "fecha": "25-06",
       "lineas": [
         "Micron revive el rally IA pero la inflación lo frena: los chips de memoria dispararon futuros del Nasdaq, pero el índice PCE de mayo subió 3,4% — máximo desde octubre 2023 — y mantuvo sobre la mesa la posibilidad de alzas de tasas por parte de la Fed bajo Kevin Warsh, con el bono del Tesoro y el dólar absorbiendo la señal.",
@@ -23,6 +15,14 @@
         "El \"RAMageddon\" da vuelta a los mercados tech: la escasez de chips de memoria que celebraba el mercado pasa a ser riesgo de costos para todos los que usan IA; el Nasdaq cae -1,2% en futuros y los semiconductores asiáticos desploman hasta 12% en una sesión.",
         "La Fed no bajará tasas: con el PCE subyacente en 3,4% anual y Kashkari abriendo la puerta a una alza, los economistas encuestados por Reuters esperan a la Fed en pausa todo 2026; el dólar se consolida y el USD/CLP sube a 924,2.",
         "En Chile, la megarreforma tributaria entra a la recta final mientras la economía da señales mixtas: el Senado ya aprobó el proyecto en general y BofA recorta su proyección de PIB al 1,4%, en tanto Moody's advierte que reconstruir los colchones fiscales es condición para mantener la nota crediticia."
+      ]
+    },
+    {
+      "fecha": "29-06",
+      "lineas": [
+        "EE.UU. e Irán acuerdan cesar ataques: los futuros del S&P 500 suben +0,8% y el Brent +1,6% esta mañana, pero el oro cede -0,8% al disiparse parte del riesgo extremo; el USD/CLP sube modestamente a 921,8.",
+        "Comcast anuncia el spin-off de NBCUniversal y sus acciones se disparan +23%, el mayor movimiento corporativo del día en EE.UU.; JPMorgan define su sucesión con Doug Petno y Troy Rohrbaugh como co-presidentes mientras Marianne Lake sale.",
+        "En Chile, el mercado de M&A registra su mejor primer semestre en tres años y Moody's advierte que el margen fiscal del país es más acotado que el de sus pares, todo ello mientras la megarreforma busca respaldos y el número de personas en quiebra más que se duplica a mayo."
       ]
     }
   ]
