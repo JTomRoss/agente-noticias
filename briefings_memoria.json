@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "25-06",
-      "lineas": [
-        "Micron revive el rally IA pero la inflación lo frena: los chips de memoria dispararon futuros del Nasdaq, pero el índice PCE de mayo subió 3,4% — máximo desde octubre 2023 — y mantuvo sobre la mesa la posibilidad de alzas de tasas por parte de la Fed bajo Kevin Warsh, con el bono del Tesoro y el dólar absorbiendo la señal.",
-        "El Estrecho de Ormuz presiona energía y geopolítica: Irán declaró \"inaceptable\" el tránsito no autorizado por el Estrecho de Hormuz, ataques a embarcaciones cargo confirmados, y el crudo que venía en mínimos pre-guerra rebotó, alterando el escenario de desinflación vía energía que algunos mercados descontaban.",
-        "Chile: megarreforma aprobada en general por un voto y Codelco–Anglo cierran acuerdo histórico: el Senado votó 21-20 en favor de legislar la reforma tributaria, que vuelve a Hacienda para ajustes; simultáneamente, el acuerdo de operación conjunta de Los Bronces y Andina se consolida como uno de los mayores negocios mineros del gobierno."
-      ]
-    },
-    {
       "fecha": "26-06",
       "lineas": [
         "El \"RAMageddon\" da vuelta a los mercados tech: la escasez de chips de memoria que celebraba el mercado pasa a ser riesgo de costos para todos los que usan IA; el Nasdaq cae -1,2% en futuros y los semiconductores asiáticos desploman hasta 12% en una sesión.",
@@ -23,6 +15,14 @@
         "EE.UU. e Irán acuerdan cesar ataques: los futuros del S&P 500 suben +0,8% y el Brent +1,6% esta mañana, pero el oro cede -0,8% al disiparse parte del riesgo extremo; el USD/CLP sube modestamente a 921,8.",
         "Comcast anuncia el spin-off de NBCUniversal y sus acciones se disparan +23%, el mayor movimiento corporativo del día en EE.UU.; JPMorgan define su sucesión con Doug Petno y Troy Rohrbaugh como co-presidentes mientras Marianne Lake sale.",
         "En Chile, el mercado de M&A registra su mejor primer semestre en tres años y Moody's advierte que el margen fiscal del país es más acotado que el de sus pares, todo ello mientras la megarreforma busca respaldos y el número de personas en quiebra más que se duplica a mayo."
+      ]
+    },
+    {
+      "fecha": "30-06",
+      "lineas": [
+        "Cierre de trimestre con Wall Street en zona de récords los futuros del S&P 500 y Nasdaq suben levemente esta mañana y el mercado apunta a su mejor desempeño trimestral desde 2020, mientras la rotación desde el trade AI hacia el resto del mercado genera turbulencia al interior de los índices.",
+        "La Corte Suprema de EE.UU. protege a la Fed pero amplía los poderes presidenciales rechazó la destitución de la gobernadora Lisa Cook, pero el fallo abre la puerta a mayor control ejecutivo sobre otras agencias regulatorias, con implicancias directas para el marco institucional de la política monetaria.",
+        "En Chile, el Senado vota hoy la acusación constitucional contra el exministro Grau y la prensa económica abre con alertas sobre un posible error de más de US$10.000 millones en las proyecciones de deuda pública del gobierno saliente, acelerando el debate sobre la megarreforma tributaria."
       ]
     }
   ]
