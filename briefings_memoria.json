@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "26-06",
-      "lineas": [
-        "El \"RAMageddon\" da vuelta a los mercados tech: la escasez de chips de memoria que celebraba el mercado pasa a ser riesgo de costos para todos los que usan IA; el Nasdaq cae -1,2% en futuros y los semiconductores asiáticos desploman hasta 12% en una sesión.",
-        "La Fed no bajará tasas: con el PCE subyacente en 3,4% anual y Kashkari abriendo la puerta a una alza, los economistas encuestados por Reuters esperan a la Fed en pausa todo 2026; el dólar se consolida y el USD/CLP sube a 924,2.",
-        "En Chile, la megarreforma tributaria entra a la recta final mientras la economía da señales mixtas: el Senado ya aprobó el proyecto en general y BofA recorta su proyección de PIB al 1,4%, en tanto Moody's advierte que reconstruir los colchones fiscales es condición para mantener la nota crediticia."
-      ]
-    },
-    {
       "fecha": "29-06",
       "lineas": [
         "EE.UU. e Irán acuerdan cesar ataques: los futuros del S&P 500 suben +0,8% y el Brent +1,6% esta mañana, pero el oro cede -0,8% al disiparse parte del riesgo extremo; el USD/CLP sube modestamente a 921,8.",
@@ -23,6 +15,14 @@
         "Cierre de trimestre con Wall Street en zona de récords los futuros del S&P 500 y Nasdaq suben levemente esta mañana y el mercado apunta a su mejor desempeño trimestral desde 2020, mientras la rotación desde el trade AI hacia el resto del mercado genera turbulencia al interior de los índices.",
         "La Corte Suprema de EE.UU. protege a la Fed pero amplía los poderes presidenciales rechazó la destitución de la gobernadora Lisa Cook, pero el fallo abre la puerta a mayor control ejecutivo sobre otras agencias regulatorias, con implicancias directas para el marco institucional de la política monetaria.",
         "En Chile, el Senado vota hoy la acusación constitucional contra el exministro Grau y la prensa económica abre con alertas sobre un posible error de más de US$10.000 millones en las proyecciones de deuda pública del gobierno saliente, acelerando el debate sobre la megarreforma tributaria."
+      ]
+    },
+    {
+      "fecha": "01-07",
+      "lineas": [
+        "Chile enfrenta su quinta caída mensual del Imacec con producción industrial en mínimos de nueve años, desempleo en 9,4% —máximo en cinco años— y expectativas de recesión técnica, mientras el gobierno atribuye el deterioro a \"años de malas políticas públicas\".",
+        "El dólar se fortalece globalmente y presiona activos de riesgo: el yen toca mínimos de 40 años pese a intervenciones de Japón por US$74.000 millones, el oro cierra su peor trimestre en más de una década y Bitcoin cae por debajo de US$60.000 ante el alza de tasas esperada de la Fed.",
+        "El segundo semestre abre con foco en el mercado laboral de EE.UU.: el reporte de empleo de hoy es el evento clave; la inflación de la eurozona cayó más de lo esperado en junio, reforzando la pausa del BCE, mientras los PMI manufactureros globales mostraron resiliencia pese a la guerra."
       ]
     }
   ]
