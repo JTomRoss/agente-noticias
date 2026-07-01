@@ -661,7 +661,7 @@ def _fallback_news_bucket(title: str) -> int:
 _SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif"
 _SERIF = "Georgia,'Times New Roman',serif"
 EMAIL_CSS: dict[str, str] = {
-    "turn": "margin:20px 0 0;font-size:14.5px;line-height:1.5;color:#1a1a1a;border-top:1px solid #e3e3e0;padding-top:16px;",
+    "turn": "margin:20px 0 0;font-size:14.5px;line-height:1.5;color:#1a1a1a;border-top:1px solid #e3e3e0;padding-top:16px;text-align:justify;",
     "turn-b": "font-weight:700;color:#0f3d2e;",
     "brief": "margin:16px 0 0;border-left:3px solid #0f3d2e;background:#eef3f0;padding:14px 18px 16px;border-radius:0 4px 4px 0;",
     "brief-lbl": "font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#0f3d2e;font-weight:700;margin:0 0 8px 0;",
@@ -674,12 +674,12 @@ EMAIL_CSS: dict[str, str] = {
     "part": f"font-family:{_SERIF};font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#1a1a1a;margin:34px 0 0 0;padding-bottom:8px;border-bottom:1px solid #1a1a1a;font-weight:700;",
     "sec": "margin:24px 0 0;",
     "eyebrow": "font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#0f3d2e;font-weight:700;margin:0 0 10px 0;",
-    "item": "margin:0 0 14px 0;font-size:14.5px;line-height:1.55;color:#1a1a1a;",
-    "lead-item": "margin:0 0 14px 0;font-size:15px;line-height:1.55;color:#1a1a1a;",
+    "item": "margin:0 0 14px 0;font-size:14.5px;line-height:1.55;color:#1a1a1a;text-align:justify;",
+    "lead-item": "margin:0 0 14px 0;font-size:15px;line-height:1.55;color:#1a1a1a;text-align:justify;",
     "src": "font-size:12.5px;color:#1a56c4;text-decoration:none;",
     "bin": "margin:6px 0 0;padding-left:16px;",
     "bin-bullet": "margin:0 0 9px 0;font-size:13.5px;line-height:1.5;color:#1a1a1a;",
-    "prev": "margin:14px 0 2px 0;border-left:2px solid #cfcfca;padding:2px 0 2px 14px;font-size:12.5px;line-height:1.5;color:#5f6368;font-style:italic;",
+    "prev": "margin:14px 0 2px 0;border-left:2px solid #cfcfca;padding:2px 0 2px 14px;font-size:12.5px;line-height:1.5;color:#5f6368;font-style:italic;text-align:justify;",
     "prev-tag": "font-style:normal;font-weight:700;color:#80868b;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:3px;",
 }
 
