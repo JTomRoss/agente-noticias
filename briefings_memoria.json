@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "29-06",
-      "lineas": [
-        "EE.UU. e Irán acuerdan cesar ataques: los futuros del S&P 500 suben +0,8% y el Brent +1,6% esta mañana, pero el oro cede -0,8% al disiparse parte del riesgo extremo; el USD/CLP sube modestamente a 921,8.",
-        "Comcast anuncia el spin-off de NBCUniversal y sus acciones se disparan +23%, el mayor movimiento corporativo del día en EE.UU.; JPMorgan define su sucesión con Doug Petno y Troy Rohrbaugh como co-presidentes mientras Marianne Lake sale.",
-        "En Chile, el mercado de M&A registra su mejor primer semestre en tres años y Moody's advierte que el margen fiscal del país es más acotado que el de sus pares, todo ello mientras la megarreforma busca respaldos y el número de personas en quiebra más que se duplica a mayo."
-      ]
-    },
-    {
       "fecha": "30-06",
       "lineas": [
         "Cierre de trimestre con Wall Street en zona de récords los futuros del S&P 500 y Nasdaq suben levemente esta mañana y el mercado apunta a su mejor desempeño trimestral desde 2020, mientras la rotación desde el trade AI hacia el resto del mercado genera turbulencia al interior de los índices.",
@@ -23,6 +15,14 @@
         "Chile enfrenta su quinta caída mensual del Imacec con producción industrial en mínimos de nueve años, desempleo en 9,4% —máximo en cinco años— y expectativas de recesión técnica, mientras el gobierno atribuye el deterioro a \"años de malas políticas públicas\".",
         "El dólar se fortalece globalmente y presiona activos de riesgo: el yen toca mínimos de 40 años pese a intervenciones de Japón por US$74.000 millones, el oro cierra su peor trimestre en más de una década y Bitcoin cae por debajo de US$60.000 ante el alza de tasas esperada de la Fed.",
         "El segundo semestre abre con foco en el mercado laboral de EE.UU.: el reporte de empleo de hoy es el evento clave; la inflación de la eurozona cayó más de lo esperado en junio, reforzando la pausa del BCE, mientras los PMI manufactureros globales mostraron resiliencia pese a la guerra."
+      ]
+    },
+    {
+      "fecha": "02-07",
+      "lineas": [
+        "Chile en zona de recesión técnica: el Imacec de mayo cayó 0,9% en su quinta contracción mensual consecutiva, la producción industrial acumula ocho meses a la baja y el desempleo sube a 9,4% —su máximo en cinco años—, mientras expertos exigen respuestas de Hacienda y el Banco Central.",
+        "Warsh mueve la renta fija: el presidente de la Fed señaló que los riesgos inflacionarios han bajado y comprometió estabilidad de precios, llevando los Treasury a 2 años a caer 23 pb hasta 3,90% y empujando el bitcoin por encima de US$60.000; el mercado espera hoy el informe de nóminas de junio.",
+        "EE.UU. activa el reloj del USMCA: la administración Trump no renovó el acuerdo comercial norteamericano, iniciando un proceso que puede desembocar en su término, con impacto directo en las cadenas de exportación de México y Canadá —y en Chile como proveedor de materias primas a la región."
       ]
     }
   ]
