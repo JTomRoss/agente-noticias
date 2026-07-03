@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "30-06",
-      "lineas": [
-        "Cierre de trimestre con Wall Street en zona de récords los futuros del S&P 500 y Nasdaq suben levemente esta mañana y el mercado apunta a su mejor desempeño trimestral desde 2020, mientras la rotación desde el trade AI hacia el resto del mercado genera turbulencia al interior de los índices.",
-        "La Corte Suprema de EE.UU. protege a la Fed pero amplía los poderes presidenciales rechazó la destitución de la gobernadora Lisa Cook, pero el fallo abre la puerta a mayor control ejecutivo sobre otras agencias regulatorias, con implicancias directas para el marco institucional de la política monetaria.",
-        "En Chile, el Senado vota hoy la acusación constitucional contra el exministro Grau y la prensa económica abre con alertas sobre un posible error de más de US$10.000 millones en las proyecciones de deuda pública del gobierno saliente, acelerando el debate sobre la megarreforma tributaria."
-      ]
-    },
-    {
       "fecha": "01-07",
       "lineas": [
         "Chile enfrenta su quinta caída mensual del Imacec con producción industrial en mínimos de nueve años, desempleo en 9,4% —máximo en cinco años— y expectativas de recesión técnica, mientras el gobierno atribuye el deterioro a \"años de malas políticas públicas\".",
@@ -23,6 +15,14 @@
         "Chile en zona de recesión técnica: el Imacec de mayo cayó 0,9% en su quinta contracción mensual consecutiva, la producción industrial acumula ocho meses a la baja y el desempleo sube a 9,4% —su máximo en cinco años—, mientras expertos exigen respuestas de Hacienda y el Banco Central.",
         "Warsh mueve la renta fija: el presidente de la Fed señaló que los riesgos inflacionarios han bajado y comprometió estabilidad de precios, llevando los Treasury a 2 años a caer 23 pb hasta 3,90% y empujando el bitcoin por encima de US$60.000; el mercado espera hoy el informe de nóminas de junio.",
         "EE.UU. activa el reloj del USMCA: la administración Trump no renovó el acuerdo comercial norteamericano, iniciando un proceso que puede desembocar en su término, con impacto directo en las cadenas de exportación de México y Canadá —y en Chile como proveedor de materias primas a la región."
+      ]
+    },
+    {
+      "fecha": "03-07",
+      "lineas": [
+        "El empleo de EE.UU. decepciona y aleja un alza de tasas: la economía creó solo 57.000 puestos en junio —muy bajo lo esperado— y la participación laboral cayó a mínimos de cinco años; los mercados respondieron con un Dow en máximo histórico, bonos al alza y dólar a la baja.",
+        "Chile suma cinco meses seguidos de contracción: el Imacec de mayo cayó 0,9%, la CPC calcula que la economía ilícita mueve más de US$5.700 millones al año y el gobierno lanzó subsidios del 50% del sueldo mínimo para intentar crear 50.000 empleos ante la \"emergencia laboral\".",
+        "Big Tech acelera la carrera de IA con nuevas apuestas de capital: Microsoft desplegó US$2.500 millones y 6.000 empleados en una unidad de implementación de IA; Meta planea vender capacidad de cómputo en la nube; y Google perdió su apelación contra la multa récord de €4.100 millones de la UE por prácticas anticompetitivas."
       ]
     }
   ]
