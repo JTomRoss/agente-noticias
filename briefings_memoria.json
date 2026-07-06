@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "01-07",
-      "lineas": [
-        "Chile enfrenta su quinta caída mensual del Imacec con producción industrial en mínimos de nueve años, desempleo en 9,4% —máximo en cinco años— y expectativas de recesión técnica, mientras el gobierno atribuye el deterioro a \"años de malas políticas públicas\".",
-        "El dólar se fortalece globalmente y presiona activos de riesgo: el yen toca mínimos de 40 años pese a intervenciones de Japón por US$74.000 millones, el oro cierra su peor trimestre en más de una década y Bitcoin cae por debajo de US$60.000 ante el alza de tasas esperada de la Fed.",
-        "El segundo semestre abre con foco en el mercado laboral de EE.UU.: el reporte de empleo de hoy es el evento clave; la inflación de la eurozona cayó más de lo esperado en junio, reforzando la pausa del BCE, mientras los PMI manufactureros globales mostraron resiliencia pese a la guerra."
-      ]
-    },
-    {
       "fecha": "02-07",
       "lineas": [
         "Chile en zona de recesión técnica: el Imacec de mayo cayó 0,9% en su quinta contracción mensual consecutiva, la producción industrial acumula ocho meses a la baja y el desempleo sube a 9,4% —su máximo en cinco años—, mientras expertos exigen respuestas de Hacienda y el Banco Central.",
@@ -23,6 +15,14 @@
         "El empleo de EE.UU. decepciona y aleja un alza de tasas: la economía creó solo 57.000 puestos en junio —muy bajo lo esperado— y la participación laboral cayó a mínimos de cinco años; los mercados respondieron con un Dow en máximo histórico, bonos al alza y dólar a la baja.",
         "Chile suma cinco meses seguidos de contracción: el Imacec de mayo cayó 0,9%, la CPC calcula que la economía ilícita mueve más de US$5.700 millones al año y el gobierno lanzó subsidios del 50% del sueldo mínimo para intentar crear 50.000 empleos ante la \"emergencia laboral\".",
         "Big Tech acelera la carrera de IA con nuevas apuestas de capital: Microsoft desplegó US$2.500 millones y 6.000 empleados en una unidad de implementación de IA; Meta planea vender capacidad de cómputo en la nube; y Google perdió su apelación contra la multa récord de €4.100 millones de la UE por prácticas anticompetitivas."
+      ]
+    },
+    {
+      "fecha": "06-07",
+      "lineas": [
+        "Los mercados globales arrancan la semana con optimismo selectivo: futuros del Nasdaq suben 1,1% y del S&P 500 un 0,4%, el cobre avanza 1,8% hasta US$6,22/lb y el oro sube 1,4% hasta US$4.168, mientras el petróleo cede ante la señal de mayor oferta de la OPEC+.",
+        "Chile abre la semana en la cuerda floja entre recesión técnica y esperanza de rebote: el ministro Quiroz descarta la recesión pese a cinco meses consecutivos de contracción del Imacec y desempleo en 9,4%, mientras economistas matizan su optimismo y los sectores productivos presionan por flexibilización de la jornada de 40 horas.",
+        "Arauco y Cencosud lideran el frente corporativo nacional: Arauco acordó vender bosques de eucalipto en Valdivia por más de US$216 millones, y Cencosud anunció la adquisición del 100% de Makro en Colombia por US$158 millones, dos movimientos de M&A relevantes para el sector."
       ]
     }
   ]
