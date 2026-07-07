@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "02-07",
-      "lineas": [
-        "Chile en zona de recesión técnica: el Imacec de mayo cayó 0,9% en su quinta contracción mensual consecutiva, la producción industrial acumula ocho meses a la baja y el desempleo sube a 9,4% —su máximo en cinco años—, mientras expertos exigen respuestas de Hacienda y el Banco Central.",
-        "Warsh mueve la renta fija: el presidente de la Fed señaló que los riesgos inflacionarios han bajado y comprometió estabilidad de precios, llevando los Treasury a 2 años a caer 23 pb hasta 3,90% y empujando el bitcoin por encima de US$60.000; el mercado espera hoy el informe de nóminas de junio.",
-        "EE.UU. activa el reloj del USMCA: la administración Trump no renovó el acuerdo comercial norteamericano, iniciando un proceso que puede desembocar en su término, con impacto directo en las cadenas de exportación de México y Canadá —y en Chile como proveedor de materias primas a la región."
-      ]
-    },
-    {
       "fecha": "03-07",
       "lineas": [
         "El empleo de EE.UU. decepciona y aleja un alza de tasas: la economía creó solo 57.000 puestos en junio —muy bajo lo esperado— y la participación laboral cayó a mínimos de cinco años; los mercados respondieron con un Dow en máximo histórico, bonos al alza y dólar a la baja.",
@@ -23,6 +15,14 @@
         "Los mercados globales arrancan la semana con optimismo selectivo: futuros del Nasdaq suben 1,1% y del S&P 500 un 0,4%, el cobre avanza 1,8% hasta US$6,22/lb y el oro sube 1,4% hasta US$4.168, mientras el petróleo cede ante la señal de mayor oferta de la OPEC+.",
         "Chile abre la semana en la cuerda floja entre recesión técnica y esperanza de rebote: el ministro Quiroz descarta la recesión pese a cinco meses consecutivos de contracción del Imacec y desempleo en 9,4%, mientras economistas matizan su optimismo y los sectores productivos presionan por flexibilización de la jornada de 40 horas.",
         "Arauco y Cencosud lideran el frente corporativo nacional: Arauco acordó vender bosques de eucalipto en Valdivia por más de US$216 millones, y Cencosud anunció la adquisición del 100% de Makro en Colombia por US$158 millones, dos movimientos de M&A relevantes para el sector."
+      ]
+    },
+    {
+      "fecha": "07-07",
+      "lineas": [
+        "El FMI recorta Chile a 1,8% y exige ajuste fiscal adicional: el organismo rebajó su proyección de crecimiento y repitió las alertas sobre la situación fiscal del país, en un contexto donde el dólar llegó a $930 y cierra hoy cerca de $928.",
+        "Samsung dispara alarmas en semiconductores: pese a un salto de 1.800% en utilidades, los inversores castigaron la acción por preocupaciones sobre el gasto en IA; los futuros del Nasdaq caen 1% y el KOSPI se desplomó cerca de 5%, arrastrando a toda la cadena de chips.",
+        "El petróleo sube mientras el Estrecho de Ormuz vuelve a tensionarse: reportes de un ataque iraní a buques comerciales empujaron el WTI a US$69,3 (+1,1%) y el Brent a US$72,9 (+1,3%), con el mercado ya atento al nivel de reservas estratégicas de EE.UU. en mínimos desde 1983."
       ]
     }
   ]
