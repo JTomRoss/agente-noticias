@@ -2156,6 +2156,29 @@ def build_worldcup_html(partidos: list[dict[str, str]]) -> str:
     )
 
 
+def _fecha_larga_es(dt: datetime) -> str:
+    """Fecha larga en español, ej. 'Martes 8 de julio de 2026' (dt ya en zona CL)."""
+    dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+    meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+             "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+    return f"{dias[dt.weekday()]} {dt.day} de {meses[dt.month - 1]} de {dt.year}"
+
+
+def _insert_matches(cuerpo: str, matches_block: str) -> str:
+    """Inserta el bloque de partidos justo antes de 'La historia del día'.
+    Lógica única compartida por el correo (compose_email_document) y el adjunto TTS."""
+    if not matches_block:
+        return cuerpo
+    idx = cuerpo.find("La historia del día")
+    if idx == -1:
+        idx = cuerpo.find("La historia del dia")
+    if idx != -1:
+        start = cuerpo.rfind("<", 0, idx)
+        start = start if start != -1 else idx
+        return cuerpo[:start] + matches_block + "\n" + cuerpo[start:]
+    return matches_block + "\n" + cuerpo
+
+
 def compose_email_document(
     price_block: str,
     news_block: str,
@@ -2167,23 +2190,8 @@ def compose_email_document(
     El fragmento de Claude viene con CLASES; aquí se inlinean (Gmail-safe) y se
     insertan los partidos justo antes de "La historia del día".
     """
-    _DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-    _MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
-              "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
-    hoy = datetime.now(SANTIAGO_TZ)
-    fecha_larga = f"{_DIAS[hoy.weekday()]} {hoy.day} de {_MESES[hoy.month - 1]} de {hoy.year}"
-
-    cuerpo = inline_email_classes(news_block)
-    if matches_block:
-        idx = cuerpo.find("La historia del día")
-        if idx == -1:
-            idx = cuerpo.find("La historia del dia")
-        if idx != -1:
-            start = cuerpo.rfind("<", 0, idx)
-            start = start if start != -1 else idx
-            cuerpo = cuerpo[:start] + matches_block + "\n" + cuerpo[start:]
-        else:
-            cuerpo = matches_block + "\n" + cuerpo
+    fecha_larga = _fecha_larga_es(datetime.now(SANTIAGO_TZ))
+    cuerpo = _insert_matches(inline_email_classes(news_block), matches_block)
 
     mast = (
         '<div style="padding:24px 28px 16px;border-bottom:2px solid #1a1a1a;">'
@@ -2227,8 +2235,11 @@ def send_email_html(
     destino: str,
     subject: str,
     html_body: str,
+    adjuntos: list[tuple[str, str]] | None = None,
 ) -> tuple[bool, str | None]:
-    """Envía correo multipart/alternative: texto plano mínimo + HTML (charset UTF-8)."""
+    """Envía el correo. Sin adjuntos: multipart/alternative (texto + HTML), idéntico
+    a siempre. Con adjuntos [(filename, html)]: envuelve ese alternative en un
+    contenedor 'mixed' y suma cada archivo; el cuerpo inline del correo no cambia."""
     try:
         # Separar por coma, punto y coma o saltos de línea, y limpiar cada dirección.
         # Esto evita el error 'folded header contains newline' cuando el secret trae
@@ -2238,11 +2249,6 @@ def send_email_html(
         destinos = [d.strip() for d in crudos if d.strip()]
         if not destinos:
             return False, "Sin destinatarios válidos (EMAIL_DESTINO vacío o mal formado)."
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject.replace("\n", " ").replace("\r", " ").strip()
-        msg["From"] = f"Ecoterra Report <{gmail_user.strip()}>"
-        msg["To"] = ", ".join(destinos)
-
         part_plain = MIMEText(
             "Este mensaje es HTML. Abre el correo en Gmail (vista web) o en un cliente "
             "que muestre formato HTML.",
@@ -2252,8 +2258,25 @@ def send_email_html(
         part_html = MIMEText(html_body, "html", "utf-8")
         part_html.set_charset("utf-8")
 
-        msg.attach(part_plain)
-        msg.attach(part_html)
+        alt = MIMEMultipart("alternative")
+        alt.attach(part_plain)
+        alt.attach(part_html)
+
+        if adjuntos:
+            # Cuerpo + adjuntos: contenedor 'mixed' que envuelve el 'alternative'.
+            msg = MIMEMultipart("mixed")
+            msg.attach(alt)
+            for fname, contenido in adjuntos:
+                parte = MIMEText(contenido, "html", "utf-8")
+                parte.add_header("Content-Disposition", "attachment", filename=fname)
+                msg.attach(parte)
+        else:
+            # Sin adjuntos: exactamente el mensaje de siempre (multipart/alternative).
+            msg = alt
+
+        msg["Subject"] = subject.replace("\n", " ").replace("\r", " ").strip()
+        msg["From"] = f"Ecoterra Report <{gmail_user.strip()}>"
+        msg["To"] = ", ".join(destinos)
 
         with smtplib.SMTP("smtp.gmail.com", 587, timeout=120) as server:
             server.ehlo()
@@ -2299,7 +2322,7 @@ _STANDALONE_TEMPLATE = r"""<!DOCTYPE html>
   <button id="tts-stop" class="tts-btn ghost" type="button">&#9632; Detener</button>
   <label class="tts-ctl">Voz <select id="tts-voice" class="tts-select"></select></label>
   <label class="tts-ctl">Velocidad <input id="tts-rate" class="tts-rate" type="range" min="0.7" max="1.4" step="0.1" value="1"><span id="tts-rate-val">1.0x</span></label>
-  <span id="tts-status" class="tts-status"></span>
+  <span id="tts-status" class="tts-status" role="status" aria-live="polite"></span>
   <span id="tts-note" class="tts-note">Abrir en un navegador (Chrome, Edge o Safari) para escuchar.</span>
 </div>
 <div class="wrap">
@@ -2355,7 +2378,8 @@ _STANDALONE_TEMPLATE = r"""<!DOCTYPE html>
       selVoice.appendChild(o);
     }
     // Conserva la voz elegida si sigue disponible; si no, la mejor en español.
-    var elegir = (prev && voiceByName(prev)) ? voiceByName(prev) : pickVoice();
+    var prevVoice = prev ? voiceByName(prev) : null;
+    var elegir = prevVoice || pickVoice();
     if(!elegir && orden.length){ elegir = orden[0]; }
     if(elegir){ voice = elegir; selVoice.value = elegir.name; }
     var hayEs = voice && voice.lang && voice.lang.toLowerCase().indexOf('es')===0;
@@ -2380,13 +2404,26 @@ _STANDALONE_TEMPLATE = r"""<!DOCTYPE html>
     if(voice){ u.voice = voice; }
     u.lang = (voice && voice.lang) ? voice.lang : 'es-ES';
     u.rate = rate; u.pitch = 1.0;
-    u.onstart = function(){ clearHL(); el.classList.add('tts-reading'); el.scrollIntoView({behavior:'smooth', block:'center'}); };
+    u.onstart = function(){
+      clearHL(); el.classList.add('tts-reading');
+      var r = el.getBoundingClientRect();
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      if(r.top < 60 || r.bottom > vh){ el.scrollIntoView({block:'nearest'}); }
+    };
     u.onend = function(){ if(myGen === gen && playing && !paused){ speakFrom(idx+1); } };
     synth.speak(u);
   }
   // Reinicia el párrafo en curso con la voz/velocidad nueva (aplica al instante).
   // El token 'gen' invalida el onend del utterance cancelado y evita el doble avance.
-  function restartLive(){ if(playing && !paused){ gen++; synth.cancel(); speakFrom(idx); } }
+  function restartLive(){
+    if(playing && !paused){
+      gen++; synth.cancel();
+      var g = gen;
+      // Chrome puede "tragarse" el enunciado si speak() va justo tras cancel();
+      // diferirlo un tick lo evita. g===gen aborta si entretanto se detuvo o pausó.
+      setTimeout(function(){ if(g === gen && playing && !paused){ speakFrom(idx); } }, 60);
+    }
+  }
 
   function play(){
     if(paused){ synth.resume(); paused=false; playing=true; btnPause.textContent='⏸ Pausar'; setStatus('Leyendo…'); return; }
@@ -2413,8 +2450,12 @@ _STANDALONE_TEMPLATE = r"""<!DOCTYPE html>
   rangeRate.addEventListener('input', function(){ rate = parseFloat(rangeRate.value) || 1.0; rateVal.textContent = rate.toFixed(1) + 'x'; });
   rangeRate.addEventListener('change', restartLive);
 
-  // Workaround Chrome: evita el corte en lecturas largas (micro pause/resume).
-  setInterval(function(){ if(playing && !paused){ synth.pause(); synth.resume(); } }, 10000);
+  // Workaround SOLO para Chromium de escritorio: evita el corte a ~15s en lecturas
+  // largas (micro pause/resume). En Safari/iOS es contraproducente, así que se omite.
+  var _isChromium = /Chrom(e|ium)|Edg\//.test(navigator.userAgent) && !/OPR|Opera/.test(navigator.userAgent);
+  if(_isChromium){
+    setInterval(function(){ if(playing && !paused){ synth.pause(); synth.resume(); } }, 10000);
+  }
 })();
 </script>
 </body>
@@ -2717,6 +2758,25 @@ def run() -> int:
         subject = f"Morning Brief | {subject_date}"
     html = compose_email_document(price_html, news_html, news_errors, matches_html)
 
+    # Adjunto standalone con lectura por voz (se abre en el navegador). El inner va
+    # CON CLASES (news_html crudo): el selector del TTS y el CSS del standalone
+    # dependen de las clases. La tabla de precios y los partidos van inline y quedan
+    # (a propósito) fuera de la lectura. Si algo falla, se envía el correo SIN adjunto.
+    adjuntos = None
+    try:
+        titulo_adj = "Resumen vespertino" if mode == "vespertino" else "Morning Brief"
+        inner_adj = price_html + _insert_matches(news_html, matches_html)
+        standalone_html = build_standalone_html_report(
+            inner_adj, _fecha_larga_es(_hoy_cl), titulo_adj
+        )
+        base_adj = "Resumen_Vespertino" if mode == "vespertino" else "Morning_Brief"
+        fname_adj = f"{base_adj}_{_hoy_cl.strftime('%Y-%m-%d')}.html"
+        adjuntos = [(fname_adj, standalone_html)]
+        print(f"  Adjunto TTS generado: {fname_adj} ({len(standalone_html)} bytes).")
+    except Exception as e:  # nunca debe impedir el envío del correo
+        print(f"  [adjunto TTS] no se pudo generar; se envía sin adjunto: {e}", file=sys.stderr)
+        adjuntos = None
+
     print("Enviando correo (HTML multipart)…")
     ok, smtp_err = send_email_html(
         env["GMAIL_USER"],
@@ -2724,6 +2784,7 @@ def run() -> int:
         env["EMAIL_DESTINO_BRIEFING"],
         subject,
         html,
+        adjuntos=adjuntos,
     )
     if not ok:
         print(smtp_err or "Error SMTP desconocido", file=sys.stderr)
