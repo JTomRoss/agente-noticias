@@ -6,3 +6,6 @@ __pycache__/
 .venv/
 venv/
 *.egg-info/
+
+# Artefacto generado por preview_tts.py (previsualización local del TTS); no se commitea.
+preview_tts.html

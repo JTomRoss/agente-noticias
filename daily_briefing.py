@@ -2266,6 +2266,181 @@ def send_email_html(
         return False, f"SMTP: {e}\n{traceback.format_exc()}"
 
 
+_STANDALONE_TEMPLATE = r"""<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%%TITULO%% — %%FECHA%%</title>
+<style>
+  html,body{margin:0;padding:0;background:#f3f2ee;color:#1a1a1a;font-family:%%SANS%%;font-size:15px;line-height:1.55;}
+  .tts-bar{position:sticky;top:0;z-index:10;background:#0f3d2e;color:#fff;padding:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;box-shadow:0 1px 4px rgba(0,0,0,.15);}
+  .tts-btn{appearance:none;border:0;border-radius:6px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;font-family:%%SANS%%;}
+  .tts-btn.primary{background:#fff;color:#0f3d2e;}
+  .tts-btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6);}
+  .tts-btn:disabled{opacity:.5;cursor:default;}
+  .tts-ctl{display:flex;align-items:center;gap:6px;color:#cfe3d9;font-size:12.5px;}
+  .tts-select{appearance:none;border:0;border-radius:6px;padding:7px 10px;font-size:13px;font-family:%%SANS%%;background:#fff;color:#0f3d2e;max-width:240px;}
+  .tts-rate{accent-color:#fff;vertical-align:middle;}
+  .tts-status{font-size:12.5px;color:#cfe3d9;margin-left:4px;}
+  .tts-note{width:100%;font-size:11.5px;color:#a9c7ba;margin-top:2px;}
+  .wrap{max-width:640px;margin:0 auto;background:#fff;padding:24px 22px 34px;}
+  h1.brand{font-family:%%SERIF%%;font-size:30px;margin:6px 0 2px;}
+  .brand-eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5f6368;font-weight:700;}
+  .brand-date{color:#5f6368;font-size:13px;margin:2px 0 6px;}
+  .tts-reading{background:#fff6da;border-radius:3px;box-shadow:0 0 0 4px #fff6da;transition:background .15s;}
+%%CLASES_CSS%%
+</style>
+</head>
+<body>
+<div class="tts-bar">
+  <button id="tts-play" class="tts-btn primary" type="button">&#9654; Leer informe</button>
+  <button id="tts-pause" class="tts-btn ghost" type="button">&#9208; Pausar</button>
+  <button id="tts-stop" class="tts-btn ghost" type="button">&#9632; Detener</button>
+  <label class="tts-ctl">Voz <select id="tts-voice" class="tts-select"></select></label>
+  <label class="tts-ctl">Velocidad <input id="tts-rate" class="tts-rate" type="range" min="0.7" max="1.4" step="0.1" value="1"><span id="tts-rate-val">1.0x</span></label>
+  <span id="tts-status" class="tts-status"></span>
+  <span id="tts-note" class="tts-note">Abrir en un navegador (Chrome, Edge o Safari) para escuchar.</span>
+</div>
+<div class="wrap">
+  <div class="brand-eyebrow">Ecoterra Report</div>
+  <h1 class="brand">%%TITULO%%</h1>
+  <div class="brand-date">%%FECHA%%</div>
+  <div id="reporte">
+%%INNER%%
+  </div>
+</div>
+<script>
+(function(){
+  var synth = window.speechSynthesis;
+  var SEL = '#reporte .turn, #reporte .part, #reporte .eyebrow, #reporte .brief-lbl, #reporte .brief-li, #reporte .watch-lbl, #reporte .watch-li, #reporte .lead-item, #reporte .item, #reporte .bin-bullet, #reporte .prev';
+  var btnPlay = document.getElementById('tts-play');
+  var btnPause = document.getElementById('tts-pause');
+  var btnStop = document.getElementById('tts-stop');
+  var selVoice = document.getElementById('tts-voice');
+  var rangeRate = document.getElementById('tts-rate');
+  var rateVal = document.getElementById('tts-rate-val');
+  var note = document.getElementById('tts-note');
+  var statusEl = document.getElementById('tts-status');
+  var allVoices = [], voice = null, rate = 1.0, nodes = [], idx = 0, playing = false, paused = false, gen = 0;
+
+  if(!synth || typeof SpeechSynthesisUtterance === 'undefined'){
+    note.textContent = 'Este navegador no soporta lectura por voz.';
+    btnPlay.disabled = btnPause.disabled = btnStop.disabled = true;
+    selVoice.disabled = rangeRate.disabled = true;
+    return;
+  }
+  function pickVoice(){
+    var pref = ['es-cl','es-419','es-mx','es-us','es-es'];
+    for(var i=0;i<pref.length;i++){
+      for(var j=0;j<allVoices.length;j++){ if(allVoices[j].lang && allVoices[j].lang.toLowerCase()===pref[i]) return allVoices[j]; }
+    }
+    for(var k=0;k<allVoices.length;k++){ if(allVoices[k].lang && allVoices[k].lang.toLowerCase().indexOf('es')===0) return allVoices[k]; }
+    return null;
+  }
+  function voiceByName(name){ for(var i=0;i<allVoices.length;i++){ if(allVoices[i].name===name) return allVoices[i]; } return null; }
+  function refreshVoices(){
+    allVoices = synth.getVoices() || [];
+    if(!allVoices.length){ return; }
+    // Español primero, luego el resto; rellena el desplegable.
+    var es = [], otras = [];
+    for(var i=0;i<allVoices.length;i++){ (allVoices[i].lang && allVoices[i].lang.toLowerCase().indexOf('es')===0 ? es : otras).push(allVoices[i]); }
+    var orden = es.concat(otras);
+    var prev = voice ? voice.name : '';
+    selVoice.innerHTML = '';
+    for(var j=0;j<orden.length;j++){
+      var o = document.createElement('option');
+      o.value = orden[j].name;
+      o.textContent = orden[j].name + ' — ' + orden[j].lang;
+      selVoice.appendChild(o);
+    }
+    // Conserva la voz elegida si sigue disponible; si no, la mejor en español.
+    var elegir = (prev && voiceByName(prev)) ? voiceByName(prev) : pickVoice();
+    if(!elegir && orden.length){ elegir = orden[0]; }
+    if(elegir){ voice = elegir; selVoice.value = elegir.name; }
+    var hayEs = voice && voice.lang && voice.lang.toLowerCase().indexOf('es')===0;
+    note.textContent = hayEs
+      ? 'Tip: en Microsoft Edge, "Leer en voz alta" (Ctrl+Shift+U) suena más natural.'
+      : 'No hay voz en español instalada; puede sonar en otro idioma. Tip: ábrelo en Edge y usa "Leer en voz alta".';
+  }
+  refreshVoices();
+  synth.onvoiceschanged = refreshVoices;
+
+  function clearHL(){ var a=document.querySelectorAll('.tts-reading'); for(var i=0;i<a.length;i++) a[i].classList.remove('tts-reading'); }
+  function setStatus(t){ statusEl.textContent = t; }
+
+  function speakFrom(i){
+    if(i >= nodes.length){ stop(); setStatus('Lectura finalizada'); return; }
+    idx = i;
+    var myGen = gen;
+    var el = nodes[i];
+    var text = (el.textContent || '').replace(/\s+/g,' ').trim();
+    if(!text){ speakFrom(i+1); return; }
+    var u = new SpeechSynthesisUtterance(text);
+    if(voice){ u.voice = voice; }
+    u.lang = (voice && voice.lang) ? voice.lang : 'es-ES';
+    u.rate = rate; u.pitch = 1.0;
+    u.onstart = function(){ clearHL(); el.classList.add('tts-reading'); el.scrollIntoView({behavior:'smooth', block:'center'}); };
+    u.onend = function(){ if(myGen === gen && playing && !paused){ speakFrom(idx+1); } };
+    synth.speak(u);
+  }
+  // Reinicia el párrafo en curso con la voz/velocidad nueva (aplica al instante).
+  // El token 'gen' invalida el onend del utterance cancelado y evita el doble avance.
+  function restartLive(){ if(playing && !paused){ gen++; synth.cancel(); speakFrom(idx); } }
+
+  function play(){
+    if(paused){ synth.resume(); paused=false; playing=true; btnPause.textContent='⏸ Pausar'; setStatus('Leyendo…'); return; }
+    if(playing){ return; }
+    nodes = [].slice.call(document.querySelectorAll(SEL));
+    if(!nodes.length){ setStatus('No hay texto para leer.'); return; }
+    playing = true; paused = false; gen++;
+    synth.cancel();
+    btnPause.textContent = '⏸ Pausar';
+    setStatus('Leyendo…');
+    speakFrom(0);
+  }
+  function pauseToggle(){
+    if(!playing){ return; }
+    if(!paused){ synth.pause(); paused=true; btnPause.textContent='▶ Reanudar'; setStatus('En pausa'); }
+    else { synth.resume(); paused=false; btnPause.textContent='⏸ Pausar'; setStatus('Leyendo…'); }
+  }
+  function stop(){ playing=false; paused=false; gen++; synth.cancel(); clearHL(); btnPause.textContent='⏸ Pausar'; setStatus('Detenido'); }
+
+  btnPlay.addEventListener('click', play);
+  btnPause.addEventListener('click', pauseToggle);
+  btnStop.addEventListener('click', stop);
+  selVoice.addEventListener('change', function(){ voice = voiceByName(selVoice.value) || voice; restartLive(); });
+  rangeRate.addEventListener('input', function(){ rate = parseFloat(rangeRate.value) || 1.0; rateVal.textContent = rate.toFixed(1) + 'x'; });
+  rangeRate.addEventListener('change', restartLive);
+
+  // Workaround Chrome: evita el corte en lecturas largas (micro pause/resume).
+  setInterval(function(){ if(playing && !paused){ synth.pause(); synth.resume(); } }, 10000);
+})();
+</script>
+</body>
+</html>"""
+
+
+def build_standalone_html_report(inner_html: str, fecha_str: str, titulo: str = "Morning Brief") -> str:
+    """Envuelve el cuerpo del brief (HTML con clases EMAIL_CSS) en un documento
+    standalone autocontenido, con botón de lectura por voz (Web Speech API).
+
+    Pensado para ADJUNTARSE al correo: el <script> NO corre dentro de Gmail
+    (los clientes de correo lo eliminan). Se abre en Chrome/Edge/Safari para
+    escuchar. La lectura recorre la prosa, los títulos y las viñetas, y SALTA
+    la tabla de indicadores (no lleva las clases de prosa)."""
+    clases_css = "\n".join(f".{c}{{{estilo}}}" for c, estilo in EMAIL_CSS.items())
+    return (
+        _STANDALONE_TEMPLATE
+        .replace("%%TITULO%%", titulo)
+        .replace("%%FECHA%%", fecha_str)
+        .replace("%%SANS%%", _SANS)
+        .replace("%%SERIF%%", _SERIF)
+        .replace("%%CLASES_CSS%%", clases_css)
+        .replace("%%INNER%%", inner_html)
+    )
+
+
 # ---------------------------------------------------------------------------
 # Memoria móvil: guarda la síntesis ("El día en tres líneas") de los últimos
 # correos para que "En contexto" detecte el cambio de foco vs. días previos.
