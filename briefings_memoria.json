@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "06-07",
-      "lineas": [
-        "Los mercados globales arrancan la semana con optimismo selectivo: futuros del Nasdaq suben 1,1% y del S&P 500 un 0,4%, el cobre avanza 1,8% hasta US$6,22/lb y el oro sube 1,4% hasta US$4.168, mientras el petróleo cede ante la señal de mayor oferta de la OPEC+.",
-        "Chile abre la semana en la cuerda floja entre recesión técnica y esperanza de rebote: el ministro Quiroz descarta la recesión pese a cinco meses consecutivos de contracción del Imacec y desempleo en 9,4%, mientras economistas matizan su optimismo y los sectores productivos presionan por flexibilización de la jornada de 40 horas.",
-        "Arauco y Cencosud lideran el frente corporativo nacional: Arauco acordó vender bosques de eucalipto en Valdivia por más de US$216 millones, y Cencosud anunció la adquisición del 100% de Makro en Colombia por US$158 millones, dos movimientos de M&A relevantes para el sector."
-      ]
-    },
-    {
       "fecha": "07-07",
       "lineas": [
         "El FMI recorta Chile a 1,8% y exige ajuste fiscal adicional: el organismo rebajó su proyección de crecimiento y repitió las alertas sobre la situación fiscal del país, en un contexto donde el dólar llegó a $930 y cierra hoy cerca de $928.",
@@ -23,6 +15,14 @@
         "Trump declara el fin del alto el fuego con Irán y EE.UU. lanza nuevos ataques: el WTI sube 5,2% a US$74,1 y el Brent 5,4% a US$78,2, presionando al alza la inflación esperada y al alza los treasuries (10 años en 4,53%).",
         "La tecnología se desinfla en dos frentes: Samsung decepcionó en IA y el KOSPI cayó a territorio bajista (–20% desde máximos); los futuros del Nasdaq retroceden 1,3% y el S&P 500 un 1,0%, con semiconductores como principal lastre.",
         "Chile enfrenta una semana de presión institucional simultánea: el Senado aprobó endeudamiento adicional por US$6.200 millones, el FMI ratificó su proyección de 1,8% de crecimiento con alerta fiscal, y el dólar se mantiene sobre $928."
+      ]
+    },
+    {
+      "fecha": "09-07",
+      "lineas": [
+        "Trump declara el cese al fuego con Irán \"terminado\" tras segundos ataques, pero hoy abre la puerta a negociación: el WTI sube hoy +0,9% a US$74,2 y el Brent +1,0% a US$78,8, el oro avanza +0,9% a US$4.108 y los futuros de Wall Street recuperan terreno (+0,1% S&P 500; +0,5% Nasdaq), en una jornada donde la inflación vuelve a ser el riesgo macro central para la Fed.",
+        "La Fed mostró división interna en su reunión de junio: las minutas publicadas ayer revelaron que \"algunos\" funcionarios vieron caso para subir tasas en junio, mientras la mayoría prefirió esperar; el Treasury 10 años sube hoy 4 pb a 4,57%, acumulando +15 pb en el mes.",
+        "En Chile, el PPD acordó con el Gobierno una invariabilidad tributaria escalonada en la megarreforma —sobretasa del 1,5% e invariabilidad de 10 a 20 años según monto de inversión—, desactivando la amenaza de ir al TC y generando reacciones cruzadas en la oposición; mientras tanto el IPC de junio marcó 0% mensual y el dólar escala a $935, su mayor nivel en meses."
       ]
     }
   ]
