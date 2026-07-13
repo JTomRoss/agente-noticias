@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "08-07",
-      "lineas": [
-        "Trump declara el fin del alto el fuego con Irán y EE.UU. lanza nuevos ataques: el WTI sube 5,2% a US$74,1 y el Brent 5,4% a US$78,2, presionando al alza la inflación esperada y al alza los treasuries (10 años en 4,53%).",
-        "La tecnología se desinfla en dos frentes: Samsung decepcionó en IA y el KOSPI cayó a territorio bajista (–20% desde máximos); los futuros del Nasdaq retroceden 1,3% y el S&P 500 un 1,0%, con semiconductores como principal lastre.",
-        "Chile enfrenta una semana de presión institucional simultánea: el Senado aprobó endeudamiento adicional por US$6.200 millones, el FMI ratificó su proyección de 1,8% de crecimiento con alerta fiscal, y el dólar se mantiene sobre $928."
-      ]
-    },
-    {
       "fecha": "09-07",
       "lineas": [
         "Trump declara el cese al fuego con Irán \"terminado\" tras segundos ataques, pero hoy abre la puerta a negociación: el WTI sube hoy +0,9% a US$74,2 y el Brent +1,0% a US$78,8, el oro avanza +0,9% a US$4.108 y los futuros de Wall Street recuperan terreno (+0,1% S&P 500; +0,5% Nasdaq), en una jornada donde la inflación vuelve a ser el riesgo macro central para la Fed.",
@@ -23,6 +15,14 @@
         "SK Hynix debuta en EE.UU. con una de las mayores captaciones de capital del año y arrastra al alza a los semiconductores, compensando en gran medida el ruido geopolítico del Estrecho de Ormuz.",
         "En Chile, el IPC de junio marcó 0% mensual —bajo las estimaciones— mientras el peso se aprecia y el cobre sube, pero el debate sobre el recorte de tasa del Banco Central se complica por la inflación acumulada y el conflicto en Medio Oriente.",
         "La megarreforma avanza con tensiones: el PPD selló un acuerdo de invariabilidad tributaria con el Gobierno, el ejecutivo propone rebajar el impuesto corporativo al 22% y el coordinador eléctrico advierte posible déficit de abastecimiento."
+      ]
+    },
+    {
+      "fecha": "13-07",
+      "lineas": [
+        "El petróleo se dispara más de 3% y arrastra bonos y bolsas mientras EE.UU. e Irán intercambian ataques en el Estrecho de Ormuz, cuyo cierre temporal amenaza el suministro global de energía y combustible de aviación.",
+        "Los futuros de Wall Street retroceden —S&P 500 –0,3%, Nasdaq –0,9%— y los treasuries escalan (2Y en 3,96%, 10Y en 4,57%) ante la perspectiva de que la tensión en Medio Oriente complique la senda desinflacionaria de la Fed justo antes de que su nuevo presidente comparezca en el Congreso.",
+        "En Chile, la megarreforma tributaria llega a semana decisiva con votación en el Senado el miércoles 15, el PPD condiciona su apoyo a una rebaja del impuesto a las bencinas, y encuestas Cadem y Criteria revelan que la economía es el área peor evaluada del Gobierno de Kast con desaprobación en 58%."
       ]
     }
   ]
