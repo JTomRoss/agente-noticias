@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "09-07",
-      "lineas": [
-        "Trump declara el cese al fuego con Irán \"terminado\" tras segundos ataques, pero hoy abre la puerta a negociación: el WTI sube hoy +0,9% a US$74,2 y el Brent +1,0% a US$78,8, el oro avanza +0,9% a US$4.108 y los futuros de Wall Street recuperan terreno (+0,1% S&P 500; +0,5% Nasdaq), en una jornada donde la inflación vuelve a ser el riesgo macro central para la Fed.",
-        "La Fed mostró división interna en su reunión de junio: las minutas publicadas ayer revelaron que \"algunos\" funcionarios vieron caso para subir tasas en junio, mientras la mayoría prefirió esperar; el Treasury 10 años sube hoy 4 pb a 4,57%, acumulando +15 pb en el mes.",
-        "En Chile, el PPD acordó con el Gobierno una invariabilidad tributaria escalonada en la megarreforma —sobretasa del 1,5% e invariabilidad de 10 a 20 años según monto de inversión—, desactivando la amenaza de ir al TC y generando reacciones cruzadas en la oposición; mientras tanto el IPC de junio marcó 0% mensual y el dólar escala a $935, su mayor nivel en meses."
-      ]
-    },
-    {
       "fecha": "10-07",
       "lineas": [
         "SK Hynix debuta en EE.UU. con una de las mayores captaciones de capital del año y arrastra al alza a los semiconductores, compensando en gran medida el ruido geopolítico del Estrecho de Ormuz.",
@@ -23,6 +15,14 @@
         "El petróleo se dispara más de 3% y arrastra bonos y bolsas mientras EE.UU. e Irán intercambian ataques en el Estrecho de Ormuz, cuyo cierre temporal amenaza el suministro global de energía y combustible de aviación.",
         "Los futuros de Wall Street retroceden —S&P 500 –0,3%, Nasdaq –0,9%— y los treasuries escalan (2Y en 3,96%, 10Y en 4,57%) ante la perspectiva de que la tensión en Medio Oriente complique la senda desinflacionaria de la Fed justo antes de que su nuevo presidente comparezca en el Congreso.",
         "En Chile, la megarreforma tributaria llega a semana decisiva con votación en el Senado el miércoles 15, el PPD condiciona su apoyo a una rebaja del impuesto a las bencinas, y encuestas Cadem y Criteria revelan que la economía es el área peor evaluada del Gobierno de Kast con desaprobación en 58%."
+      ]
+    },
+    {
+      "fecha": "14-07",
+      "lineas": [
+        "Ormuz en llamas y petróleo en máximos : EE.UU. lanza nuevos ataques sobre Irán tras misiles iraníes contra buques del Golfo; el WTI sube +3,4% a US$80,8 y el Brent +4,5% a US$87, acumulando un alza de ~+19% en julio, lo que reaviva las expectativas de inflación y complica la agenda de la Fed.",
+        "La Fed en el foco máximo : el nuevo presidente de la Reserva Federal, Kevin Warsh, comparece hoy por primera vez ante el Congreso mientras los mercados de futuros asignan 50% de probabilidad a un alza de tasas en julio; los treasuries suben (10Y en 4,61%) y el dólar presiona al CLP a $932,7 (+0,6%).",
+        "Chile: la megarreforma entra a la sala del Senado con la Comisión de Hacienda habiendo despachado el proyecto con invariabilidad tributaria escalonada y tasa corporativa en 23%, mientras BofA sube su estimación de PIB a 3% para 2027 y el Cadem registra el nivel más alto de pesimismo económico personal en 12 años."
       ]
     }
   ]
