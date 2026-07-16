@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "13-07",
-      "lineas": [
-        "El petróleo se dispara más de 3% y arrastra bonos y bolsas mientras EE.UU. e Irán intercambian ataques en el Estrecho de Ormuz, cuyo cierre temporal amenaza el suministro global de energía y combustible de aviación.",
-        "Los futuros de Wall Street retroceden —S&P 500 –0,3%, Nasdaq –0,9%— y los treasuries escalan (2Y en 3,96%, 10Y en 4,57%) ante la perspectiva de que la tensión en Medio Oriente complique la senda desinflacionaria de la Fed justo antes de que su nuevo presidente comparezca en el Congreso.",
-        "En Chile, la megarreforma tributaria llega a semana decisiva con votación en el Senado el miércoles 15, el PPD condiciona su apoyo a una rebaja del impuesto a las bencinas, y encuestas Cadem y Criteria revelan que la economía es el área peor evaluada del Gobierno de Kast con desaprobación en 58%."
-      ]
-    },
-    {
       "fecha": "14-07",
       "lineas": [
         "Ormuz en llamas y petróleo en máximos : EE.UU. lanza nuevos ataques sobre Irán tras misiles iraníes contra buques del Golfo; el WTI sube +3,4% a US$80,8 y el Brent +4,5% a US$87, acumulando un alza de ~+19% en julio, lo que reaviva las expectativas de inflación y complica la agenda de la Fed.",
@@ -23,6 +15,14 @@
         "El IPC de EE.UU. bajó por primera vez desde 2020 y el mercado descuenta que la Fed salteará el alza de julio; los treasuries suben, el dólar cede y los futuros de Wall Street ganan terreno, aunque el presidente Warsh insiste en que \"la misión antiinflación no está cumplida\".",
         "Trump amenaza con ataques a plantas eléctricas iraníes la semana próxima , el petróleo WTI sube +1% hasta US$80,1 y los mercados de futuros occidentales marcan tensión récord en el suministro; ASML contrarresta el ruido con resultados que superan estimados y eleva su guía de ventas por segunda vez en el año.",
         "En Chile, la Comisión de Hacienda del Senado despachó la megarreforma tributaria con invariabilidad por tramos y tasa corporativa en 23%; Bci Corredora elevó su objetivo para el IPSA a 12.050 puntos y Bice Inversiones apunta a un alza de casi 14%, mientras el sistema frontal activa planes de emergencia en todo el país."
+      ]
+    },
+    {
+      "fecha": "16-07",
+      "lineas": [
+        "TSMC reporta utilidades +77% y anuncia US$100 mil millones adicionales en Arizona , consolidando el auge de IA en los semiconductores; los futuros del Nasdaq retroceden igual –0,6% tras el alza reciente, con chipmakers que pesan sobre el índice.",
+        "Irán amenaza con cerrar el estrecho de Ormuz y EE.UU. reanuda el bloqueo de puertos iraníes , manteniendo el petróleo cerca de US$80/barril y al oro en US$4.037 como activo refugio bajo presión geopolítica.",
+        "El Senado de Chile despachó la megarreforma tributaria tras once horas de votación ; JP Morgan la califica como un cambio que \"podría mejorar significativamente las perspectivas de la economía chilena\", aunque la Cámara de Diputados aún debe ratificarla."
       ]
     }
   ]
