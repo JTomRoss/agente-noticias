@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "14-07",
-      "lineas": [
-        "Ormuz en llamas y petróleo en máximos : EE.UU. lanza nuevos ataques sobre Irán tras misiles iraníes contra buques del Golfo; el WTI sube +3,4% a US$80,8 y el Brent +4,5% a US$87, acumulando un alza de ~+19% en julio, lo que reaviva las expectativas de inflación y complica la agenda de la Fed.",
-        "La Fed en el foco máximo : el nuevo presidente de la Reserva Federal, Kevin Warsh, comparece hoy por primera vez ante el Congreso mientras los mercados de futuros asignan 50% de probabilidad a un alza de tasas en julio; los treasuries suben (10Y en 4,61%) y el dólar presiona al CLP a $932,7 (+0,6%).",
-        "Chile: la megarreforma entra a la sala del Senado con la Comisión de Hacienda habiendo despachado el proyecto con invariabilidad tributaria escalonada y tasa corporativa en 23%, mientras BofA sube su estimación de PIB a 3% para 2027 y el Cadem registra el nivel más alto de pesimismo económico personal en 12 años."
-      ]
-    },
-    {
       "fecha": "15-07",
       "lineas": [
         "El IPC de EE.UU. bajó por primera vez desde 2020 y el mercado descuenta que la Fed salteará el alza de julio; los treasuries suben, el dólar cede y los futuros de Wall Street ganan terreno, aunque el presidente Warsh insiste en que \"la misión antiinflación no está cumplida\".",
@@ -23,6 +15,14 @@
         "TSMC reporta utilidades +77% y anuncia US$100 mil millones adicionales en Arizona , consolidando el auge de IA en los semiconductores; los futuros del Nasdaq retroceden igual –0,6% tras el alza reciente, con chipmakers que pesan sobre el índice.",
         "Irán amenaza con cerrar el estrecho de Ormuz y EE.UU. reanuda el bloqueo de puertos iraníes , manteniendo el petróleo cerca de US$80/barril y al oro en US$4.037 como activo refugio bajo presión geopolítica.",
         "El Senado de Chile despachó la megarreforma tributaria tras once horas de votación ; JP Morgan la califica como un cambio que \"podría mejorar significativamente las perspectivas de la economía chilena\", aunque la Cámara de Diputados aún debe ratificarla."
+      ]
+    },
+    {
+      "fecha": "17-07",
+      "lineas": [
+        "TSMC decepciona y arrastra a los chips globales: pese a utilidades récord, las guías cautelosas reavivan el debate sobre el techo del ciclo de IA, con futuros del Nasdaq en -1,6% y bolsas asiáticas en modo \"bloodbath\".",
+        "Irán y petróleo al alza: EEUU reanuda el bloqueo naval a Irán y expande ataques a Siria y Bahréin; el WTI sube +1,3% hasta US$80 y el Brent alcanza US$85,9, mientras la Fed señala que la inflación es \"preocupante\" y varios gobernadores abogan por tasas más altas.",
+        "La megarreforma chilena pasa el Senado y espera la Cámara: el Senado despachó el proyecto con ajuste al impuesto corporativo y exención de contribuciones para mayores de 65 años; JP Morgan la calificó como un cambio que \"mejoraría significativamente las perspectivas de la economía chilena\", mientras Sanhattan ve oportunidad de revalorización."
       ]
     }
   ]
