@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "16-07",
-      "lineas": [
-        "TSMC reporta utilidades +77% y anuncia US$100 mil millones adicionales en Arizona , consolidando el auge de IA en los semiconductores; los futuros del Nasdaq retroceden igual –0,6% tras el alza reciente, con chipmakers que pesan sobre el índice.",
-        "Irán amenaza con cerrar el estrecho de Ormuz y EE.UU. reanuda el bloqueo de puertos iraníes , manteniendo el petróleo cerca de US$80/barril y al oro en US$4.037 como activo refugio bajo presión geopolítica.",
-        "El Senado de Chile despachó la megarreforma tributaria tras once horas de votación ; JP Morgan la califica como un cambio que \"podría mejorar significativamente las perspectivas de la economía chilena\", aunque la Cámara de Diputados aún debe ratificarla."
-      ]
-    },
-    {
       "fecha": "17-07",
       "lineas": [
         "TSMC decepciona y arrastra a los chips globales: pese a utilidades récord, las guías cautelosas reavivan el debate sobre el techo del ciclo de IA, con futuros del Nasdaq en -1,6% y bolsas asiáticas en modo \"bloodbath\".",
@@ -23,6 +15,14 @@
         "El Brent toca US$90 y el conflicto EE.UU.-Irán amenaza el Estrecho de Ormuz: los ataques sobre tanqueros y la escasez de cargamentos en el Golfo empujan el crudo a máximos recientes, elevan los costos de los refinadores y presionan la inflación global.",
         "La temporada de resultados Big Tech arranca esta semana con Alphabet y Tesla: los mercados ponen a prueba si el gasto en IA puede sostenerse; futuros del S&P 500 suben +0,3% y el Nasdaq +0,7%, pero el apetito por cobertura crece.",
         "En Chile, el sistema frontal dejó cinco muertos y el Gobierno posterga impuestos para 29 comunas: el temporal activa el debate sobre el estado de catástrofe y golpea a distribuidoras eléctricas, mientras Uber prepara una oferta por Delivery Hero con efectos directos en el mercado local."
+      ]
+    },
+    {
+      "fecha": "21-07",
+      "lineas": [
+        "Petróleo cede terreno y bolsas rebotan ante reportes de mediadores que empujan un posible cese al fuego de diez días en Medio Oriente; los futuros del S&P 500 suben +0,6% y el Nasdaq +1,4%, liderados por semiconductores.",
+        "Jamie Dimon advierte que los mercados subestiman los riesgos y declara que no compraría acciones ni Treasuries a los precios actuales, sumando presión retórica a una sesión donde los yields del Treasury a 10 años escalan a 4,60%.",
+        "En Chile, la megarreforma laboral enfrenta su tercer trámite en la Cámara en un día marcado por el anatocismo como batalla paralela: el Banco Central, BancoEstado y la banca privada se unen para rechazar la indicación que prohíbe el interés sobre interés."
       ]
     }
   ]
