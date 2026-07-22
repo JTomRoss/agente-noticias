@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "17-07",
-      "lineas": [
-        "TSMC decepciona y arrastra a los chips globales: pese a utilidades récord, las guías cautelosas reavivan el debate sobre el techo del ciclo de IA, con futuros del Nasdaq en -1,6% y bolsas asiáticas en modo \"bloodbath\".",
-        "Irán y petróleo al alza: EEUU reanuda el bloqueo naval a Irán y expande ataques a Siria y Bahréin; el WTI sube +1,3% hasta US$80 y el Brent alcanza US$85,9, mientras la Fed señala que la inflación es \"preocupante\" y varios gobernadores abogan por tasas más altas.",
-        "La megarreforma chilena pasa el Senado y espera la Cámara: el Senado despachó el proyecto con ajuste al impuesto corporativo y exención de contribuciones para mayores de 65 años; JP Morgan la calificó como un cambio que \"mejoraría significativamente las perspectivas de la economía chilena\", mientras Sanhattan ve oportunidad de revalorización."
-      ]
-    },
-    {
       "fecha": "20-07",
       "lineas": [
         "El Brent toca US$90 y el conflicto EE.UU.-Irán amenaza el Estrecho de Ormuz: los ataques sobre tanqueros y la escasez de cargamentos en el Golfo empujan el crudo a máximos recientes, elevan los costos de los refinadores y presionan la inflación global.",
@@ -23,6 +15,14 @@
         "Petróleo cede terreno y bolsas rebotan ante reportes de mediadores que empujan un posible cese al fuego de diez días en Medio Oriente; los futuros del S&P 500 suben +0,6% y el Nasdaq +1,4%, liderados por semiconductores.",
         "Jamie Dimon advierte que los mercados subestiman los riesgos y declara que no compraría acciones ni Treasuries a los precios actuales, sumando presión retórica a una sesión donde los yields del Treasury a 10 años escalan a 4,60%.",
         "En Chile, la megarreforma laboral enfrenta su tercer trámite en la Cámara en un día marcado por el anatocismo como batalla paralela: el Banco Central, BancoEstado y la banca privada se unen para rechazar la indicación que prohíbe el interés sobre interés."
+      ]
+    },
+    {
+      "fecha": "22-07",
+      "lineas": [
+        "El conflicto con Irán presiona energía y tasas: el WTI sube +2,6% a US$87,2 —+51,8% en lo que va del año— mientras el Secretario Rubio declara que Irán \"no está siendo serio\" en las negociaciones, y el Treasury a 10 años alcanza 4,63%, su máximo de los últimos dos meses.",
+        "Chile aprueba la megarreforma, con un artículo en disputa: el grueso del proyecto de reactivación fue despachado para convertirse en ley, con gremios empresariales celebrando el avance; solo un artículo pasa a comisión mixta, mientras el debate sobre el anatocismo (prohibición del interés sobre interés) genera una inusual alianza entre BancoEstado, banca privada y el Banco Central.",
+        "La industria japonesa concentra la atención macro global: el yen cae a mínimos de 40 años frente al dólar —superando la barrera de 163—, Tokio amenaza con acción \"decisiva\" y el BOJ señala apertura a subir tasas más rápido de lo esperado; en paralelo, las importaciones japonesas saltan a un récord histórico empujadas por el alza del crudo."
       ]
     }
   ]
