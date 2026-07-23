@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "20-07",
-      "lineas": [
-        "El Brent toca US$90 y el conflicto EE.UU.-Irán amenaza el Estrecho de Ormuz: los ataques sobre tanqueros y la escasez de cargamentos en el Golfo empujan el crudo a máximos recientes, elevan los costos de los refinadores y presionan la inflación global.",
-        "La temporada de resultados Big Tech arranca esta semana con Alphabet y Tesla: los mercados ponen a prueba si el gasto en IA puede sostenerse; futuros del S&P 500 suben +0,3% y el Nasdaq +0,7%, pero el apetito por cobertura crece.",
-        "En Chile, el sistema frontal dejó cinco muertos y el Gobierno posterga impuestos para 29 comunas: el temporal activa el debate sobre el estado de catástrofe y golpea a distribuidoras eléctricas, mientras Uber prepara una oferta por Delivery Hero con efectos directos en el mercado local."
-      ]
-    },
-    {
       "fecha": "21-07",
       "lineas": [
         "Petróleo cede terreno y bolsas rebotan ante reportes de mediadores que empujan un posible cese al fuego de diez días en Medio Oriente; los futuros del S&P 500 suben +0,6% y el Nasdaq +1,4%, liderados por semiconductores.",
@@ -23,6 +15,14 @@
         "El conflicto con Irán presiona energía y tasas: el WTI sube +2,6% a US$87,2 —+51,8% en lo que va del año— mientras el Secretario Rubio declara que Irán \"no está siendo serio\" en las negociaciones, y el Treasury a 10 años alcanza 4,63%, su máximo de los últimos dos meses.",
         "Chile aprueba la megarreforma, con un artículo en disputa: el grueso del proyecto de reactivación fue despachado para convertirse en ley, con gremios empresariales celebrando el avance; solo un artículo pasa a comisión mixta, mientras el debate sobre el anatocismo (prohibición del interés sobre interés) genera una inusual alianza entre BancoEstado, banca privada y el Banco Central.",
         "La industria japonesa concentra la atención macro global: el yen cae a mínimos de 40 años frente al dólar —superando la barrera de 163—, Tokio amenaza con acción \"decisiva\" y el BOJ señala apertura a subir tasas más rápido de lo esperado; en paralelo, las importaciones japonesas saltan a un récord histórico empujadas por el alza del crudo."
+      ]
+    },
+    {
+      "fecha": "23-07",
+      "lineas": [
+        "El petróleo escala a US$90,5 (WTI) y los bonos globales se venden mientras Houthis atacan tanqueros saudíes y el Estrecho de Ormuz enfrenta su mayor amenaza de interrupción en años, enviando el Brent cerca de US$93 y empujando los yields del Treasury a 10 años a 4,66%.",
+        "Alphabet y Tesla decepcionan: el gasto en IA aplasta el ánimo de Wall Street con futuros del S&P 500 y Nasdaq cayendo -0,3%, Tesla reportando flujo de caja libre negativo y márgenes comprimidos, y Google quemando miles de millones en capex de infraestructura de IA.",
+        "En Chile, la megarreforma se posterga a agosto tras el retiro de urgencia por el Gobierno al no contar con votos suficientes en el Senado, mientras el dólar sube a $937 presionado por la tensión en Medio Oriente y el cobre se mantiene firme en US$6,46/lb."
       ]
     }
   ]
