@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "21-07",
-      "lineas": [
-        "Petróleo cede terreno y bolsas rebotan ante reportes de mediadores que empujan un posible cese al fuego de diez días en Medio Oriente; los futuros del S&P 500 suben +0,6% y el Nasdaq +1,4%, liderados por semiconductores.",
-        "Jamie Dimon advierte que los mercados subestiman los riesgos y declara que no compraría acciones ni Treasuries a los precios actuales, sumando presión retórica a una sesión donde los yields del Treasury a 10 años escalan a 4,60%.",
-        "En Chile, la megarreforma laboral enfrenta su tercer trámite en la Cámara en un día marcado por el anatocismo como batalla paralela: el Banco Central, BancoEstado y la banca privada se unen para rechazar la indicación que prohíbe el interés sobre interés."
-      ]
-    },
-    {
       "fecha": "22-07",
       "lineas": [
         "El conflicto con Irán presiona energía y tasas: el WTI sube +2,6% a US$87,2 —+51,8% en lo que va del año— mientras el Secretario Rubio declara que Irán \"no está siendo serio\" en las negociaciones, y el Treasury a 10 años alcanza 4,63%, su máximo de los últimos dos meses.",
@@ -23,6 +15,14 @@
         "El petróleo escala a US$90,5 (WTI) y los bonos globales se venden mientras Houthis atacan tanqueros saudíes y el Estrecho de Ormuz enfrenta su mayor amenaza de interrupción en años, enviando el Brent cerca de US$93 y empujando los yields del Treasury a 10 años a 4,66%.",
         "Alphabet y Tesla decepcionan: el gasto en IA aplasta el ánimo de Wall Street con futuros del S&P 500 y Nasdaq cayendo -0,3%, Tesla reportando flujo de caja libre negativo y márgenes comprimidos, y Google quemando miles de millones en capex de infraestructura de IA.",
         "En Chile, la megarreforma se posterga a agosto tras el retiro de urgencia por el Gobierno al no contar con votos suficientes en el Senado, mientras el dólar sube a $937 presionado por la tensión en Medio Oriente y el cobre se mantiene firme en US$6,46/lb."
+      ]
+    },
+    {
+      "fecha": "24-07",
+      "lineas": [
+        "El petróleo retrocede desde US$100, pero el daño ya está hecho: el Brent cae -8,7% en el día según la tabla, tras haber superado los US$100 ayer; el Treasury a 10 años sube a 4,70% y el talk de mercado gira hacia estanflación y posibles alzas de tasas de la Fed.",
+        "La \"Magnificient 7\" pierde cientos de miles de millones en bolsa después de que Alphabet y Tesla reportaran gasto en IA que superó las expectativas de ingresos; Intel, en cambio, sorprende con su crecimiento más rápido en 15 años.",
+        "Chile encaja un doble golpe: EE.UU. impone un arancel de 12,5% a productos chilenos bajo el argumento de \"trabajo forzoso\", mientras el dólar cierra en $945 —máximo en nueve meses— afectado por la caída del cobre y la fortaleza global del billete verde."
       ]
     }
   ]
