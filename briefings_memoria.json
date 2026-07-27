@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "22-07",
-      "lineas": [
-        "El conflicto con Irán presiona energía y tasas: el WTI sube +2,6% a US$87,2 —+51,8% en lo que va del año— mientras el Secretario Rubio declara que Irán \"no está siendo serio\" en las negociaciones, y el Treasury a 10 años alcanza 4,63%, su máximo de los últimos dos meses.",
-        "Chile aprueba la megarreforma, con un artículo en disputa: el grueso del proyecto de reactivación fue despachado para convertirse en ley, con gremios empresariales celebrando el avance; solo un artículo pasa a comisión mixta, mientras el debate sobre el anatocismo (prohibición del interés sobre interés) genera una inusual alianza entre BancoEstado, banca privada y el Banco Central.",
-        "La industria japonesa concentra la atención macro global: el yen cae a mínimos de 40 años frente al dólar —superando la barrera de 163—, Tokio amenaza con acción \"decisiva\" y el BOJ señala apertura a subir tasas más rápido de lo esperado; en paralelo, las importaciones japonesas saltan a un récord histórico empujadas por el alza del crudo."
-      ]
-    },
-    {
       "fecha": "23-07",
       "lineas": [
         "El petróleo escala a US$90,5 (WTI) y los bonos globales se venden mientras Houthis atacan tanqueros saudíes y el Estrecho de Ormuz enfrenta su mayor amenaza de interrupción en años, enviando el Brent cerca de US$93 y empujando los yields del Treasury a 10 años a 4,66%.",
@@ -23,6 +15,14 @@
         "El petróleo retrocede desde US$100, pero el daño ya está hecho: el Brent cae -8,7% en el día según la tabla, tras haber superado los US$100 ayer; el Treasury a 10 años sube a 4,70% y el talk de mercado gira hacia estanflación y posibles alzas de tasas de la Fed.",
         "La \"Magnificient 7\" pierde cientos de miles de millones en bolsa después de que Alphabet y Tesla reportaran gasto en IA que superó las expectativas de ingresos; Intel, en cambio, sorprende con su crecimiento más rápido en 15 años.",
         "Chile encaja un doble golpe: EE.UU. impone un arancel de 12,5% a productos chilenos bajo el argumento de \"trabajo forzoso\", mientras el dólar cierra en $945 —máximo en nueve meses— afectado por la caída del cobre y la fortaleza global del billete verde."
+      ]
+    },
+    {
+      "fecha": "27-07",
+      "lineas": [
+        "La pausa en el conflicto EE.UU.-Irán desploma el petróleo más de 7% y relaja los mercados: futuros del S&P 500 suben +1,0% y el Nasdaq +1,6%, mientras el oro avanza +0,9% como reserva de valor ante la incertidumbre que persiste.",
+        "La Fed toma el centro del escenario esta semana con su reunión de política monetaria, en un contexto donde la caída del crudo reduce presiones de alza de tasas, pero los bonistas siguen en guardia: el Treasury a 10 años cotiza en 4,68%.",
+        "Chile cierra un lunes complejo: el peso cede frente al dólar (USD/CLP en 948,5, +0,7%), la reconstrucción post-sistema frontal en Coquimbo podría superar los US$500 millones y la megarreforma tributaria avanza hacia su promulgación."
       ]
     }
   ]
