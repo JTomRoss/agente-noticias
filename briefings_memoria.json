@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "23-07",
-      "lineas": [
-        "El petróleo escala a US$90,5 (WTI) y los bonos globales se venden mientras Houthis atacan tanqueros saudíes y el Estrecho de Ormuz enfrenta su mayor amenaza de interrupción en años, enviando el Brent cerca de US$93 y empujando los yields del Treasury a 10 años a 4,66%.",
-        "Alphabet y Tesla decepcionan: el gasto en IA aplasta el ánimo de Wall Street con futuros del S&P 500 y Nasdaq cayendo -0,3%, Tesla reportando flujo de caja libre negativo y márgenes comprimidos, y Google quemando miles de millones en capex de infraestructura de IA.",
-        "En Chile, la megarreforma se posterga a agosto tras el retiro de urgencia por el Gobierno al no contar con votos suficientes en el Senado, mientras el dólar sube a $937 presionado por la tensión en Medio Oriente y el cobre se mantiene firme en US$6,46/lb."
-      ]
-    },
-    {
       "fecha": "24-07",
       "lineas": [
         "El petróleo retrocede desde US$100, pero el daño ya está hecho: el Brent cae -8,7% en el día según la tabla, tras haber superado los US$100 ayer; el Treasury a 10 años sube a 4,70% y el talk de mercado gira hacia estanflación y posibles alzas de tasas de la Fed.",
@@ -23,6 +15,14 @@
         "La pausa en el conflicto EE.UU.-Irán desploma el petróleo más de 7% y relaja los mercados: futuros del S&P 500 suben +1,0% y el Nasdaq +1,6%, mientras el oro avanza +0,9% como reserva de valor ante la incertidumbre que persiste.",
         "La Fed toma el centro del escenario esta semana con su reunión de política monetaria, en un contexto donde la caída del crudo reduce presiones de alza de tasas, pero los bonistas siguen en guardia: el Treasury a 10 años cotiza en 4,68%.",
         "Chile cierra un lunes complejo: el peso cede frente al dólar (USD/CLP en 948,5, +0,7%), la reconstrucción post-sistema frontal en Coquimbo podría superar los US$500 millones y la megarreforma tributaria avanza hacia su promulgación."
+      ]
+    },
+    {
+      "fecha": "28-07",
+      "lineas": [
+        "Venta masiva en chips por amenaza china. El IPO de CXMT en Shanghai detonó temores de competencia en memoria y arrastró a SK Hynix, Micron y Nvidia; futuros del Nasdaq caen -0,9% y los índices globales registran su peor semana en un mes.",
+        "Chile coloca bonos en Europa con demanda récord. El Ministerio de Hacienda emitió bonos por US$3.660 millones en mercados europeos con una demanda 2,8 veces superior a la oferta, respaldada por la ampliación del techo de deuda aprobada días atrás; el peso se aprecia -0,7% frente al dólar.",
+        "La Fed decide tasas hoy en un contexto incierto. Los mercados descuentan una pausa, pero Citadel Securities advierte que el próximo presidente designado Kevin Warsh podría sorprender con un alza; el Treasury a 10 años cede 4 pb a 4,64% mientras el petróleo extiende su caída."
       ]
     }
   ]
