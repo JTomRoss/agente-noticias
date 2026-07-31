@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "28-07",
-      "lineas": [
-        "Venta masiva en chips por amenaza china. El IPO de CXMT en Shanghai detonó temores de competencia en memoria y arrastró a SK Hynix, Micron y Nvidia; futuros del Nasdaq caen -0,9% y los índices globales registran su peor semana en un mes.",
-        "Chile coloca bonos en Europa con demanda récord. El Ministerio de Hacienda emitió bonos por US$3.660 millones en mercados europeos con una demanda 2,8 veces superior a la oferta, respaldada por la ampliación del techo de deuda aprobada días atrás; el peso se aprecia -0,7% frente al dólar.",
-        "La Fed decide tasas hoy en un contexto incierto. Los mercados descuentan una pausa, pero Citadel Securities advierte que el próximo presidente designado Kevin Warsh podría sorprender con un alza; el Treasury a 10 años cede 4 pb a 4,64% mientras el petróleo extiende su caída."
-      ]
-    },
-    {
       "fecha": "29-07",
       "lineas": [
         "Irán lanza ataque balístico sorpresa contra fuerzas de EE.UU.: el WTI sube +4,7% a US$82,9 y el Brent +5,2% a US$88,4, mientras el oro avanza +1,3% a US$4.087,8 como activo refugio, y los futuros de renta variable abren planos pese al shock geopolítico.",
@@ -23,6 +15,14 @@
         "La IA divide Big Tech: Microsoft sube ~9% tras reportar resultados sólidos impulsados por la nube y la IA, mientras Meta cae ~9% al decepcionar expectativas de monetización; el Nasdaq rebota +1,0% en futuros pese a la semana difícil.",
         "Irán escala y amenaza represalia: Teherán advirtió que \"castigará al agresor hoy\" tras una nueva ola de ataques aéreos de EE.UU.; el WTI cotiza en US$84,1 y Shell reportó su mejor trimestre en cuatro años beneficiada por los precios del crudo.",
         "Fed dividida presiona bonos y pone a Warsh en la mira: con tres votos disidentes a favor de un alza, el Treasury a 10 años sube 2 pb a 4,62% y gestores como Gundlach advierten que el mercado de bonos exige acción real; el oro avanza +2,5% a US$4.135,8."
+      ]
+    },
+    {
+      "fecha": "31-07",
+      "lineas": [
+        "Amazon sube 12% y Apple cae 7% tras sus reportes: el mercado premia la IA de nube y castiga la presión sobre márgenes por escasez de memoria, dividiendo al sector tecnológico y empujando los futuros del Nasdaq +1,2%.",
+        "Japón intervino el yen y el BOJ mantuvo tasas: el yen se apreció cerca de 3% en horas ante lo que fuentes confirman como intervención oficial, mientras el banco central japonés dejó la puerta abierta a un alza en septiembre.",
+        "Chile: señales mixtas en Codelco y reforma previsional: el presidente de la cuprífera cerró la puerta a la privatización, el gobierno envió señales ambiguas sobre capital privado, y desde agosto sube la cotización previsional como parte de la reforma de pensiones."
       ]
     }
   ]
