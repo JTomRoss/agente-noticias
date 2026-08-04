@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "30-07",
-      "lineas": [
-        "La IA divide Big Tech: Microsoft sube ~9% tras reportar resultados sólidos impulsados por la nube y la IA, mientras Meta cae ~9% al decepcionar expectativas de monetización; el Nasdaq rebota +1,0% en futuros pese a la semana difícil.",
-        "Irán escala y amenaza represalia: Teherán advirtió que \"castigará al agresor hoy\" tras una nueva ola de ataques aéreos de EE.UU.; el WTI cotiza en US$84,1 y Shell reportó su mejor trimestre en cuatro años beneficiada por los precios del crudo.",
-        "Fed dividida presiona bonos y pone a Warsh en la mira: con tres votos disidentes a favor de un alza, el Treasury a 10 años sube 2 pb a 4,62% y gestores como Gundlach advierten que el mercado de bonos exige acción real; el oro avanza +2,5% a US$4.135,8."
-      ]
-    },
-    {
       "fecha": "31-07",
       "lineas": [
         "Amazon sube 12% y Apple cae 7% tras sus reportes: el mercado premia la IA de nube y castiga la presión sobre márgenes por escasez de memoria, dividiendo al sector tecnológico y empujando los futuros del Nasdaq +1,2%.",
@@ -23,6 +15,14 @@
         "El petróleo se desploma más de 6% y los futuros de renta variable suben tras el anuncio de Trump de suspender los ataques a Irán, aliviando la prima de riesgo geopolítico que había sostenido el crudo por encima de US$84.",
         "EE.UU. y Japón coordinan intervención en el yen por primera vez en décadas, con Bessent advirtiendo que hay más munición disponible; la moneda japonesa acumula su tercer día consecutivo de apreciación.",
         "En Chile, la reforma previsional entra en vigor con el segundo punto porcentual adicional de cotización que deben pagar los empleadores desde este mes, mientras Hacienda prepara un proyecto de mercado de capitales y el desempleo no cede del 9,4%."
+      ]
+    },
+    {
+      "fecha": "04-08",
+      "lineas": [
+        "Palantir salta ~16% y empuja los futuros al alza tras reportar ingresos comerciales en EE.UU. que el propio CEO calificó de \"de otro mundo\", con los futuros del S&P 500 y Nasdaq subiendo +1,6% y +2,4% respectivamente al inicio del día.",
+        "El petróleo se desploma cerca de 5% en Brent mientras Trump advierte que las negociaciones con Irán son la \"última oportunidad\", aunque un buque reportó ser alcanzado en el Estrecho de Ormuz horas después, tensando de nuevo la prima geopolítica.",
+        "Chile esquiva la recesión técnica con un Imacec de +2,4% en junio —el primer positivo del año—, lo que empujó al dólar a la baja y generó un debate sobre si la recuperación es sostenible, en medio de una confianza empresarial en mínimos de año y medio."
       ]
     }
   ]
