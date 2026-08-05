@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "31-07",
-      "lineas": [
-        "Amazon sube 12% y Apple cae 7% tras sus reportes: el mercado premia la IA de nube y castiga la presión sobre márgenes por escasez de memoria, dividiendo al sector tecnológico y empujando los futuros del Nasdaq +1,2%.",
-        "Japón intervino el yen y el BOJ mantuvo tasas: el yen se apreció cerca de 3% en horas ante lo que fuentes confirman como intervención oficial, mientras el banco central japonés dejó la puerta abierta a un alza en septiembre.",
-        "Chile: señales mixtas en Codelco y reforma previsional: el presidente de la cuprífera cerró la puerta a la privatización, el gobierno envió señales ambiguas sobre capital privado, y desde agosto sube la cotización previsional como parte de la reforma de pensiones."
-      ]
-    },
-    {
       "fecha": "03-08",
       "lineas": [
         "El petróleo se desploma más de 6% y los futuros de renta variable suben tras el anuncio de Trump de suspender los ataques a Irán, aliviando la prima de riesgo geopolítico que había sostenido el crudo por encima de US$84.",
@@ -23,6 +15,14 @@
         "Palantir salta ~16% y empuja los futuros al alza tras reportar ingresos comerciales en EE.UU. que el propio CEO calificó de \"de otro mundo\", con los futuros del S&P 500 y Nasdaq subiendo +1,6% y +2,4% respectivamente al inicio del día.",
         "El petróleo se desploma cerca de 5% en Brent mientras Trump advierte que las negociaciones con Irán son la \"última oportunidad\", aunque un buque reportó ser alcanzado en el Estrecho de Ormuz horas después, tensando de nuevo la prima geopolítica.",
         "Chile esquiva la recesión técnica con un Imacec de +2,4% en junio —el primer positivo del año—, lo que empujó al dólar a la baja y generó un debate sobre si la recuperación es sostenible, en medio de una confianza empresarial en mínimos de año y medio."
+      ]
+    },
+    {
+      "fecha": "05-08",
+      "lineas": [
+        "Wall Street toca récords impulsado por IA y esperanza iraní: el S&P 500 y el Dow cerraron en máximos históricos ayer, con la carrera de capex en inteligencia artificial (SpaceX, Eli Lilly, Disney) como catalizador; los futuros consolidan hoy con el S&P subiendo 0,4% y el petróleo rebotando moderadamente ante la amenaza hutí a un petrolero saudí.",
+        "El cobre anota un nuevo máximo histórico en Londres y el dólar se hunde en Chile: el metal rojo superó los US$6,60/lb ayer impulsado por flujos hacia EE.UU. que aprietan el mercado; el USD/CLP cede 1,5% hasta $910,6 —su nivel más bajo en más de un mes—, beneficiando al fisco y reforzando la narrativa de recuperación local.",
+        "La megarreforma tributaria chilena es despachada al Ejecutivo: el Congreso aprobó el controvertido mecanismo de compensación a municipios como último escollo; el gobierno celebra que \"Chile reabre las puertas a la inversión\", aunque economistas independientes advierten que el impacto real en el crecimiento será marginal."
       ]
     }
   ]
