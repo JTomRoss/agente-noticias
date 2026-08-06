@@ -2,27 +2,27 @@
   "version": 1,
   "urls": {
     "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/monthly-market-review": {
-      "signature": "b2c91ca101854b94f993630f62a388cbdd273b293647f30e03dfc0c9a567c548",
+      "signature": "ccc730719de11e355046b8869ac5dd1a158f9c13bdc4a823fad79dd0e57b4cf9",
       "headline": "Review of Markets over July 2026",
       "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/monthly-market-review/"
     },
     "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/fixed-income-views": {
-      "signature": "1a390cf555682407352f41f33530c271a93f2a1fb88c7d5a005888f6c695c24f",
+      "signature": "4002443d8fe37fca5f72bbe3849200c823810c21049336653acfc4c5845fa149",
       "headline": "Global Fixed Income Views 3Q 2026",
       "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/fixed-income-views/"
     },
     "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/equity-views": {
-      "signature": "3ebb89c071ebf295d8952824c9d7e3eaf5eedeabd55c367518f0e0e10076fe87",
+      "signature": "641ba3429ed5b92496e73b832758cc3cf7df176ca08b5ad2a31d2a0695a72238",
       "headline": "Global Equity Views 3Q 2026",
       "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/equity-views/"
     },
     "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/the-weekly-brief": {
-      "signature": "dd8a2e2bc64e16b019cfdb913ccd29f38353490ca4a9b97145abaa4c9beee7c9",
+      "signature": "f7aac8d525f796efc2809875d3b6bee4f7f368627dc80cc1594d6c167581f0d1",
       "headline": "The Weekly Brief",
       "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/market-insights/market-updates/the-weekly-brief/"
     },
     "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/asset-allocation-views": {
-      "signature": "b0179b59b59e9d79567102b54a083df03875a310de04b99a13b8b745501066f5",
+      "signature": "65de4488c4cdb7afa9bfc628356c1575315b4c953a386ca4fcea15b7eaf2adee",
       "headline": "Global Asset Allocation Views 3Q 2026",
       "page_url": "https://am.jpmorgan.com/gb/en/asset-management/per/insights/portfolio-insights/asset-class-views/asset-allocation-views/"
     }

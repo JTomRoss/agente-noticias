@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "03-08",
-      "lineas": [
-        "El petróleo se desploma más de 6% y los futuros de renta variable suben tras el anuncio de Trump de suspender los ataques a Irán, aliviando la prima de riesgo geopolítico que había sostenido el crudo por encima de US$84.",
-        "EE.UU. y Japón coordinan intervención en el yen por primera vez en décadas, con Bessent advirtiendo que hay más munición disponible; la moneda japonesa acumula su tercer día consecutivo de apreciación.",
-        "En Chile, la reforma previsional entra en vigor con el segundo punto porcentual adicional de cotización que deben pagar los empleadores desde este mes, mientras Hacienda prepara un proyecto de mercado de capitales y el desempleo no cede del 9,4%."
-      ]
-    },
-    {
       "fecha": "04-08",
       "lineas": [
         "Palantir salta ~16% y empuja los futuros al alza tras reportar ingresos comerciales en EE.UU. que el propio CEO calificó de \"de otro mundo\", con los futuros del S&P 500 y Nasdaq subiendo +1,6% y +2,4% respectivamente al inicio del día.",
@@ -23,6 +15,14 @@
         "Wall Street toca récords impulsado por IA y esperanza iraní: el S&P 500 y el Dow cerraron en máximos históricos ayer, con la carrera de capex en inteligencia artificial (SpaceX, Eli Lilly, Disney) como catalizador; los futuros consolidan hoy con el S&P subiendo 0,4% y el petróleo rebotando moderadamente ante la amenaza hutí a un petrolero saudí.",
         "El cobre anota un nuevo máximo histórico en Londres y el dólar se hunde en Chile: el metal rojo superó los US$6,60/lb ayer impulsado por flujos hacia EE.UU. que aprietan el mercado; el USD/CLP cede 1,5% hasta $910,6 —su nivel más bajo en más de un mes—, beneficiando al fisco y reforzando la narrativa de recuperación local.",
         "La megarreforma tributaria chilena es despachada al Ejecutivo: el Congreso aprobó el controvertido mecanismo de compensación a municipios como último escollo; el gobierno celebra que \"Chile reabre las puertas a la inversión\", aunque economistas independientes advierten que el impacto real en el crecimiento será marginal."
+      ]
+    },
+    {
+      "fecha": "06-08",
+      "lineas": [
+        "El cobre en máximos históricos y el USD/CLP cerca de $913 siguen siendo el motor del alivio fiscal chileno, aunque el Banco Central advierte que las empresas podrían haber postergado inversiones a la espera de que terminara la megarreforma.",
+        "La Fed mantiene postura vigilante sobre la inflación: las gobernadores Cook y Daly respaldaron la decisión de julio de no tocar tasas, pero Cook se declaró lista para subir si la inflación no cede, mientras Kashkari va más lejos y pide una alza inmediata.",
+        "Kast lanza agenda de seguridad y reforma constitucional tras la aprobación de la reforma miscelánea, con propuestas que incluyen estado de excepción en barrios críticos y apoyo de las FF.AA. a Carabineros."
       ]
     }
   ]
