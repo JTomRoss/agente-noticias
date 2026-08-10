@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "05-08",
-      "lineas": [
-        "Wall Street toca récords impulsado por IA y esperanza iraní: el S&P 500 y el Dow cerraron en máximos históricos ayer, con la carrera de capex en inteligencia artificial (SpaceX, Eli Lilly, Disney) como catalizador; los futuros consolidan hoy con el S&P subiendo 0,4% y el petróleo rebotando moderadamente ante la amenaza hutí a un petrolero saudí.",
-        "El cobre anota un nuevo máximo histórico en Londres y el dólar se hunde en Chile: el metal rojo superó los US$6,60/lb ayer impulsado por flujos hacia EE.UU. que aprietan el mercado; el USD/CLP cede 1,5% hasta $910,6 —su nivel más bajo en más de un mes—, beneficiando al fisco y reforzando la narrativa de recuperación local.",
-        "La megarreforma tributaria chilena es despachada al Ejecutivo: el Congreso aprobó el controvertido mecanismo de compensación a municipios como último escollo; el gobierno celebra que \"Chile reabre las puertas a la inversión\", aunque economistas independientes advierten que el impacto real en el crecimiento será marginal."
-      ]
-    },
-    {
       "fecha": "06-08",
       "lineas": [
         "El cobre en máximos históricos y el USD/CLP cerca de $913 siguen siendo el motor del alivio fiscal chileno, aunque el Banco Central advierte que las empresas podrían haber postergado inversiones a la espera de que terminara la megarreforma.",
@@ -23,6 +15,14 @@
         "El informe de empleo de julio (EE.UU.) es el evento del día: el mercado estima un alza moderada de nóminas con desempleo en 4,2%; si el dato sorprende al alza, aumenta la presión sobre la Fed para una subida de tasas, impulsando aún más los treasuries largos que ya suben 5 pb.",
         "Irán cierra el Estrecho de Ormuz a EE.UU. e Israel en su borrador negociador, el tráfico de buques casi se detiene y el petróleo sube pese a la baja diaria de hoy; el oro toca US$4.372 (+3,1%) como cobertura geopolítica de primer orden.",
         "En Chile, el Imacec vuelve a crecer tras cinco meses de caídas y el gobierno anuncia un plan para convertir los servicios financieros en el segundo sector exportador del país, mientras Fitch valora la megarreforma pero alerta sobre la trayectoria de la deuda pública."
+      ]
+    },
+    {
+      "fecha": "10-08",
+      "lineas": [
+        "El cobre supera US$6,62/lb y el oro toca US$4.400 impulsados por la caída de las apuestas a una alza de la Fed tras el débil reporte de empleo de julio en EE.UU., mientras los futuros de Wall Street abren ligeramente al alza a la espera del IPC de esta semana.",
+        "El Estrecho de Ormuz sigue sin solución : Irán condiciona la reapertura a concesiones concretas de EE.UU. mientras el petróleo rebota y el mercado vive en modo \"deal-or-no-deal\", con el WTI en US$78,9 y el Brent en US$84,4.",
+        "En Chile, la megarreforma ya es historia y el horizonte es la reforma al mercado de capitales : el ministro Quiroz señaló que \"viene ahora el mercado de capitales\" y Hacienda anticipa un crecimiento del gasto de entre 0% y 1% en el presupuesto 2027, mientras la inflación de julio se desaceleró al 3,5% anual."
       ]
     }
   ]
