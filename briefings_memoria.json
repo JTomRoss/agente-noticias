@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "07-08",
-      "lineas": [
-        "El informe de empleo de julio (EE.UU.) es el evento del día: el mercado estima un alza moderada de nóminas con desempleo en 4,2%; si el dato sorprende al alza, aumenta la presión sobre la Fed para una subida de tasas, impulsando aún más los treasuries largos que ya suben 5 pb.",
-        "Irán cierra el Estrecho de Ormuz a EE.UU. e Israel en su borrador negociador, el tráfico de buques casi se detiene y el petróleo sube pese a la baja diaria de hoy; el oro toca US$4.372 (+3,1%) como cobertura geopolítica de primer orden.",
-        "En Chile, el Imacec vuelve a crecer tras cinco meses de caídas y el gobierno anuncia un plan para convertir los servicios financieros en el segundo sector exportador del país, mientras Fitch valora la megarreforma pero alerta sobre la trayectoria de la deuda pública."
-      ]
-    },
-    {
       "fecha": "10-08",
       "lineas": [
         "El cobre supera US$6,62/lb y el oro toca US$4.400 impulsados por la caída de las apuestas a una alza de la Fed tras el débil reporte de empleo de julio en EE.UU., mientras los futuros de Wall Street abren ligeramente al alza a la espera del IPC de esta semana.",
@@ -23,6 +15,14 @@
         "Codelco retiene el 100% de sus utilidades de 2025 por primera vez en sus más de 50 años de historia: el gobierno capitaliza en vez de retirar dividendos, con reacciones mixtas en el Congreso que advierten que \"no es un cheque en blanco\".",
         "El petróleo sube más de 2% y el oro toca US$4.432 mientras las negociaciones por el Estrecho de Ormuz se atascan y Teherán eleva sus exigencias, encareciendo perspectivas de inflación y presionando yields largos en EE.UU.",
         "Nvidia ancla un financiamiento de US$500.000 millones junto a grandes bancos de Wall Street para infraestructura de IA, mientras Intel amplía su emisión de acciones a US$20.000 millones para financiar su regreso al negocio de chips avanzados."
+      ]
+    },
+    {
+      "fecha": "12-08",
+      "lineas": [
+        "El CPI de julio en EE.UU. es el evento del día: el mercado espera un alza moderada con energía a la baja, pero la Fed —dividida y presionada por Trump— necesita el dato para calibrar si sube o pausa; el oro en US$4.478 y los treasuries a 10 años en 4,68% reflejan la tensión.",
+        "El conflicto Irán–EE.UU. escala: un ataque Houthi mató seis personas en el Mar Rojo —las primeras víctimas en más de un año— y la IEA advierte que el cierre del Estrecho de Hormuz genera un déficit de oferta petrolera creciente; el petróleo cede levemente hoy pero el cobre sube +1,2%.",
+        "En Chile, el mapa Codelco–capitalización ocupa las portadas: el directorio confirma que el 100% de las utilidades de 2025 se reinvierte, Bernardo Fontaine descarta privatización y El Teniente exhibe cuatro proyectos por US$7.000 millones en disputa tras las detenciones por sismicidad."
       ]
     }
   ]
