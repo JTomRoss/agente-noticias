@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "10-08",
-      "lineas": [
-        "El cobre supera US$6,62/lb y el oro toca US$4.400 impulsados por la caída de las apuestas a una alza de la Fed tras el débil reporte de empleo de julio en EE.UU., mientras los futuros de Wall Street abren ligeramente al alza a la espera del IPC de esta semana.",
-        "El Estrecho de Ormuz sigue sin solución : Irán condiciona la reapertura a concesiones concretas de EE.UU. mientras el petróleo rebota y el mercado vive en modo \"deal-or-no-deal\", con el WTI en US$78,9 y el Brent en US$84,4.",
-        "En Chile, la megarreforma ya es historia y el horizonte es la reforma al mercado de capitales : el ministro Quiroz señaló que \"viene ahora el mercado de capitales\" y Hacienda anticipa un crecimiento del gasto de entre 0% y 1% en el presupuesto 2027, mientras la inflación de julio se desaceleró al 3,5% anual."
-      ]
-    },
-    {
       "fecha": "11-08",
       "lineas": [
         "Codelco retiene el 100% de sus utilidades de 2025 por primera vez en sus más de 50 años de historia: el gobierno capitaliza en vez de retirar dividendos, con reacciones mixtas en el Congreso que advierten que \"no es un cheque en blanco\".",
@@ -23,6 +15,14 @@
         "El CPI de julio en EE.UU. es el evento del día: el mercado espera un alza moderada con energía a la baja, pero la Fed —dividida y presionada por Trump— necesita el dato para calibrar si sube o pausa; el oro en US$4.478 y los treasuries a 10 años en 4,68% reflejan la tensión.",
         "El conflicto Irán–EE.UU. escala: un ataque Houthi mató seis personas en el Mar Rojo —las primeras víctimas en más de un año— y la IEA advierte que el cierre del Estrecho de Hormuz genera un déficit de oferta petrolera creciente; el petróleo cede levemente hoy pero el cobre sube +1,2%.",
         "En Chile, el mapa Codelco–capitalización ocupa las portadas: el directorio confirma que el 100% de las utilidades de 2025 se reinvierte, Bernardo Fontaine descarta privatización y El Teniente exhibe cuatro proyectos por US$7.000 millones en disputa tras las detenciones por sismicidad."
+      ]
+    },
+    {
+      "fecha": "13-08",
+      "lineas": [
+        "IPC de julio en EE.UU. llega benigno y despeja parcialmente a la Fed: la inflación subió 0,1% mensual y se situó en 3,4% anual, en línea con expectativas, lo que reduce —sin eliminar— las apuestas a un alza de tasas en septiembre y mantiene los treasuries estables.",
+        "El Estrecho de Ormuz sigue bloqueado e Irán disputa las declaraciones de Trump: Teherán dice que el bloqueo continúa mientras el tráfico por el estrecho cae a mínimos de casi tres meses; el petróleo cede hoy -1,5% ante señales de debilidad de demanda, pese a la disrupc ión de oferta.",
+        "En Chile, la megarreforma cierra su tramitación legislativa con la aprobación de los tres vetos del Ejecutivo en el Senado, mientras Copec anuncia un aporte de capital de US$450 millones a Arauco en medio de su megaproyecto en Brasil y el IPSA sufre su mayor caída en más de diez semanas."
       ]
     }
   ]
