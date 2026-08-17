@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "12-08",
-      "lineas": [
-        "El CPI de julio en EE.UU. es el evento del día: el mercado espera un alza moderada con energía a la baja, pero la Fed —dividida y presionada por Trump— necesita el dato para calibrar si sube o pausa; el oro en US$4.478 y los treasuries a 10 años en 4,68% reflejan la tensión.",
-        "El conflicto Irán–EE.UU. escala: un ataque Houthi mató seis personas en el Mar Rojo —las primeras víctimas en más de un año— y la IEA advierte que el cierre del Estrecho de Hormuz genera un déficit de oferta petrolera creciente; el petróleo cede levemente hoy pero el cobre sube +1,2%.",
-        "En Chile, el mapa Codelco–capitalización ocupa las portadas: el directorio confirma que el 100% de las utilidades de 2025 se reinvierte, Bernardo Fontaine descarta privatización y El Teniente exhibe cuatro proyectos por US$7.000 millones en disputa tras las detenciones por sismicidad."
-      ]
-    },
-    {
       "fecha": "13-08",
       "lineas": [
         "IPC de julio en EE.UU. llega benigno y despeja parcialmente a la Fed: la inflación subió 0,1% mensual y se situó en 3,4% anual, en línea con expectativas, lo que reduce —sin eliminar— las apuestas a un alza de tasas en septiembre y mantiene los treasuries estables.",
@@ -23,6 +15,14 @@
         "La Fed sigue dividida y bajo presión: con el PPI de julio plano (vs. +0,2% esperado), las apuestas a una alza de tasas se diluyen aún más, pero la presidenta de la Fed de Cleveland, Hammack, insiste en que \"hay que actuar ahora\" sobre la inflación, dejando septiembre como una incógnita abierta.",
         "Chile y el mundo bajo la sombra del transbordo de mercancías chinas: EE.UU. acusa a Chile y otros 39 países de ser canales de triangulación de productos chinos para eludir aranceles, lo que agrega presión diplomática y comercial en un momento en que el canciller chileno reafirma a China como \"socio estratégico de largo plazo\".",
         "Arauco y Copec dominan las portadas locales: Empresas Copec aprueba un aporte de capital de US$450 millones a Arauco para financiar su megaproyecto forestal en Brasil, mientras Arauco revierte pérdidas y anota utilidades en el semestre; el TC resuelve parcialmente sobre la megarreforma."
+      ]
+    },
+    {
+      "fecha": "17-08",
+      "lineas": [
+        "China se frena más de lo previsto en julio: ventas minoristas y producción industrial decepcionan, el sector inmobiliario acelera su caída y el yuan toca reservas de doce años, presionando al banco central a defender la divisa.",
+        "Irán y el Estrecho de Ormuz siguen sin resolverse: el tráfico marítimo se mantiene paralizado ante el vencimiento del cese al fuego; el petróleo sube hoy ante la incertidumbre de oferta y Goldman advierte que el mercado subestima el riesgo de un alza de tasas de la Fed.",
+        "En Chile, el freno al empleo y la reforma de seguridad dominan las portadas: los gremios identifican costos laborales, bajas ventas e inversión débil como los frenos a la contratación, mientras la agenda legislativa genera tensión al interior del oficialismo."
       ]
     }
   ]
