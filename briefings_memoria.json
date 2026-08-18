@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "13-08",
-      "lineas": [
-        "IPC de julio en EE.UU. llega benigno y despeja parcialmente a la Fed: la inflación subió 0,1% mensual y se situó en 3,4% anual, en línea con expectativas, lo que reduce —sin eliminar— las apuestas a un alza de tasas en septiembre y mantiene los treasuries estables.",
-        "El Estrecho de Ormuz sigue bloqueado e Irán disputa las declaraciones de Trump: Teherán dice que el bloqueo continúa mientras el tráfico por el estrecho cae a mínimos de casi tres meses; el petróleo cede hoy -1,5% ante señales de debilidad de demanda, pese a la disrupc ión de oferta.",
-        "En Chile, la megarreforma cierra su tramitación legislativa con la aprobación de los tres vetos del Ejecutivo en el Senado, mientras Copec anuncia un aporte de capital de US$450 millones a Arauco en medio de su megaproyecto en Brasil y el IPSA sufre su mayor caída en más de diez semanas."
-      ]
-    },
-    {
       "fecha": "14-08",
       "lineas": [
         "La Fed sigue dividida y bajo presión: con el PPI de julio plano (vs. +0,2% esperado), las apuestas a una alza de tasas se diluyen aún más, pero la presidenta de la Fed de Cleveland, Hammack, insiste en que \"hay que actuar ahora\" sobre la inflación, dejando septiembre como una incógnita abierta.",
@@ -23,6 +15,14 @@
         "China se frena más de lo previsto en julio: ventas minoristas y producción industrial decepcionan, el sector inmobiliario acelera su caída y el yuan toca reservas de doce años, presionando al banco central a defender la divisa.",
         "Irán y el Estrecho de Ormuz siguen sin resolverse: el tráfico marítimo se mantiene paralizado ante el vencimiento del cese al fuego; el petróleo sube hoy ante la incertidumbre de oferta y Goldman advierte que el mercado subestima el riesgo de un alza de tasas de la Fed.",
         "En Chile, el freno al empleo y la reforma de seguridad dominan las portadas: los gremios identifican costos laborales, bajas ventas e inversión débil como los frenos a la contratación, mientras la agenda legislativa genera tensión al interior del oficialismo."
+      ]
+    },
+    {
+      "fecha": "18-08",
+      "lineas": [
+        "Bonos globales en venta masiva: el Treasury a 30 años toca su nivel más alto desde 2007 y el japonés a 10 años alcanza un máximo de tres décadas, presionados por la tensión con Irán, el alza del petróleo y el riesgo de que la Fed deba subir tasas; los futuros del S&P 500 caen 0,5% y los del Nasdaq 1,2%.",
+        "El cobre bate récords pero hoy cede: tras tocar nuevos máximos históricos ayer —acercándose a los US$7 por libra— el metal retrocede 1,0% esta mañana, aunque el dólar/CLP se mantiene relativamente estable en $915,7.",
+        "Chile concentra su agenda en la reforma de seguridad: el gobierno insiste en sus 11 modificaciones constitucionales, la oposición coordina su respuesta y JP Morgan advierte que un eventual fallo del TC podría paradójicamente mejorar la efectividad de la reforma."
       ]
     }
   ]
