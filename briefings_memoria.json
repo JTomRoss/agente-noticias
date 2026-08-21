@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "18-08",
-      "lineas": [
-        "Bonos globales en venta masiva: el Treasury a 30 años toca su nivel más alto desde 2007 y el japonés a 10 años alcanza un máximo de tres décadas, presionados por la tensión con Irán, el alza del petróleo y el riesgo de que la Fed deba subir tasas; los futuros del S&P 500 caen 0,5% y los del Nasdaq 1,2%.",
-        "El cobre bate récords pero hoy cede: tras tocar nuevos máximos históricos ayer —acercándose a los US$7 por libra— el metal retrocede 1,0% esta mañana, aunque el dólar/CLP se mantiene relativamente estable en $915,7.",
-        "Chile concentra su agenda en la reforma de seguridad: el gobierno insiste en sus 11 modificaciones constitucionales, la oposición coordina su respuesta y JP Morgan advierte que un eventual fallo del TC podría paradójicamente mejorar la efectividad de la reforma."
-      ]
-    },
-    {
       "fecha": "19-08",
       "lineas": [
         "Chile entra en recesión técnica : el PIB cayó 0,2% en el segundo trimestre, completando dos semestres consecutivos en rojo —la peor racha desde la pandemia—; el gobierno promete \"acelerar el paso\" pero los economistas ajustan la proyección de crecimiento anual hacia el 1%.",
@@ -23,6 +15,14 @@
         "La Fed admite que puede volver a subir tasas si la inflación no cede, según minutas del FOMC de julio, mientras el Tesoro de Bessent activa un programa de recompra de deuda para frenar los rendimientos —el Treasury a 10 años cede 5 pb hasta 4,65%— en medio de una deuda federal que supera los US$40 billones por primera vez.",
         "Trump escala la crisis con Irán amenazando con un \"D-Day económico\" y consecuencias para sus aliados, sin negociaciones a la vista y con el Estrecho de Ormuz aún cerrado; el Brent sube 2,6% y el oro toca US$4.540.",
         "El impulso regulatorio a las criptomonedas dispara a Bitcoin hasta US$71.838 (+3,7%) tras el llamado de Trump al Congreso para aprobar la Crypto Clarity Act, mientras OpenAI confirma que saldrá a bolsa en 2027 o antes."
+      ]
+    },
+    {
+      "fecha": "21-08",
+      "lineas": [
+        "Bessent no convenció al mercado: la recompra ampliada de bonos del Tesoro alivió los rendimientos por unas horas, pero el Treasury a 10 años volvió a subir y cerró la semana con la deuda federal superando los US$40 billones, forzando a la Fed a tratar con cautela la nueva intervención del Tesoro.",
+        "Chile suma presiones externas e internas: la CEPAL recortó su proyección de crecimiento al 1,6% para el año, el dólar supera los $922 y el alza histórica de los combustibles abre un nuevo frente político para el gobierno de Kast, que a la vez no logra votos propios para su reforma de seguridad.",
+        "Bitcoin rompe US$75.000 y el oro alcanza US$4.641: el rally cripto de la semana —impulsado por el optimismo sobre la Crypto Clarity Act y la debilidad del dólar— acumula cerca de un 20% semanal, mientras los activos de refugio también suben ante la incertidumbre fiscal global."
       ]
     }
   ]
