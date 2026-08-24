@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "19-08",
-      "lineas": [
-        "Chile entra en recesión técnica : el PIB cayó 0,2% en el segundo trimestre, completando dos semestres consecutivos en rojo —la peor racha desde la pandemia—; el gobierno promete \"acelerar el paso\" pero los economistas ajustan la proyección de crecimiento anual hacia el 1%.",
-        "Los bonos globales dan un respiro pero la tendencia de fondo no cambia : el Treasury a 10 años cede 2 pb hasta 4,71% y el dólar afloja; las minutas del FOMC de esta tarde son el catalizador clave para saber si la Fed valida un pivot o mantiene la puerta a una alza.",
-        "El petróleo sube por cuarto día consecutivo ante el estancamiento entre EE.UU. e Irán —el Brent cotiza en US$92,0, +1,1% en el día—, mientras el oro supera los US$4.414, impulsado por la demanda de refugio."
-      ]
-    },
-    {
       "fecha": "20-08",
       "lineas": [
         "La Fed admite que puede volver a subir tasas si la inflación no cede, según minutas del FOMC de julio, mientras el Tesoro de Bessent activa un programa de recompra de deuda para frenar los rendimientos —el Treasury a 10 años cede 5 pb hasta 4,65%— en medio de una deuda federal que supera los US$40 billones por primera vez.",
@@ -23,6 +15,14 @@
         "Bessent no convenció al mercado: la recompra ampliada de bonos del Tesoro alivió los rendimientos por unas horas, pero el Treasury a 10 años volvió a subir y cerró la semana con la deuda federal superando los US$40 billones, forzando a la Fed a tratar con cautela la nueva intervención del Tesoro.",
         "Chile suma presiones externas e internas: la CEPAL recortó su proyección de crecimiento al 1,6% para el año, el dólar supera los $922 y el alza histórica de los combustibles abre un nuevo frente político para el gobierno de Kast, que a la vez no logra votos propios para su reforma de seguridad.",
         "Bitcoin rompe US$75.000 y el oro alcanza US$4.641: el rally cripto de la semana —impulsado por el optimismo sobre la Crypto Clarity Act y la debilidad del dólar— acumula cerca de un 20% semanal, mientras los activos de refugio también suben ante la incertidumbre fiscal global."
+      ]
+    },
+    {
+      "fecha": "24-08",
+      "lineas": [
+        "EEUU declara \"D-Day económico\" contra Irán y Bessent anuncia lo que llama la mayor ofensiva financiera de la historia; el petróleo cae porque el mercado descuenta que las sanciones abren una salida negociada, aunque el Estrecho de Ormuz sigue prácticamente paralizado.",
+        "Canadá y EEUU entran en guerra comercial abierta tras el colapso de negociaciones: Ottawa anuncia represalias formales desde el 8 de septiembre y el primer ministro Carney declara que su país está \"en guerra\" comercial, sacudiendo los futuros del S&P 500 y del dólar canadiense.",
+        "En Chile, JPMorgan proyecta crecimiento del 3% y un IPSA en 12.500 pese a la recesión técnica, mientras EEUU envía un negociador para revisar el arancel del 12,5% y el cobre sube en la apertura, empujando al IPSA."
       ]
     }
   ]
