@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "20-08",
-      "lineas": [
-        "La Fed admite que puede volver a subir tasas si la inflación no cede, según minutas del FOMC de julio, mientras el Tesoro de Bessent activa un programa de recompra de deuda para frenar los rendimientos —el Treasury a 10 años cede 5 pb hasta 4,65%— en medio de una deuda federal que supera los US$40 billones por primera vez.",
-        "Trump escala la crisis con Irán amenazando con un \"D-Day económico\" y consecuencias para sus aliados, sin negociaciones a la vista y con el Estrecho de Ormuz aún cerrado; el Brent sube 2,6% y el oro toca US$4.540.",
-        "El impulso regulatorio a las criptomonedas dispara a Bitcoin hasta US$71.838 (+3,7%) tras el llamado de Trump al Congreso para aprobar la Crypto Clarity Act, mientras OpenAI confirma que saldrá a bolsa en 2027 o antes."
-      ]
-    },
-    {
       "fecha": "21-08",
       "lineas": [
         "Bessent no convenció al mercado: la recompra ampliada de bonos del Tesoro alivió los rendimientos por unas horas, pero el Treasury a 10 años volvió a subir y cerró la semana con la deuda federal superando los US$40 billones, forzando a la Fed a tratar con cautela la nueva intervención del Tesoro.",
@@ -23,6 +15,14 @@
         "EEUU declara \"D-Day económico\" contra Irán y Bessent anuncia lo que llama la mayor ofensiva financiera de la historia; el petróleo cae porque el mercado descuenta que las sanciones abren una salida negociada, aunque el Estrecho de Ormuz sigue prácticamente paralizado.",
         "Canadá y EEUU entran en guerra comercial abierta tras el colapso de negociaciones: Ottawa anuncia represalias formales desde el 8 de septiembre y el primer ministro Carney declara que su país está \"en guerra\" comercial, sacudiendo los futuros del S&P 500 y del dólar canadiense.",
         "En Chile, JPMorgan proyecta crecimiento del 3% y un IPSA en 12.500 pese a la recesión técnica, mientras EEUU envía un negociador para revisar el arancel del 12,5% y el cobre sube en la apertura, empujando al IPSA."
+      ]
+    },
+    {
+      "fecha": "25-08",
+      "lineas": [
+        "Nvidia y Jackson Hole definen el tono de la semana: los futuros del S&P 500 suben +0,5% y el Nasdaq +1,0% mientras el mercado posiciona para las cifras de Nvidia y el discurso del nuevo presidente de la Fed; las opciones implican un movimiento de mercado de cientos de miles de millones de dólares en la acción.",
+        "La guerra comercial EE.UU.–Canadá escala y genera inflación: tras el colapso de negociaciones y la amenaza de Trump de doblar aranceles a autos canadienses, Bloomberg advierte riesgos inflacionarios renovados; el dólar canadiense cayó con fuerza y los activos de riesgo absorben el golpe.",
+        "En Chile, el PIB marcó 0% en el segundo trimestre según la OCDE mientras los swaps de largo plazo escalan a máximos de 18 meses, la negociación arancelaria con EE.UU. sigue sin acuerdo y la reforma de seguridad entra en pausa; el peso se aprecia con fuerza (-1,0%) respaldado por el cobre en US$6,66."
       ]
     }
   ]
