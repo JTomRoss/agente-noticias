@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "21-08",
-      "lineas": [
-        "Bessent no convenció al mercado: la recompra ampliada de bonos del Tesoro alivió los rendimientos por unas horas, pero el Treasury a 10 años volvió a subir y cerró la semana con la deuda federal superando los US$40 billones, forzando a la Fed a tratar con cautela la nueva intervención del Tesoro.",
-        "Chile suma presiones externas e internas: la CEPAL recortó su proyección de crecimiento al 1,6% para el año, el dólar supera los $922 y el alza histórica de los combustibles abre un nuevo frente político para el gobierno de Kast, que a la vez no logra votos propios para su reforma de seguridad.",
-        "Bitcoin rompe US$75.000 y el oro alcanza US$4.641: el rally cripto de la semana —impulsado por el optimismo sobre la Crypto Clarity Act y la debilidad del dólar— acumula cerca de un 20% semanal, mientras los activos de refugio también suben ante la incertidumbre fiscal global."
-      ]
-    },
-    {
       "fecha": "24-08",
       "lineas": [
         "EEUU declara \"D-Day económico\" contra Irán y Bessent anuncia lo que llama la mayor ofensiva financiera de la historia; el petróleo cae porque el mercado descuenta que las sanciones abren una salida negociada, aunque el Estrecho de Ormuz sigue prácticamente paralizado.",
@@ -23,6 +15,14 @@
         "Nvidia y Jackson Hole definen el tono de la semana: los futuros del S&P 500 suben +0,5% y el Nasdaq +1,0% mientras el mercado posiciona para las cifras de Nvidia y el discurso del nuevo presidente de la Fed; las opciones implican un movimiento de mercado de cientos de miles de millones de dólares en la acción.",
         "La guerra comercial EE.UU.–Canadá escala y genera inflación: tras el colapso de negociaciones y la amenaza de Trump de doblar aranceles a autos canadienses, Bloomberg advierte riesgos inflacionarios renovados; el dólar canadiense cayó con fuerza y los activos de riesgo absorben el golpe.",
         "En Chile, el PIB marcó 0% en el segundo trimestre según la OCDE mientras los swaps de largo plazo escalan a máximos de 18 meses, la negociación arancelaria con EE.UU. sigue sin acuerdo y la reforma de seguridad entra en pausa; el peso se aprecia con fuerza (-1,0%) respaldado por el cobre en US$6,66."
+      ]
+    },
+    {
+      "fecha": "26-08",
+      "lineas": [
+        "Nvidia y el PCE ponen a prueba el rally: los futuros del S&P 500 ceden levemente (-0,1%) mientras el mercado aguarda dos catalizadores simultáneos: los resultados de Nvidia —que definirán si la expansión de capex en IA sigue justificada— y el índice de precios PCE de julio en EE.UU., primer dato inflacionario tras el discurso del nuevo presidente de la Fed en Jackson Hole.",
+        "El TC rechaza el requerimiento del gobierno y confirma la norma de reconexión de servicios básicos: la derrota constitucional obliga a las empresas de gas, sanitarias y eléctricas a reconectar clientes morosos, algo que los gremios califican de \"imposible de cumplir\" y que abre un frente legal nuevo para el sector regulado.",
+        "El cobre supera US$6,82 y el dólar cede a $912: el metal industrial avanza +1,6% en el día, empujado por la percepción de menor riesgo geopolítico en Medio Oriente tras señales de un posible acuerdo temporal sobre el Estrecho de Ormuz; el peso chileno acumula -1,4% de depreciación en el mes, favoreciendo al IPSA exportador."
       ]
     }
   ]
