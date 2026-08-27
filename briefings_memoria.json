@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "24-08",
-      "lineas": [
-        "EEUU declara \"D-Day económico\" contra Irán y Bessent anuncia lo que llama la mayor ofensiva financiera de la historia; el petróleo cae porque el mercado descuenta que las sanciones abren una salida negociada, aunque el Estrecho de Ormuz sigue prácticamente paralizado.",
-        "Canadá y EEUU entran en guerra comercial abierta tras el colapso de negociaciones: Ottawa anuncia represalias formales desde el 8 de septiembre y el primer ministro Carney declara que su país está \"en guerra\" comercial, sacudiendo los futuros del S&P 500 y del dólar canadiense.",
-        "En Chile, JPMorgan proyecta crecimiento del 3% y un IPSA en 12.500 pese a la recesión técnica, mientras EEUU envía un negociador para revisar el arancel del 12,5% y el cobre sube en la apertura, empujando al IPSA."
-      ]
-    },
-    {
       "fecha": "25-08",
       "lineas": [
         "Nvidia y Jackson Hole definen el tono de la semana: los futuros del S&P 500 suben +0,5% y el Nasdaq +1,0% mientras el mercado posiciona para las cifras de Nvidia y el discurso del nuevo presidente de la Fed; las opciones implican un movimiento de mercado de cientos de miles de millones de dólares en la acción.",
@@ -23,6 +15,14 @@
         "Nvidia y el PCE ponen a prueba el rally: los futuros del S&P 500 ceden levemente (-0,1%) mientras el mercado aguarda dos catalizadores simultáneos: los resultados de Nvidia —que definirán si la expansión de capex en IA sigue justificada— y el índice de precios PCE de julio en EE.UU., primer dato inflacionario tras el discurso del nuevo presidente de la Fed en Jackson Hole.",
         "El TC rechaza el requerimiento del gobierno y confirma la norma de reconexión de servicios básicos: la derrota constitucional obliga a las empresas de gas, sanitarias y eléctricas a reconectar clientes morosos, algo que los gremios califican de \"imposible de cumplir\" y que abre un frente legal nuevo para el sector regulado.",
         "El cobre supera US$6,82 y el dólar cede a $912: el metal industrial avanza +1,6% en el día, empujado por la percepción de menor riesgo geopolítico en Medio Oriente tras señales de un posible acuerdo temporal sobre el Estrecho de Ormuz; el peso chileno acumula -1,4% de depreciación en el mes, favoreciendo al IPSA exportador."
+      ]
+    },
+    {
+      "fecha": "27-08",
+      "lineas": [
+        "Nvidia dispara el rally de IA: la chipera proyectó crecimiento de ventas del 70% y los futuros del Nasdaq suben +0,9%; Salesforce, CrowdStrike y Okta se suman al alza tras sus propios resultados trimestrales.",
+        "Inflación en EE.UU. sigue elevada y la Fed sorprende al alza: el PCE subyacente de julio marcó 3,3% anual —sobre lo esperado— y el Fed de Kansas City advirtió que la política monetaria no es restrictiva, avivando apuestas de un nuevo alza de tasas.",
+        "Chile obtiene respaldo del FMI por US$11.800 millones y BlackRock elogia al país como destino de inversión , mientras el peso se deprecia y es la única moneda de Latinoamérica que no participa del rally del MSCI."
       ]
     }
   ]
