@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "25-08",
-      "lineas": [
-        "Nvidia y Jackson Hole definen el tono de la semana: los futuros del S&P 500 suben +0,5% y el Nasdaq +1,0% mientras el mercado posiciona para las cifras de Nvidia y el discurso del nuevo presidente de la Fed; las opciones implican un movimiento de mercado de cientos de miles de millones de dólares en la acción.",
-        "La guerra comercial EE.UU.–Canadá escala y genera inflación: tras el colapso de negociaciones y la amenaza de Trump de doblar aranceles a autos canadienses, Bloomberg advierte riesgos inflacionarios renovados; el dólar canadiense cayó con fuerza y los activos de riesgo absorben el golpe.",
-        "En Chile, el PIB marcó 0% en el segundo trimestre según la OCDE mientras los swaps de largo plazo escalan a máximos de 18 meses, la negociación arancelaria con EE.UU. sigue sin acuerdo y la reforma de seguridad entra en pausa; el peso se aprecia con fuerza (-1,0%) respaldado por el cobre en US$6,66."
-      ]
-    },
-    {
       "fecha": "26-08",
       "lineas": [
         "Nvidia y el PCE ponen a prueba el rally: los futuros del S&P 500 ceden levemente (-0,1%) mientras el mercado aguarda dos catalizadores simultáneos: los resultados de Nvidia —que definirán si la expansión de capex en IA sigue justificada— y el índice de precios PCE de julio en EE.UU., primer dato inflacionario tras el discurso del nuevo presidente de la Fed en Jackson Hole.",
@@ -23,6 +15,14 @@
         "Nvidia dispara el rally de IA: la chipera proyectó crecimiento de ventas del 70% y los futuros del Nasdaq suben +0,9%; Salesforce, CrowdStrike y Okta se suman al alza tras sus propios resultados trimestrales.",
         "Inflación en EE.UU. sigue elevada y la Fed sorprende al alza: el PCE subyacente de julio marcó 3,3% anual —sobre lo esperado— y el Fed de Kansas City advirtió que la política monetaria no es restrictiva, avivando apuestas de un nuevo alza de tasas.",
         "Chile obtiene respaldo del FMI por US$11.800 millones y BlackRock elogia al país como destino de inversión , mientras el peso se deprecia y es la única moneda de Latinoamérica que no participa del rally del MSCI."
+      ]
+    },
+    {
+      "fecha": "28-08",
+      "lineas": [
+        "Jackson Hole y la Fed dividen a los mercados: Warsh debuta hoy como presidente de la Fed ante expectativas de una postura dura; varios miembros del FOMC —Hammack, Schmid, Collins— ya adelantaron que la política monetaria no es restrictiva y que \"es hora de actuar\", mientras el PCE subyacente de julio marcó 3,3% anual, sobre lo esperado.",
+        "Chile acelera en inversión y reformas: BlackRock ve más inversión en Chile por el cobre y la megarreforma; el Banco Central renovó su línea de crédito flexible con el FMI por US$11.800 millones; y el ministro Quiroz fijó la primera quincena de septiembre para la promulgación de la megarreforma tributaria.",
+        "La guerra de seis meses en Irán remodela energía y sanciones: el petróleo sube 44% en el año (WTI $82,7); EE.UU. negocia participación en campos petroleros venezolanos y la Marina aplica un bloqueo naval que recorta las exportaciones de crudo iraní, con China en el centro del debate de presión secundaria."
       ]
     }
   ]
