@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "26-08",
-      "lineas": [
-        "Nvidia y el PCE ponen a prueba el rally: los futuros del S&P 500 ceden levemente (-0,1%) mientras el mercado aguarda dos catalizadores simultáneos: los resultados de Nvidia —que definirán si la expansión de capex en IA sigue justificada— y el índice de precios PCE de julio en EE.UU., primer dato inflacionario tras el discurso del nuevo presidente de la Fed en Jackson Hole.",
-        "El TC rechaza el requerimiento del gobierno y confirma la norma de reconexión de servicios básicos: la derrota constitucional obliga a las empresas de gas, sanitarias y eléctricas a reconectar clientes morosos, algo que los gremios califican de \"imposible de cumplir\" y que abre un frente legal nuevo para el sector regulado.",
-        "El cobre supera US$6,82 y el dólar cede a $912: el metal industrial avanza +1,6% en el día, empujado por la percepción de menor riesgo geopolítico en Medio Oriente tras señales de un posible acuerdo temporal sobre el Estrecho de Ormuz; el peso chileno acumula -1,4% de depreciación en el mes, favoreciendo al IPSA exportador."
-      ]
-    },
-    {
       "fecha": "27-08",
       "lineas": [
         "Nvidia dispara el rally de IA: la chipera proyectó crecimiento de ventas del 70% y los futuros del Nasdaq suben +0,9%; Salesforce, CrowdStrike y Okta se suman al alza tras sus propios resultados trimestrales.",
@@ -23,6 +15,14 @@
         "Jackson Hole y la Fed dividen a los mercados: Warsh debuta hoy como presidente de la Fed ante expectativas de una postura dura; varios miembros del FOMC —Hammack, Schmid, Collins— ya adelantaron que la política monetaria no es restrictiva y que \"es hora de actuar\", mientras el PCE subyacente de julio marcó 3,3% anual, sobre lo esperado.",
         "Chile acelera en inversión y reformas: BlackRock ve más inversión en Chile por el cobre y la megarreforma; el Banco Central renovó su línea de crédito flexible con el FMI por US$11.800 millones; y el ministro Quiroz fijó la primera quincena de septiembre para la promulgación de la megarreforma tributaria.",
         "La guerra de seis meses en Irán remodela energía y sanciones: el petróleo sube 44% en el año (WTI $82,7); EE.UU. negocia participación en campos petroleros venezolanos y la Marina aplica un bloqueo naval que recorta las exportaciones de crudo iraní, con China en el centro del debate de presión secundaria."
+      ]
+    },
+    {
+      "fecha": "31-08",
+      "lineas": [
+        "EE.UU. e Irán intercambian ataques por primera vez en un mes , el Brent supera US$88 y los bonos soberanos globales caen ante la doble presión geopolítica y la retórica hawkish de Warsh, que eleva la probabilidad de una alza de tasas de la Fed en septiembre a moneda al aire.",
+        "Chile presenta un Presupuesto austero y anuncia beneficios tributarios para exploración minera , mientras el dólar sube a $922,7 y Hacienda descarta una baja de tasas del Banco Central, apostando a la inversión privada para reactivar la economía.",
+        "El mercado de celulosa sufre un colapso estructural en el sur de EE.UU. que ya borra el valor de la madera para pulpa y encarece el cartón, con implicancias directas para Arauco y CMPC."
       ]
     }
   ]
