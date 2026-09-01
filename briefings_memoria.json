@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "27-08",
-      "lineas": [
-        "Nvidia dispara el rally de IA: la chipera proyectó crecimiento de ventas del 70% y los futuros del Nasdaq suben +0,9%; Salesforce, CrowdStrike y Okta se suman al alza tras sus propios resultados trimestrales.",
-        "Inflación en EE.UU. sigue elevada y la Fed sorprende al alza: el PCE subyacente de julio marcó 3,3% anual —sobre lo esperado— y el Fed de Kansas City advirtió que la política monetaria no es restrictiva, avivando apuestas de un nuevo alza de tasas.",
-        "Chile obtiene respaldo del FMI por US$11.800 millones y BlackRock elogia al país como destino de inversión , mientras el peso se deprecia y es la única moneda de Latinoamérica que no participa del rally del MSCI."
-      ]
-    },
-    {
       "fecha": "28-08",
       "lineas": [
         "Jackson Hole y la Fed dividen a los mercados: Warsh debuta hoy como presidente de la Fed ante expectativas de una postura dura; varios miembros del FOMC —Hammack, Schmid, Collins— ya adelantaron que la política monetaria no es restrictiva y que \"es hora de actuar\", mientras el PCE subyacente de julio marcó 3,3% anual, sobre lo esperado.",
@@ -23,6 +15,14 @@
         "EE.UU. e Irán intercambian ataques por primera vez en un mes , el Brent supera US$88 y los bonos soberanos globales caen ante la doble presión geopolítica y la retórica hawkish de Warsh, que eleva la probabilidad de una alza de tasas de la Fed en septiembre a moneda al aire.",
         "Chile presenta un Presupuesto austero y anuncia beneficios tributarios para exploración minera , mientras el dólar sube a $922,7 y Hacienda descarta una baja de tasas del Banco Central, apostando a la inversión privada para reactivar la economía.",
         "El mercado de celulosa sufre un colapso estructural en el sur de EE.UU. que ya borra el valor de la madera para pulpa y encarece el cartón, con implicancias directas para Arauco y CMPC."
+      ]
+    },
+    {
+      "fecha": "01-09",
+      "lineas": [
+        "Bonos globales en caída libre y petróleo sobre US$90 — la combinación de escalada militar entre EE.UU. e Irán y las señales de la Fed de Warsh dispara los yields soberanos en Japón, Reino Unido y la eurozona, y hace subir el Brent a US$92,3 (+2% en el día), con inflación de la eurozona ya en 3,3% en agosto.",
+        "Chile confirma la debilidad del tercer trimestre — la producción industrial cayó 5,1% en julio y la minería lidera el retroceso; los analistas anticipan un nuevo Imacec negativo, mientras el dólar supera $931 y el Gobierno pide esperar a septiembre para mejores datos de empleo.",
+        "Reforma al mercado de capitales y apetito por bonos de mayor riesgo — la CMF lanzó un paquete de modernización financiera y el Ministerio de Hacienda adelanta una reforma orientada a facilitar el acceso a vivienda; pese a cifras débiles, las expectativas de reactivación elevan el apetito por bonos corporativos chilenos de mayor riesgo."
       ]
     }
   ]
