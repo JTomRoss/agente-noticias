@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "28-08",
-      "lineas": [
-        "Jackson Hole y la Fed dividen a los mercados: Warsh debuta hoy como presidente de la Fed ante expectativas de una postura dura; varios miembros del FOMC —Hammack, Schmid, Collins— ya adelantaron que la política monetaria no es restrictiva y que \"es hora de actuar\", mientras el PCE subyacente de julio marcó 3,3% anual, sobre lo esperado.",
-        "Chile acelera en inversión y reformas: BlackRock ve más inversión en Chile por el cobre y la megarreforma; el Banco Central renovó su línea de crédito flexible con el FMI por US$11.800 millones; y el ministro Quiroz fijó la primera quincena de septiembre para la promulgación de la megarreforma tributaria.",
-        "La guerra de seis meses en Irán remodela energía y sanciones: el petróleo sube 44% en el año (WTI $82,7); EE.UU. negocia participación en campos petroleros venezolanos y la Marina aplica un bloqueo naval que recorta las exportaciones de crudo iraní, con China en el centro del debate de presión secundaria."
-      ]
-    },
-    {
       "fecha": "31-08",
       "lineas": [
         "EE.UU. e Irán intercambian ataques por primera vez en un mes , el Brent supera US$88 y los bonos soberanos globales caen ante la doble presión geopolítica y la retórica hawkish de Warsh, que eleva la probabilidad de una alza de tasas de la Fed en septiembre a moneda al aire.",
@@ -23,6 +15,14 @@
         "Bonos globales en caída libre y petróleo sobre US$90 — la combinación de escalada militar entre EE.UU. e Irán y las señales de la Fed de Warsh dispara los yields soberanos en Japón, Reino Unido y la eurozona, y hace subir el Brent a US$92,3 (+2% en el día), con inflación de la eurozona ya en 3,3% en agosto.",
         "Chile confirma la debilidad del tercer trimestre — la producción industrial cayó 5,1% en julio y la minería lidera el retroceso; los analistas anticipan un nuevo Imacec negativo, mientras el dólar supera $931 y el Gobierno pide esperar a septiembre para mejores datos de empleo.",
         "Reforma al mercado de capitales y apetito por bonos de mayor riesgo — la CMF lanzó un paquete de modernización financiera y el Ministerio de Hacienda adelanta una reforma orientada a facilitar el acceso a vivienda; pese a cifras débiles, las expectativas de reactivación elevan el apetito por bonos corporativos chilenos de mayor riesgo."
+      ]
+    },
+    {
+      "fecha": "02-09",
+      "lineas": [
+        "Irán contraataca en Ormuz y el petróleo supera US$90 dos tanqueros fueron alcanzados por minas navales iraníes en el Estrecho de Ormuz, el WTI toca US$90,4 y los mercados asiáticos abren en rojo generalizado mientras los yields soberanos siguen subiendo.",
+        "Chile confirma su peor dato de actividad desde 2023 el Imacec de julio cayó entre 1,5% y 1,7% —la mayor caída mensual en más de tres años—, golpeado por tormentas y debilidad minera, forzando a Hacienda y analistas a revisar a la baja la proyección de PIB para 2026, que ahora difícilmente superará el 1%.",
+        "Sell-off global de bonos se profundiza el Treasury a 10 años alcanza 4,80% (+4 pb hoy) y el bono japonés a 30 años toca 3% por primera vez en tres décadas, mientras la inflación de la eurozona rebota sobre el 3% y el BCE prepara nuevas alzas."
       ]
     }
   ]
