@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "31-08",
-      "lineas": [
-        "EE.UU. e Irán intercambian ataques por primera vez en un mes , el Brent supera US$88 y los bonos soberanos globales caen ante la doble presión geopolítica y la retórica hawkish de Warsh, que eleva la probabilidad de una alza de tasas de la Fed en septiembre a moneda al aire.",
-        "Chile presenta un Presupuesto austero y anuncia beneficios tributarios para exploración minera , mientras el dólar sube a $922,7 y Hacienda descarta una baja de tasas del Banco Central, apostando a la inversión privada para reactivar la economía.",
-        "El mercado de celulosa sufre un colapso estructural en el sur de EE.UU. que ya borra el valor de la madera para pulpa y encarece el cartón, con implicancias directas para Arauco y CMPC."
-      ]
-    },
-    {
       "fecha": "01-09",
       "lineas": [
         "Bonos globales en caída libre y petróleo sobre US$90 — la combinación de escalada militar entre EE.UU. e Irán y las señales de la Fed de Warsh dispara los yields soberanos en Japón, Reino Unido y la eurozona, y hace subir el Brent a US$92,3 (+2% en el día), con inflación de la eurozona ya en 3,3% en agosto.",
@@ -23,6 +15,14 @@
         "Irán contraataca en Ormuz y el petróleo supera US$90 dos tanqueros fueron alcanzados por minas navales iraníes en el Estrecho de Ormuz, el WTI toca US$90,4 y los mercados asiáticos abren en rojo generalizado mientras los yields soberanos siguen subiendo.",
         "Chile confirma su peor dato de actividad desde 2023 el Imacec de julio cayó entre 1,5% y 1,7% —la mayor caída mensual en más de tres años—, golpeado por tormentas y debilidad minera, forzando a Hacienda y analistas a revisar a la baja la proyección de PIB para 2026, que ahora difícilmente superará el 1%.",
         "Sell-off global de bonos se profundiza el Treasury a 10 años alcanza 4,80% (+4 pb hoy) y el bono japonés a 30 años toca 3% por primera vez en tres décadas, mientras la inflación de la eurozona rebota sobre el 3% y el BCE prepara nuevas alzas."
+      ]
+    },
+    {
+      "fecha": "03-09",
+      "lineas": [
+        "El Imacec de julio fue un golpe de realidad para Chile: la actividad cayó 1,7% mensual —su peor registro desde 2022— por tormentas y debilidad minera, forzando a Hacienda a anunciar una revisión a la baja de la proyección de PIB 2026, que difícilmente superará el 1%.",
+        "La era de tasas altas se consolida globalmente: el Treasury a 10 años se mantiene en 4,80%, el Banco de Canadá sostuvo su tasa y advirtió que podrían necesitarse nuevas alzas, mientras la Fed sigue dividida entre pausar y subir en septiembre.",
+        "La escalada en Medio Oriente sostiene el petróleo sobre US$91 (WTI) y presiona al peso: el dólar sube a $937 en Chile, el oro avanza 2,7% y las bolsas recuperan algo de terreno tras tres jornadas de caídas."
       ]
     }
   ]
