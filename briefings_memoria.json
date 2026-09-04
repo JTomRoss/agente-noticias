@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "01-09",
-      "lineas": [
-        "Bonos globales en caída libre y petróleo sobre US$90 — la combinación de escalada militar entre EE.UU. e Irán y las señales de la Fed de Warsh dispara los yields soberanos en Japón, Reino Unido y la eurozona, y hace subir el Brent a US$92,3 (+2% en el día), con inflación de la eurozona ya en 3,3% en agosto.",
-        "Chile confirma la debilidad del tercer trimestre — la producción industrial cayó 5,1% en julio y la minería lidera el retroceso; los analistas anticipan un nuevo Imacec negativo, mientras el dólar supera $931 y el Gobierno pide esperar a septiembre para mejores datos de empleo.",
-        "Reforma al mercado de capitales y apetito por bonos de mayor riesgo — la CMF lanzó un paquete de modernización financiera y el Ministerio de Hacienda adelanta una reforma orientada a facilitar el acceso a vivienda; pese a cifras débiles, las expectativas de reactivación elevan el apetito por bonos corporativos chilenos de mayor riesgo."
-      ]
-    },
-    {
       "fecha": "02-09",
       "lineas": [
         "Irán contraataca en Ormuz y el petróleo supera US$90 dos tanqueros fueron alcanzados por minas navales iraníes en el Estrecho de Ormuz, el WTI toca US$90,4 y los mercados asiáticos abren en rojo generalizado mientras los yields soberanos siguen subiendo.",
@@ -23,6 +15,14 @@
         "El Imacec de julio fue un golpe de realidad para Chile: la actividad cayó 1,7% mensual —su peor registro desde 2022— por tormentas y debilidad minera, forzando a Hacienda a anunciar una revisión a la baja de la proyección de PIB 2026, que difícilmente superará el 1%.",
         "La era de tasas altas se consolida globalmente: el Treasury a 10 años se mantiene en 4,80%, el Banco de Canadá sostuvo su tasa y advirtió que podrían necesitarse nuevas alzas, mientras la Fed sigue dividida entre pausar y subir en septiembre.",
         "La escalada en Medio Oriente sostiene el petróleo sobre US$91 (WTI) y presiona al peso: el dólar sube a $937 en Chile, el oro avanza 2,7% y las bolsas recuperan algo de terreno tras tres jornadas de caídas."
+      ]
+    },
+    {
+      "fecha": "04-09",
+      "lineas": [
+        "La Fed pausa, los mercados respiran: Waller descartó un alza en septiembre si la desinflación avanza, Wall Street cerró fuertemente al alza y los futuros del Nasdaq suben +0,4% hoy, aunque el debate sobre la tasa neutral más alta sigue abierto.",
+        "Chile sigue buscando el piso: El IPSA perdió sus máximos de siete meses al caer bajo los 11.500 puntos con salida de capitales hacia mercados desarrollados, la Cadem detecta expectativas de empleo en su peor nivel desde 2020 y el IPOM de septiembre, que se publica pronto, podría fijar el techo del PIB 2026 en apenas 1%.",
+        "Nvidia compra Hugging Face por US$13.000 millones: La adquisición consolida a Nvidia como el gran financista del ecosistema de IA abierta; el fondo de inversiones de la compañía ya supera los US$99.000 millones en compromisos, reordenando la cadena de valor tecnológica global."
       ]
     }
   ]
