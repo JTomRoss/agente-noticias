@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "02-09",
-      "lineas": [
-        "Irán contraataca en Ormuz y el petróleo supera US$90 dos tanqueros fueron alcanzados por minas navales iraníes en el Estrecho de Ormuz, el WTI toca US$90,4 y los mercados asiáticos abren en rojo generalizado mientras los yields soberanos siguen subiendo.",
-        "Chile confirma su peor dato de actividad desde 2023 el Imacec de julio cayó entre 1,5% y 1,7% —la mayor caída mensual en más de tres años—, golpeado por tormentas y debilidad minera, forzando a Hacienda y analistas a revisar a la baja la proyección de PIB para 2026, que ahora difícilmente superará el 1%.",
-        "Sell-off global de bonos se profundiza el Treasury a 10 años alcanza 4,80% (+4 pb hoy) y el bono japonés a 30 años toca 3% por primera vez en tres décadas, mientras la inflación de la eurozona rebota sobre el 3% y el BCE prepara nuevas alzas."
-      ]
-    },
-    {
       "fecha": "03-09",
       "lineas": [
         "El Imacec de julio fue un golpe de realidad para Chile: la actividad cayó 1,7% mensual —su peor registro desde 2022— por tormentas y debilidad minera, forzando a Hacienda a anunciar una revisión a la baja de la proyección de PIB 2026, que difícilmente superará el 1%.",
@@ -23,6 +15,14 @@
         "La Fed pausa, los mercados respiran: Waller descartó un alza en septiembre si la desinflación avanza, Wall Street cerró fuertemente al alza y los futuros del Nasdaq suben +0,4% hoy, aunque el debate sobre la tasa neutral más alta sigue abierto.",
         "Chile sigue buscando el piso: El IPSA perdió sus máximos de siete meses al caer bajo los 11.500 puntos con salida de capitales hacia mercados desarrollados, la Cadem detecta expectativas de empleo en su peor nivel desde 2020 y el IPOM de septiembre, que se publica pronto, podría fijar el techo del PIB 2026 en apenas 1%.",
         "Nvidia compra Hugging Face por US$13.000 millones: La adquisición consolida a Nvidia como el gran financista del ecosistema de IA abierta; el fondo de inversiones de la compañía ya supera los US$99.000 millones en compromisos, reordenando la cadena de valor tecnológica global."
+      ]
+    },
+    {
+      "fecha": "07-09",
+      "lineas": [
+        "Ormuz concentra el riesgo global: EE.UU. e Irán intercambian ataques sobre petroleros, Irán anuncia una nueva zona restringida en el Golfo y la OPEP+ congela cuotas; el petróleo cotiza en máximos de siete semanas y las bolsas europeas ceden terreno.",
+        "El cobre marca un precio histórico a días del Presupuesto 2027: el metal sube a US$6,68/lb hoy (+1,3%) y expertos llaman a cautela fiscal, mientras el nuevo régimen de inversión de las AFP se posiciona como la reforma de mayor alcance en el mercado de capitales chileno en años.",
+        "Nvidia acumula un ecosistema de IA de casi US$100.000 millones tras cerrar la adquisición de Hugging Face por US$13.000 millones; simultáneamente, la red Bitcoin-based Liquid Network reporta un hackeo de US$320 millones y Bitcoin cede -1,2% en el día."
       ]
     }
   ]
