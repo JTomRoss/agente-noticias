@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "03-09",
-      "lineas": [
-        "El Imacec de julio fue un golpe de realidad para Chile: la actividad cayó 1,7% mensual —su peor registro desde 2022— por tormentas y debilidad minera, forzando a Hacienda a anunciar una revisión a la baja de la proyección de PIB 2026, que difícilmente superará el 1%.",
-        "La era de tasas altas se consolida globalmente: el Treasury a 10 años se mantiene en 4,80%, el Banco de Canadá sostuvo su tasa y advirtió que podrían necesitarse nuevas alzas, mientras la Fed sigue dividida entre pausar y subir en septiembre.",
-        "La escalada en Medio Oriente sostiene el petróleo sobre US$91 (WTI) y presiona al peso: el dólar sube a $937 en Chile, el oro avanza 2,7% y las bolsas recuperan algo de terreno tras tres jornadas de caídas."
-      ]
-    },
-    {
       "fecha": "04-09",
       "lineas": [
         "La Fed pausa, los mercados respiran: Waller descartó un alza en septiembre si la desinflación avanza, Wall Street cerró fuertemente al alza y los futuros del Nasdaq suben +0,4% hoy, aunque el debate sobre la tasa neutral más alta sigue abierto.",
@@ -23,6 +15,14 @@
         "Ormuz concentra el riesgo global: EE.UU. e Irán intercambian ataques sobre petroleros, Irán anuncia una nueva zona restringida en el Golfo y la OPEP+ congela cuotas; el petróleo cotiza en máximos de siete semanas y las bolsas europeas ceden terreno.",
         "El cobre marca un precio histórico a días del Presupuesto 2027: el metal sube a US$6,68/lb hoy (+1,3%) y expertos llaman a cautela fiscal, mientras el nuevo régimen de inversión de las AFP se posiciona como la reforma de mayor alcance en el mercado de capitales chileno en años.",
         "Nvidia acumula un ecosistema de IA de casi US$100.000 millones tras cerrar la adquisición de Hugging Face por US$13.000 millones; simultáneamente, la red Bitcoin-based Liquid Network reporta un hackeo de US$320 millones y Bitcoin cede -1,2% en el día."
+      ]
+    },
+    {
+      "fecha": "16-09",
+      "lineas": [
+        "La Fed decide hoy y el Treasury a 10 años ya llegó al 5%: el mercado de bonos lleva días descontando la subida; los futuros del S&P 500 rebotan +1,1% esta mañana, pero el alza de rendimientos encarece el crédito y comprime múltiplos en todo el mundo.",
+        "Chile recibe respaldo externo mientras lucha con el ciclo: el FMI avala la agenda de recorte de impuestos y gasto, S&P y la presidenta del Banco Central advierten que la recuperación tomará más tiempo del previsto, y el dólar se acerca a $960 por la expectativa de alza de la Fed y la caída del cobre.",
+        "Cripto golpeado y IA en debate: el Senado de EE.UU. bloqueó el Clarity Act (regulación cripto), Bitcoin cedió con fuerza, y los CEO de las grandes casas de IA se dividen entre frenar el ritmo de desarrollo y mantenerlo, en un debate que mueve tecnológicas y pesa en los índices."
       ]
     }
   ]
