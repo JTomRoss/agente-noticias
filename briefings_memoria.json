@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "04-09",
-      "lineas": [
-        "La Fed pausa, los mercados respiran: Waller descartó un alza en septiembre si la desinflación avanza, Wall Street cerró fuertemente al alza y los futuros del Nasdaq suben +0,4% hoy, aunque el debate sobre la tasa neutral más alta sigue abierto.",
-        "Chile sigue buscando el piso: El IPSA perdió sus máximos de siete meses al caer bajo los 11.500 puntos con salida de capitales hacia mercados desarrollados, la Cadem detecta expectativas de empleo en su peor nivel desde 2020 y el IPOM de septiembre, que se publica pronto, podría fijar el techo del PIB 2026 en apenas 1%.",
-        "Nvidia compra Hugging Face por US$13.000 millones: La adquisición consolida a Nvidia como el gran financista del ecosistema de IA abierta; el fondo de inversiones de la compañía ya supera los US$99.000 millones en compromisos, reordenando la cadena de valor tecnológica global."
-      ]
-    },
-    {
       "fecha": "07-09",
       "lineas": [
         "Ormuz concentra el riesgo global: EE.UU. e Irán intercambian ataques sobre petroleros, Irán anuncia una nueva zona restringida en el Golfo y la OPEP+ congela cuotas; el petróleo cotiza en máximos de siete semanas y las bolsas europeas ceden terreno.",
@@ -23,6 +15,14 @@
         "La Fed decide hoy y el Treasury a 10 años ya llegó al 5%: el mercado de bonos lleva días descontando la subida; los futuros del S&P 500 rebotan +1,1% esta mañana, pero el alza de rendimientos encarece el crédito y comprime múltiplos en todo el mundo.",
         "Chile recibe respaldo externo mientras lucha con el ciclo: el FMI avala la agenda de recorte de impuestos y gasto, S&P y la presidenta del Banco Central advierten que la recuperación tomará más tiempo del previsto, y el dólar se acerca a $960 por la expectativa de alza de la Fed y la caída del cobre.",
         "Cripto golpeado y IA en debate: el Senado de EE.UU. bloqueó el Clarity Act (regulación cripto), Bitcoin cedió con fuerza, y los CEO de las grandes casas de IA se dividen entre frenar el ritmo de desarrollo y mantenerlo, en un debate que mueve tecnológicas y pesa en los índices."
+      ]
+    },
+    {
+      "fecha": "17-09",
+      "lineas": [
+        "La Fed subió 25 pb y telegrafió otro alza este año, defying Trump que exigía tasas de 1% o menos; Goldman Sachs ya anticipa un segundo movimiento en octubre, y el mercado de bonos cortos sube mientras Wall Street digiere la señal hawkish.",
+        "En Chile, el dólar tocó máximos desde octubre de 2025 cerca de $960 antes de ceder esta mañana; el Banco Central advierte que la recuperación tomará más tiempo del previsto, mientras el Chile Day en Londres posiciona la reforma al mercado de capitales (MK4) y el litio como las grandes apuestas de largo plazo.",
+        "El petróleo cede hoy (Brent -5,2%) tras semanas de rally ligado al conflicto en el Golfo, aliviando algo la presión inflacionaria global, aunque el cobre rebota +2,4% y el oro retrocede -0,9% post-Fed."
       ]
     }
   ]
