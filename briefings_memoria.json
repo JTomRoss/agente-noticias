@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "07-09",
-      "lineas": [
-        "Ormuz concentra el riesgo global: EE.UU. e Irán intercambian ataques sobre petroleros, Irán anuncia una nueva zona restringida en el Golfo y la OPEP+ congela cuotas; el petróleo cotiza en máximos de siete semanas y las bolsas europeas ceden terreno.",
-        "El cobre marca un precio histórico a días del Presupuesto 2027: el metal sube a US$6,68/lb hoy (+1,3%) y expertos llaman a cautela fiscal, mientras el nuevo régimen de inversión de las AFP se posiciona como la reforma de mayor alcance en el mercado de capitales chileno en años.",
-        "Nvidia acumula un ecosistema de IA de casi US$100.000 millones tras cerrar la adquisición de Hugging Face por US$13.000 millones; simultáneamente, la red Bitcoin-based Liquid Network reporta un hackeo de US$320 millones y Bitcoin cede -1,2% en el día."
-      ]
-    },
-    {
       "fecha": "16-09",
       "lineas": [
         "La Fed decide hoy y el Treasury a 10 años ya llegó al 5%: el mercado de bonos lleva días descontando la subida; los futuros del S&P 500 rebotan +1,1% esta mañana, pero el alza de rendimientos encarece el crédito y comprime múltiplos en todo el mundo.",
@@ -23,6 +15,14 @@
         "La Fed subió 25 pb y telegrafió otro alza este año, defying Trump que exigía tasas de 1% o menos; Goldman Sachs ya anticipa un segundo movimiento en octubre, y el mercado de bonos cortos sube mientras Wall Street digiere la señal hawkish.",
         "En Chile, el dólar tocó máximos desde octubre de 2025 cerca de $960 antes de ceder esta mañana; el Banco Central advierte que la recuperación tomará más tiempo del previsto, mientras el Chile Day en Londres posiciona la reforma al mercado de capitales (MK4) y el litio como las grandes apuestas de largo plazo.",
         "El petróleo cede hoy (Brent -5,2%) tras semanas de rally ligado al conflicto en el Golfo, aliviando algo la presión inflacionaria global, aunque el cobre rebota +2,4% y el oro retrocede -0,9% post-Fed."
+      ]
+    },
+    {
+      "fecha": "18-09",
+      "lineas": [
+        "La Fed subió tasas por primera vez en más de tres años y telegrafió otro alza este año, desafiando a Trump, que exigía recortes; el mercado digiere la señal hawkish mientras los futuros rebotan hoy con un petróleo que cede casi 6% desde máximos.",
+        "Chile enfrenta una \"gran recesión minera\" con una caída proyectada de 7% en la producción de cobre este año, el dólar rozando los $960 y un Banco Central que llama a mirar más allá del freno actual y eleva su proyección de crecimiento para 2028 a 3,25%.",
+        "El Banco de Japón subió tasas a su nivel más alto desde 1995, sumándose al ciclo global de endurecimiento; el yen cae paradójicamente tras el voto dividido del directorio, señal de que el mercado esperaba una postura más agresiva."
       ]
     }
   ]
