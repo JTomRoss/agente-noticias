@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "16-09",
-      "lineas": [
-        "La Fed decide hoy y el Treasury a 10 años ya llegó al 5%: el mercado de bonos lleva días descontando la subida; los futuros del S&P 500 rebotan +1,1% esta mañana, pero el alza de rendimientos encarece el crédito y comprime múltiplos en todo el mundo.",
-        "Chile recibe respaldo externo mientras lucha con el ciclo: el FMI avala la agenda de recorte de impuestos y gasto, S&P y la presidenta del Banco Central advierten que la recuperación tomará más tiempo del previsto, y el dólar se acerca a $960 por la expectativa de alza de la Fed y la caída del cobre.",
-        "Cripto golpeado y IA en debate: el Senado de EE.UU. bloqueó el Clarity Act (regulación cripto), Bitcoin cedió con fuerza, y los CEO de las grandes casas de IA se dividen entre frenar el ritmo de desarrollo y mantenerlo, en un debate que mueve tecnológicas y pesa en los índices."
-      ]
-    },
-    {
       "fecha": "17-09",
       "lineas": [
         "La Fed subió 25 pb y telegrafió otro alza este año, defying Trump que exigía tasas de 1% o menos; Goldman Sachs ya anticipa un segundo movimiento en octubre, y el mercado de bonos cortos sube mientras Wall Street digiere la señal hawkish.",
@@ -23,6 +15,14 @@
         "La Fed subió tasas por primera vez en más de tres años y telegrafió otro alza este año, desafiando a Trump, que exigía recortes; el mercado digiere la señal hawkish mientras los futuros rebotan hoy con un petróleo que cede casi 6% desde máximos.",
         "Chile enfrenta una \"gran recesión minera\" con una caída proyectada de 7% en la producción de cobre este año, el dólar rozando los $960 y un Banco Central que llama a mirar más allá del freno actual y eleva su proyección de crecimiento para 2028 a 3,25%.",
         "El Banco de Japón subió tasas a su nivel más alto desde 1995, sumándose al ciclo global de endurecimiento; el yen cae paradójicamente tras el voto dividido del directorio, señal de que el mercado esperaba una postura más agresiva."
+      ]
+    },
+    {
+      "fecha": "21-09",
+      "lineas": [
+        "La cumbre Trump-Xi domina la agenda global: Bessent calificó de \"exitosas\" las conversaciones previas con el vice premier He Lifeng; futuros suben, mercados emergentes ganan y el trigo salta ante señales de distensión comercial.",
+        "El petróleo cae casi 6% aliviando la presión inflacionaria: el Brent retrocede a US$97,7 y el WTI a US$94,2 con perspectivas diplomáticas en Medio Oriente; Arabia Saudita y el Golfo Pérsico, en cambio, acusan los ataques hutíes.",
+        "En Chile, el dólar presiona los $959 y Hacienda defiende el crecimiento: Fitch mantuvo el respaldo crediticio pese a recortar la proyección de crecimiento a 0,7%, mientras la Dipres detectó sobregasto de $10.615 millones en compras del Estado."
       ]
     }
   ]
