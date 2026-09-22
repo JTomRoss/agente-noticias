@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "17-09",
-      "lineas": [
-        "La Fed subió 25 pb y telegrafió otro alza este año, defying Trump que exigía tasas de 1% o menos; Goldman Sachs ya anticipa un segundo movimiento en octubre, y el mercado de bonos cortos sube mientras Wall Street digiere la señal hawkish.",
-        "En Chile, el dólar tocó máximos desde octubre de 2025 cerca de $960 antes de ceder esta mañana; el Banco Central advierte que la recuperación tomará más tiempo del previsto, mientras el Chile Day en Londres posiciona la reforma al mercado de capitales (MK4) y el litio como las grandes apuestas de largo plazo.",
-        "El petróleo cede hoy (Brent -5,2%) tras semanas de rally ligado al conflicto en el Golfo, aliviando algo la presión inflacionaria global, aunque el cobre rebota +2,4% y el oro retrocede -0,9% post-Fed."
-      ]
-    },
-    {
       "fecha": "18-09",
       "lineas": [
         "La Fed subió tasas por primera vez en más de tres años y telegrafió otro alza este año, desafiando a Trump, que exigía recortes; el mercado digiere la señal hawkish mientras los futuros rebotan hoy con un petróleo que cede casi 6% desde máximos.",
@@ -23,6 +15,14 @@
         "La cumbre Trump-Xi domina la agenda global: Bessent calificó de \"exitosas\" las conversaciones previas con el vice premier He Lifeng; futuros suben, mercados emergentes ganan y el trigo salta ante señales de distensión comercial.",
         "El petróleo cae casi 6% aliviando la presión inflacionaria: el Brent retrocede a US$97,7 y el WTI a US$94,2 con perspectivas diplomáticas en Medio Oriente; Arabia Saudita y el Golfo Pérsico, en cambio, acusan los ataques hutíes.",
         "En Chile, el dólar presiona los $959 y Hacienda defiende el crecimiento: Fitch mantuvo el respaldo crediticio pese a recortar la proyección de crecimiento a 0,7%, mientras la Dipres detectó sobregasto de $10.615 millones en compras del Estado."
+      ]
+    },
+    {
+      "fecha": "22-09",
+      "lineas": [
+        "La Fed endurece el mensaje: dos funcionarios —Musalem y Goolsbee— señalaron que se necesitarán más alzas de tasas para controlar la inflación; el Treasury a 10 años cotiza en 4,96% y el diesel en EE.UU. supera los US$6,50 por galón, presionando costos y márgenes.",
+        "Cumbre Trump-Xi arranca hoy en Nueva York: el encuentro, con los CEO de Microsoft, Nvidia y OpenAI en la mesa, define el tono del comercio y la regulación de IA para los próximos meses; mercados emergentes y el cobre (+2,3%) ya celebran el deshielo.",
+        "Chile atrae capital extranjero y consolida su posición fiscal: Fitch ratificó la calificación A-, la deuda soberana está 17 puntos del PIB por debajo de comparables, y Bloomberg reporta un flujo de capital extranjero relevante hacia el país; el IPSA enfrenta un reordenamiento tras el alza de tasas de la Fed."
       ]
     }
   ]
