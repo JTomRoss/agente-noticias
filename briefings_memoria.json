@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "21-09",
-      "lineas": [
-        "La cumbre Trump-Xi domina la agenda global: Bessent calificó de \"exitosas\" las conversaciones previas con el vice premier He Lifeng; futuros suben, mercados emergentes ganan y el trigo salta ante señales de distensión comercial.",
-        "El petróleo cae casi 6% aliviando la presión inflacionaria: el Brent retrocede a US$97,7 y el WTI a US$94,2 con perspectivas diplomáticas en Medio Oriente; Arabia Saudita y el Golfo Pérsico, en cambio, acusan los ataques hutíes.",
-        "En Chile, el dólar presiona los $959 y Hacienda defiende el crecimiento: Fitch mantuvo el respaldo crediticio pese a recortar la proyección de crecimiento a 0,7%, mientras la Dipres detectó sobregasto de $10.615 millones en compras del Estado."
-      ]
-    },
-    {
       "fecha": "22-09",
       "lineas": [
         "La Fed endurece el mensaje: dos funcionarios —Musalem y Goolsbee— señalaron que se necesitarán más alzas de tasas para controlar la inflación; el Treasury a 10 años cotiza en 4,96% y el diesel en EE.UU. supera los US$6,50 por galón, presionando costos y márgenes.",
@@ -23,6 +15,14 @@
         "El petróleo se hunde y el Nasdaq toca récord. El WTI cae 4,8% a US$90,1 ante la perspectiva de negociación EE.UU.-Irán en la ONU, aliviando presión inflacionaria; al mismo tiempo, el frenesí de IA lleva al Nasdaq a un cierre récord, con Meta, Nvidia y el ecosistema de modelos como catalizadores.",
         "La Fed mantiene presión hawkish y el mercado de bonos la toma en serio. Varios funcionarios —Collins, Barkin, Williams— respaldaron el alza reciente y advierten que la inflación podría subir \"notablemente\"; el Treasury a 10 años se mantiene en 4,96% y los traders cargan coberturas para un ciclo de alzas más profundo de lo esperado.",
         "Chile atrae capital extranjero pero Kast reconoce ante la ONU que la economía \"aún no despega\". Las tenencias en bonos soberanos en pesos marcan un récord, el IPSA cierra sobre 11.400 y el tipo de cambio cede a $947,5; sin embargo el Presidente admite alto desempleo y bajo crecimiento, mientras en el Congreso caen reformas clave por un voto."
+      ]
+    },
+    {
+      "fecha": "24-09",
+      "lineas": [
+        "La tesis inflacionaria se refuerza en EE.UU. y los bonos del Tesoro se desploman: el Treasury a 10 años llega a 5,11% (+15 pb hoy) y el de 30 años marca su mayor nivel desde 2004, mientras un dato de actividad más fuerte de lo esperado alimenta las apuestas de otra alza de la Fed antes de las elecciones.",
+        "El dólar se dispara a $961 en Chile —máximos de 2026— impulsado por el fortalecimiento global del billete verde y preocupaciones inflacionarias en EE.UU.; en paralelo el cobre rebota hoy +1,0% pero el petróleo (Brent sobre US$105) presiona los costos.",
+        "La cumbre Trump-Xi produce resultados concretos: se extiende por dos meses la tregua comercial EE.UU.-China, reduciendo la tensión de corto plazo, aunque la carrera tecnológica —chips de IA, autos eléctricos chinos— permanece sin resolverse."
       ]
     }
   ]
