@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "22-09",
-      "lineas": [
-        "La Fed endurece el mensaje: dos funcionarios —Musalem y Goolsbee— señalaron que se necesitarán más alzas de tasas para controlar la inflación; el Treasury a 10 años cotiza en 4,96% y el diesel en EE.UU. supera los US$6,50 por galón, presionando costos y márgenes.",
-        "Cumbre Trump-Xi arranca hoy en Nueva York: el encuentro, con los CEO de Microsoft, Nvidia y OpenAI en la mesa, define el tono del comercio y la regulación de IA para los próximos meses; mercados emergentes y el cobre (+2,3%) ya celebran el deshielo.",
-        "Chile atrae capital extranjero y consolida su posición fiscal: Fitch ratificó la calificación A-, la deuda soberana está 17 puntos del PIB por debajo de comparables, y Bloomberg reporta un flujo de capital extranjero relevante hacia el país; el IPSA enfrenta un reordenamiento tras el alza de tasas de la Fed."
-      ]
-    },
-    {
       "fecha": "23-09",
       "lineas": [
         "El petróleo se hunde y el Nasdaq toca récord. El WTI cae 4,8% a US$90,1 ante la perspectiva de negociación EE.UU.-Irán en la ONU, aliviando presión inflacionaria; al mismo tiempo, el frenesí de IA lleva al Nasdaq a un cierre récord, con Meta, Nvidia y el ecosistema de modelos como catalizadores.",
@@ -23,6 +15,14 @@
         "La tesis inflacionaria se refuerza en EE.UU. y los bonos del Tesoro se desploman: el Treasury a 10 años llega a 5,11% (+15 pb hoy) y el de 30 años marca su mayor nivel desde 2004, mientras un dato de actividad más fuerte de lo esperado alimenta las apuestas de otra alza de la Fed antes de las elecciones.",
         "El dólar se dispara a $961 en Chile —máximos de 2026— impulsado por el fortalecimiento global del billete verde y preocupaciones inflacionarias en EE.UU.; en paralelo el cobre rebota hoy +1,0% pero el petróleo (Brent sobre US$105) presiona los costos.",
         "La cumbre Trump-Xi produce resultados concretos: se extiende por dos meses la tregua comercial EE.UU.-China, reduciendo la tensión de corto plazo, aunque la carrera tecnológica —chips de IA, autos eléctricos chinos— permanece sin resolverse."
+      ]
+    },
+    {
+      "fecha": "25-09",
+      "lineas": [
+        "Los bonos globales siguen cayendo y la Fed prepara más alzas: el Treasury a 10 años llega a 5,16% —máximo en casi dos décadas— con funcionarios de la Fed señalando que \"se necesitarán movimientos modestos adicionales\" para domar la inflación; el dólar toca nuevos máximos y el mercado de hipotecas en EE.UU. supera 7,45% por primera vez desde inicios de 2025.",
+        "Irán ofrece reabrir el Estrecho de Ormuz y retomar negociaciones nucleares en siete días: la propuesta afloja el crudo (WTI -1,9% a US$92,8; Brent -7,4% a US$98,7) y modera el impulso inflacionario global, aunque la tregua aún no está firmada.",
+        "Chile debuta en el mercado de francos suizos: el Gobierno anuncia su primera emisión de bonos soberanos denominados en CHF, mientras bancos de inversión recortan sus proyecciones de crecimiento para el país en 2026 y suben las de inflación."
       ]
     }
   ]
