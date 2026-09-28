@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "23-09",
-      "lineas": [
-        "El petróleo se hunde y el Nasdaq toca récord. El WTI cae 4,8% a US$90,1 ante la perspectiva de negociación EE.UU.-Irán en la ONU, aliviando presión inflacionaria; al mismo tiempo, el frenesí de IA lleva al Nasdaq a un cierre récord, con Meta, Nvidia y el ecosistema de modelos como catalizadores.",
-        "La Fed mantiene presión hawkish y el mercado de bonos la toma en serio. Varios funcionarios —Collins, Barkin, Williams— respaldaron el alza reciente y advierten que la inflación podría subir \"notablemente\"; el Treasury a 10 años se mantiene en 4,96% y los traders cargan coberturas para un ciclo de alzas más profundo de lo esperado.",
-        "Chile atrae capital extranjero pero Kast reconoce ante la ONU que la economía \"aún no despega\". Las tenencias en bonos soberanos en pesos marcan un récord, el IPSA cierra sobre 11.400 y el tipo de cambio cede a $947,5; sin embargo el Presidente admite alto desempleo y bajo crecimiento, mientras en el Congreso caen reformas clave por un voto."
-      ]
-    },
-    {
       "fecha": "24-09",
       "lineas": [
         "La tesis inflacionaria se refuerza en EE.UU. y los bonos del Tesoro se desploman: el Treasury a 10 años llega a 5,11% (+15 pb hoy) y el de 30 años marca su mayor nivel desde 2004, mientras un dato de actividad más fuerte de lo esperado alimenta las apuestas de otra alza de la Fed antes de las elecciones.",
@@ -23,6 +15,14 @@
         "Los bonos globales siguen cayendo y la Fed prepara más alzas: el Treasury a 10 años llega a 5,16% —máximo en casi dos décadas— con funcionarios de la Fed señalando que \"se necesitarán movimientos modestos adicionales\" para domar la inflación; el dólar toca nuevos máximos y el mercado de hipotecas en EE.UU. supera 7,45% por primera vez desde inicios de 2025.",
         "Irán ofrece reabrir el Estrecho de Ormuz y retomar negociaciones nucleares en siete días: la propuesta afloja el crudo (WTI -1,9% a US$92,8; Brent -7,4% a US$98,7) y modera el impulso inflacionario global, aunque la tregua aún no está firmada.",
         "Chile debuta en el mercado de francos suizos: el Gobierno anuncia su primera emisión de bonos soberanos denominados en CHF, mientras bancos de inversión recortan sus proyecciones de crecimiento para el país en 2026 y suben las de inflación."
+      ]
+    },
+    {
+      "fecha": "28-09",
+      "lineas": [
+        "El rechazo de Trump al plan iraní para Ormuz impulsa el petróleo y presiona bonos y acciones globales: el WTI sube +3,4% a US$95,5 y el Brent cruza los US$100, mientras los futuros del S&P 500 caen -0,5% y el Treasury a 10 años llega a 5,18%, su nivel más alto en décadas.",
+        "EE.UU. y China acuerdan reducir aranceles sobre US$60.000 millones en bienes —con una lista que excluye soybeans— y extienden la tregua comercial hasta enero, primer resultado concreto de la cumbre de la semana pasada.",
+        "Chile recibe la reafirmación de su clasificación soberana \"A\" con perspectiva estable por parte de S&P , que destaca la consolidación fiscal y proyecta mayor crecimiento para 2027; internamente, el gobierno anuncia un plan laboral de emergencia que sumará 75.000 cupos al subsidio al empleo."
       ]
     }
   ]
