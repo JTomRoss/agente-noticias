@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "25-09",
-      "lineas": [
-        "Los bonos globales siguen cayendo y la Fed prepara más alzas: el Treasury a 10 años llega a 5,16% —máximo en casi dos décadas— con funcionarios de la Fed señalando que \"se necesitarán movimientos modestos adicionales\" para domar la inflación; el dólar toca nuevos máximos y el mercado de hipotecas en EE.UU. supera 7,45% por primera vez desde inicios de 2025.",
-        "Irán ofrece reabrir el Estrecho de Ormuz y retomar negociaciones nucleares en siete días: la propuesta afloja el crudo (WTI -1,9% a US$92,8; Brent -7,4% a US$98,7) y modera el impulso inflacionario global, aunque la tregua aún no está firmada.",
-        "Chile debuta en el mercado de francos suizos: el Gobierno anuncia su primera emisión de bonos soberanos denominados en CHF, mientras bancos de inversión recortan sus proyecciones de crecimiento para el país en 2026 y suben las de inflación."
-      ]
-    },
-    {
       "fecha": "28-09",
       "lineas": [
         "El rechazo de Trump al plan iraní para Ormuz impulsa el petróleo y presiona bonos y acciones globales: el WTI sube +3,4% a US$95,5 y el Brent cruza los US$100, mientras los futuros del S&P 500 caen -0,5% y el Treasury a 10 años llega a 5,18%, su nivel más alto en décadas.",
@@ -23,6 +15,14 @@
         "Los bonos siguen bajo presión y el dólar se afirma mientras el mercado descuenta más alzas de la Fed: el Treasury a 10 años sube otros 6 pb hoy hasta 5,24% y el peso chileno pierde terreno frente al billete verde, que toca máximos en más de un año.",
         "Kast lanza \"Plan Chile Despega\" con US$1.350 millones en recursos y meta de crear más de 100.000 empleos; la CPC lo valora pero pide aspirar a \"mucho más\" y los expertos anticipan impacto moderado en el corto plazo.",
         "Chile debuta en el mercado de francos suizos colocando US$458 millones en bonos soberanos en dos tramos, diversificando sus fuentes de financiamiento en un contexto de tasas globales al alza."
+      ]
+    },
+    {
+      "fecha": "30-09",
+      "lineas": [
+        "Septiembre fue un mes cruel para los bonos: el Treasury a 10 años sube 50 pb en el mes hasta 5,25% y el dólar anota su mejor mes desde junio, con el euro cayendo a mínimos de 16 meses; las acciones globales resisten, pero con la mitad del S&P 500 desacoplado del índice.",
+        "Irán y el petróleo siguen dominando la agenda geopolítica: Trump niega haber ofrecido alivio de sanciones a Irán, las conversaciones indirectas continúan vía Qatar, y el Brent opera sobre $97; la Casa Blanca delibera internamente si prohibir exportaciones de diésel, lo que golpearía directamente a Chile.",
+        "En Chile, el Presupuesto 2027 toma cuerpo: el oficialismo confirma un alza de gasto del 1,5% tras reunión con Kast, aunque el ministro Mas desliza que podría haber \"alguna sorpresa\" al alza; simultáneamente, Santander recorta a la mitad su proyección de crecimiento para el país en 2026 y anticipa la mayor inflación en cuatro años."
       ]
     }
   ]
