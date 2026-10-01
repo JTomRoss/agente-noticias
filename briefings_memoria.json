@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "28-09",
-      "lineas": [
-        "El rechazo de Trump al plan iraní para Ormuz impulsa el petróleo y presiona bonos y acciones globales: el WTI sube +3,4% a US$95,5 y el Brent cruza los US$100, mientras los futuros del S&P 500 caen -0,5% y el Treasury a 10 años llega a 5,18%, su nivel más alto en décadas.",
-        "EE.UU. y China acuerdan reducir aranceles sobre US$60.000 millones en bienes —con una lista que excluye soybeans— y extienden la tregua comercial hasta enero, primer resultado concreto de la cumbre de la semana pasada.",
-        "Chile recibe la reafirmación de su clasificación soberana \"A\" con perspectiva estable por parte de S&P , que destaca la consolidación fiscal y proyecta mayor crecimiento para 2027; internamente, el gobierno anuncia un plan laboral de emergencia que sumará 75.000 cupos al subsidio al empleo."
-      ]
-    },
-    {
       "fecha": "29-09",
       "lineas": [
         "Los bonos siguen bajo presión y el dólar se afirma mientras el mercado descuenta más alzas de la Fed: el Treasury a 10 años sube otros 6 pb hoy hasta 5,24% y el peso chileno pierde terreno frente al billete verde, que toca máximos en más de un año.",
@@ -23,6 +15,14 @@
         "Septiembre fue un mes cruel para los bonos: el Treasury a 10 años sube 50 pb en el mes hasta 5,25% y el dólar anota su mejor mes desde junio, con el euro cayendo a mínimos de 16 meses; las acciones globales resisten, pero con la mitad del S&P 500 desacoplado del índice.",
         "Irán y el petróleo siguen dominando la agenda geopolítica: Trump niega haber ofrecido alivio de sanciones a Irán, las conversaciones indirectas continúan vía Qatar, y el Brent opera sobre $97; la Casa Blanca delibera internamente si prohibir exportaciones de diésel, lo que golpearía directamente a Chile.",
         "En Chile, el Presupuesto 2027 toma cuerpo: el oficialismo confirma un alza de gasto del 1,5% tras reunión con Kast, aunque el ministro Mas desliza que podría haber \"alguna sorpresa\" al alza; simultáneamente, Santander recorta a la mitad su proyección de crecimiento para el país en 2026 y anticipa la mayor inflación en cuatro años."
+      ]
+    },
+    {
+      "fecha": "01-10",
+      "lineas": [
+        "El rout de bonos globales se acelera con el Treasury a 10 años en 5,29% y yields asiáticos saltando, mientras Goldman Sachs pospone su proyección de alza de la Fed a diciembre y Trump exige la renuncia de Powell tras ser absuelto de irregularidades.",
+        "El petróleo sube con fuerza —Brent sobre US$100, WTI en US$92— impulsado por reportes de que refinerías chinas frenan exportaciones de combustible, con implicancias directas para Chile vía bencinas y diésel.",
+        "Chile cierra el peor trimestre del peso desde 2024 con el dólar tocando $973 hoy, el desempleo en 9,6% y el Presupuesto 2027 que crece 1,5% presentado por Kast, mientras el sindicato de supervisores de Escondida vota huelga con 94,8% de apoyo."
       ]
     }
   ]
