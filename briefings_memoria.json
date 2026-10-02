@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "29-09",
-      "lineas": [
-        "Los bonos siguen bajo presión y el dólar se afirma mientras el mercado descuenta más alzas de la Fed: el Treasury a 10 años sube otros 6 pb hoy hasta 5,24% y el peso chileno pierde terreno frente al billete verde, que toca máximos en más de un año.",
-        "Kast lanza \"Plan Chile Despega\" con US$1.350 millones en recursos y meta de crear más de 100.000 empleos; la CPC lo valora pero pide aspirar a \"mucho más\" y los expertos anticipan impacto moderado en el corto plazo.",
-        "Chile debuta en el mercado de francos suizos colocando US$458 millones en bonos soberanos en dos tramos, diversificando sus fuentes de financiamiento en un contexto de tasas globales al alza."
-      ]
-    },
-    {
       "fecha": "30-09",
       "lineas": [
         "Septiembre fue un mes cruel para los bonos: el Treasury a 10 años sube 50 pb en el mes hasta 5,25% y el dólar anota su mejor mes desde junio, con el euro cayendo a mínimos de 16 meses; las acciones globales resisten, pero con la mitad del S&P 500 desacoplado del índice.",
@@ -23,6 +15,14 @@
         "El rout de bonos globales se acelera con el Treasury a 10 años en 5,29% y yields asiáticos saltando, mientras Goldman Sachs pospone su proyección de alza de la Fed a diciembre y Trump exige la renuncia de Powell tras ser absuelto de irregularidades.",
         "El petróleo sube con fuerza —Brent sobre US$100, WTI en US$92— impulsado por reportes de que refinerías chinas frenan exportaciones de combustible, con implicancias directas para Chile vía bencinas y diésel.",
         "Chile cierra el peor trimestre del peso desde 2024 con el dólar tocando $973 hoy, el desempleo en 9,6% y el Presupuesto 2027 que crece 1,5% presentado por Kast, mientras el sindicato de supervisores de Escondida vota huelga con 94,8% de apoyo."
+      ]
+    },
+    {
+      "fecha": "02-10",
+      "lineas": [
+        "El petróleo rompe a la baja y los bonos respiran: el Brent cede 3% hasta US$99,3 y el WTI retrocede 4% hasta US$89,2 por reportes de liberación de reservas de diésel y crudo en Europa, mientras los Treasuries recortan yield con fuerza —T-2 cae 28 pb— de cara al dato de empleo de hoy.",
+        "Tensión geopolítica en escala: EE.UU. envía un tercer portaaviones al Medio Oriente mientras Trump advierte nuevos ataques a Irán, y la eurozona reporta inflación en 3,8% —máximo en tres años— impulsada por los costos de energía.",
+        "Chile siente el doble filo: el dólar toca $984,3 (+1,2% en el día y +9,4% en el año), presionando al peso en un contexto de geopolítica volátil, aunque el cobre rebota +1,1% hasta US$6,55/lb, ofreciendo algo de alivio a la cuenta externa."
       ]
     }
   ]
