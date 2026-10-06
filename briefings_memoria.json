@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "01-10",
-      "lineas": [
-        "El rout de bonos globales se acelera con el Treasury a 10 años en 5,29% y yields asiáticos saltando, mientras Goldman Sachs pospone su proyección de alza de la Fed a diciembre y Trump exige la renuncia de Powell tras ser absuelto de irregularidades.",
-        "El petróleo sube con fuerza —Brent sobre US$100, WTI en US$92— impulsado por reportes de que refinerías chinas frenan exportaciones de combustible, con implicancias directas para Chile vía bencinas y diésel.",
-        "Chile cierra el peor trimestre del peso desde 2024 con el dólar tocando $973 hoy, el desempleo en 9,6% y el Presupuesto 2027 que crece 1,5% presentado por Kast, mientras el sindicato de supervisores de Escondida vota huelga con 94,8% de apoyo."
-      ]
-    },
-    {
       "fecha": "02-10",
       "lineas": [
         "El petróleo rompe a la baja y los bonos respiran: el Brent cede 3% hasta US$99,3 y el WTI retrocede 4% hasta US$89,2 por reportes de liberación de reservas de diésel y crudo en Europa, mientras los Treasuries recortan yield con fuerza —T-2 cae 28 pb— de cara al dato de empleo de hoy.",
@@ -23,6 +15,14 @@
         "El euro colapsa y los bonos soberanos europeos entran en zona de contagio: el par cae a mínimos de 17 meses por la crisis fiscal de Francia y la convocatoria de elecciones anticipadas en España, con whispers de riesgo de contagio en el mercado de deuda soberana europea que Bloomberg compara con episodios anteriores de fragmentación.",
         "El peso chileno acumula +10% de depreciación en el año y toca $989,6 hoy, presionado por la fortaleza global del dólar; el cobre rebota +1,5% hasta US$6,59/lb pero no alcanza para compensar, y el Presupuesto 2027 ingresa al Congreso con puntos de tensión en educación, salud y obras públicas.",
         "Schneider Electric anuncia la compra de PTC por US$23.700 millones en efectivo, la mayor operación corporativa del día; en paralelo, Arauco pospone su bono híbrido por la volatilidad de tasas y Lula y Bolsonaro van a segunda vuelta en Brasil, con mercados que esperan oscilaciones bruscas según el resultado."
+      ]
+    },
+    {
+      "fecha": "06-10",
+      "lineas": [
+        "Hacienda golpea al dólar: un anuncio de licitaciones de divisas desplomó el USD/CLP más de $17 en la sesión, impidiendo que tocara la barrera de $1.000 y dejando el par hoy en $979.",
+        "Brasil sorprende al mercado: Bolsonaro lidera la primera vuelta presidencial y el Bovespa alcanza récord histórico; los activos chilenos con exposición a Brasil suben con fuerza y el IPSA se contagia del optimismo.",
+        "Presupuesto 2027 ingresa al Congreso: el gobierno Kast presentó una Ley de Finanzas con endeudamiento autorizado de hasta US$25.000 millones, recortes polémicos en regiones, Ley Cholito (–86%) y el cierre de programas como Prodemu y Calles Sin Violencia, desatando críticas transversales."
       ]
     }
   ]
