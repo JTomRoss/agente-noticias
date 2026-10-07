@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "02-10",
-      "lineas": [
-        "El petróleo rompe a la baja y los bonos respiran: el Brent cede 3% hasta US$99,3 y el WTI retrocede 4% hasta US$89,2 por reportes de liberación de reservas de diésel y crudo en Europa, mientras los Treasuries recortan yield con fuerza —T-2 cae 28 pb— de cara al dato de empleo de hoy.",
-        "Tensión geopolítica en escala: EE.UU. envía un tercer portaaviones al Medio Oriente mientras Trump advierte nuevos ataques a Irán, y la eurozona reporta inflación en 3,8% —máximo en tres años— impulsada por los costos de energía.",
-        "Chile siente el doble filo: el dólar toca $984,3 (+1,2% en el día y +9,4% en el año), presionando al peso en un contexto de geopolítica volátil, aunque el cobre rebota +1,1% hasta US$6,55/lb, ofreciendo algo de alivio a la cuenta externa."
-      ]
-    },
-    {
       "fecha": "05-10",
       "lineas": [
         "El euro colapsa y los bonos soberanos europeos entran en zona de contagio: el par cae a mínimos de 17 meses por la crisis fiscal de Francia y la convocatoria de elecciones anticipadas en España, con whispers de riesgo de contagio en el mercado de deuda soberana europea que Bloomberg compara con episodios anteriores de fragmentación.",
@@ -23,6 +15,14 @@
         "Hacienda golpea al dólar: un anuncio de licitaciones de divisas desplomó el USD/CLP más de $17 en la sesión, impidiendo que tocara la barrera de $1.000 y dejando el par hoy en $979.",
         "Brasil sorprende al mercado: Bolsonaro lidera la primera vuelta presidencial y el Bovespa alcanza récord histórico; los activos chilenos con exposición a Brasil suben con fuerza y el IPSA se contagia del optimismo.",
         "Presupuesto 2027 ingresa al Congreso: el gobierno Kast presentó una Ley de Finanzas con endeudamiento autorizado de hasta US$25.000 millones, recortes polémicos en regiones, Ley Cholito (–86%) y el cierre de programas como Prodemu y Calles Sin Violencia, desatando críticas transversales."
+      ]
+    },
+    {
+      "fecha": "07-10",
+      "lineas": [
+        "El dólar extiende su caída y el Presupuesto 2027 copa la agenda: tras el anuncio de licitaciones de Hacienda el lunes, el USD/CLP baja otro 0,7% hoy hasta $972,6, mientras el Congreso inaugura la discusión presupuestaria con tensiones por recortes y el debate sobre sostenibilidad de la deuda pública.",
+        "Banco Mundial, Hacienda y el mercado coinciden en un 2026 débil: el organismo recortó su proyección de crecimiento para Chile a 0,8%, la propia Hacienda bajó su estimación a 0,7%, y la Dipres advierte que no habrá holguras fiscales entre 2028 y 2031, aunque prevé un repunte de hasta 3% en 2027.",
+        "Energía y geopolítica dominan los mercados internacionales: el Brent supera US$101 (+1,2%) en un contexto de reservas globales de crudo al límite, la IEA convoca reunión de emergencia para coordinar una liberación de stocks de diésel, y la Fed publica hoy sus minutas con los mercados de bonos elevando yields."
       ]
     }
   ]
