@@ -97,6 +97,11 @@ FO_WATCHLIST: tuple[str, ...] = (
     "Arauco",  # competencia directa
 )
 
+# Familia Matte: los titulares con el apellido se marcan "menciona_matte" para que el
+# prompt verifique la asociación (es grupo Matte/CMPC, NUNCA Angelini/Arauco) y los
+# destaque en "El día en tres líneas". Sensible a mayúsculas: no captura "matters".
+_MATTE_RE = re.compile(r"\bMatte\b")
+
 # Competidores internacionales del sector celulosa/madera (alcance global).
 PULP_GLOBAL_WATCHLIST: tuple[str, ...] = (
     "Suzano",
@@ -1785,8 +1790,10 @@ def build_claude_prompt_news_only(
     """
     lunes = es_lunes_cl()
     tabla_txt = _tabla_indicadores_texto(prices or [])
+    # Tope de 320 ítems, pero una mención a la familia Matte nunca queda fuera por el corte.
+    noticias = news[:320] + [it for it in news[320:] if it.get("menciona_matte")]
     payload = {
-        "noticias": news[:320],
+        "noticias": noticias,
         "errores_noticias": news_errors,
         "fecha_hoy": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "es_lunes": lunes,
@@ -1853,6 +1860,15 @@ La redacción es editorial y fluida (no pegar el titular crudo), pero SIEMPRE an
 - En sectores prioritarios (banca, seguros de vida, energía) solo entra lo CORPORATIVO: resultados, M&A, inversiones, emisiones de deuda, regulación con impacto en empresas, nombramientos clave.
 - WATCHLIST (family office): si hay un HECHO CONCRETO y reciente sobre {", ".join(FO_WATCHLIST)} (resultado, operación, regulación, movimiento), inclúyelo SIEMPRE y ponlo primero en su sección. PERO si NO hay noticia real de esas entidades en el JSON, NO inventes, NO fuerces un comentario ni rellenes con generalidades ("CMPC sigue atenta al mercado…"): simplemente NO menciones la entidad ese día. La regla es "no descartar un hecho real", no "mencionar la entidad sí o sí".
 
+=== FAMILIA MATTE (DOBLE CHEQUEO OBLIGATORIO) ===
+Los ítems con "menciona_matte": true nombran a alguien de apellido Matte (primer o segundo apellido, ej. "Bernardo Larraín Matte", "Eliodoro Matte"). Para este lector son clave, y un error de asociación aquí es grave.
+- HECHOS FIJOS: el grupo Matte controla CMPC, Colbún y Bicecorp (Banco BICE, BICE Vida). El grupo Angelini controla Empresas Copec y, a través de ella, Arauco, el PRINCIPAL COMPETIDOR de CMPC. Son grupos distintos y rivales: NUNCA vincules a un Matte con Angelini, Copec ni Arauco, y no confundas CMPC con Arauco.
+- CARGOS Y VÍNCULOS: describe a la persona SOLO con el cargo o rol que dice el titular del JSON. NO agregues cargos ni vínculos desde tu memoria (puede estar desactualizada). Si el titular no dice su cargo, nombra a la persona sin cargo.
+- ERROR REAL que no debe repetirse: el titular decía solo "Bernardo Larraín Matte: 'No basta con la gestión, se requieren reformas claves'" y el correo escribió "Bernardo Larraín Matte —presidente de la SOFOFA vinculado al grupo Angelini—". Ambos datos se inventaron; el vínculo con Angelini es además falso.
+- DOBLE CHEQUEO antes de entregar: relee CADA frase del correo donde aparece "Matte" y confirma que (1) todo cargo o rol sale del titular y (2) cualquier vínculo con un grupo o empresa es con el grupo Matte, nunca con otro. Si algo no lo puedes confirmar, bórralo.
+- SIEMPRE ENTRA: una noticia con "menciona_matte": true no se descarta, aunque sea una entrevista o declaración (para este lector, lo que dice un Matte ES noticia). Va en su sección del cuerpo con su fuente y además se destaca en "El día en tres líneas" (ver abajo). Excepción: si "Matte" no es el apellido (ej. "matte" como acabado de papel en un titular en inglés), ignóralo.
+- Si otro titular del día habla de la misma persona sin el segundo apellido (ej. "Bernardo Larraín"), trátalo como la misma historia y redáctala como una sola (sin hablar de "titulares" ni "apariciones").
+
 === JERARQUÍA Y SÍNTESIS (lo más importante de este correo) ===
 El correo se lee POR CAPAS: quien tiene 30 segundos saca lo esencial sin bajar; quien tiene 10 minutos profundiza. Tu trabajo es CONSTRUIR el big picture, no salpicar noticias sueltas del mismo peso.
 - AGRUPA POR NARRATIVA, no por taxonomía. Noticias con un MISMO motor van JUNTAS en un solo párrafo, no como ítems separados. Ej: si el dólar fuerte hizo caer oro, cobre, BTC y peso → UNA frase, no cuatro.
@@ -1864,7 +1880,7 @@ El correo se lee POR CAPAS: quien tiene 30 segundos saca lo esencial sin bajar; 
   · Nacional · Chile: 4-5 noticias, 2-3 frases cada una.
   · Celulosa: 3-4 noticias (ver umbral en su sección).
   · "También, en breve": MÁXIMO 5-6 ítems, UNA sola frase cada uno.
-  · "El día en tres líneas": 3 viñetas de 1-2 frases.
+  · "El día en tres líneas": 3 viñetas de 1-2 frases (+1 solo si aplica la regla Matte).
 - Estos números son GRAVEDAD, no cuota: si hay menos material real pon menos, y si una sección no tiene noticia real OMÍTELA; nunca rellenes para llegar al número. Pero NO superes los topes: lo que no entra desarrollado se comprime al bin o se elimina.
 
 === ESTRUCTURA DEL HTML — USA EXACTAMENTE ESTAS CLASES (el sistema les aplica el estilo) ===
@@ -1876,11 +1892,15 @@ NO escribas atributos style="..."; usa SOLO las clases indicadas. Para la negrit
 - Si "memoria_briefings" trae contenido, úsalo para el contraste con días previos; si está vacío, infiere el viraje desde las noticias frescas vs. las "arrastre".
 - CRÍTICO: describe solo un cambio REAL. En día plano, dilo explícito ("sin grandes cambios, sigue mandando la Fed"); NUNCA inventes una rotación.
 
-(2) EL DÍA EN TRES LÍNEAS — EXACTAMENTE 3 viñetas, cada una sintetiza un eje del día (resumen ejecutivo):
+(2) EL DÍA EN TRES LÍNEAS — EXACTAMENTE 3 viñetas (salvo la 4ª de la regla Matte), cada una sintetiza un eje del día (resumen ejecutivo):
 <div class="brief"><div class="brief-lbl">El día en tres líneas</div>
 <ol class="brief-ol">
 <li class="brief-li"><b>[idea fuerza]</b> [resto].</li>
 </ol></div>
+- REGLA MATTE: si hay noticias con "menciona_matte": true, el nombre del Matte DEBE aparecer en esta caja, en negrita (excepción permitida a "un solo <b> por ítem"):
+  · Si su noticia es parte de uno de los 3 ejes del día, nómbralo dentro de esa viñeta.
+  · Si no es de lo más relevante, agrega una 4ª viñeta AL FINAL dedicada a él (una sola, aunque haya varias noticias Matte: agrúpalas). Nunca más de 4 viñetas.
+  · Sin noticias Matte: exactamente 3 viñetas, como siempre.
 
 (3) QUÉ MIRAR HOY — MÁXIMO 3 bullets de eventos/datos del DÍA EN CURSO (reportes/datos de hoy), extraídos de las menciones del JSON. Si no hay, pon menos u omite la caja:
 <div class="watch"><div class="watch-lbl">Qué mirar hoy</div>
@@ -2498,7 +2518,9 @@ def _strip_tags(s: str) -> str:
 
 
 def _extraer_tres_lineas(html_fragment: str) -> list[str]:
-    """Extrae las 3 viñetas de la caja 'El día en tres líneas' del HTML generado."""
+    """Extrae las 3 viñetas de la caja 'El día en tres líneas' del HTML generado.
+
+    La 4ª viñeta opcional (regla Matte) va al final y queda fuera a propósito."""
     if not html_fragment:
         return []
     m = re.search(r"El d[íi]a en tres l[íi]neas.*?<ol[^>]*>(.*?)</ol>", html_fragment, re.I | re.S)
@@ -2685,6 +2707,13 @@ def run() -> int:
     pre_dedupe = len(news)
     news = dedupe_news_by_title_similarity(news)
     print(f"  Tras deduplicación por similitud de título: {len(news)} (antes {pre_dedupe}).")
+    n_matte = 0
+    for it in news:
+        if _MATTE_RE.search(it.get("titular") or ""):
+            it["menciona_matte"] = True
+            n_matte += 1
+    if n_matte:
+        print(f"  Familia Matte: {n_matte} titular(es) marcados para doble chequeo y destaque.")
 
     print("\n--- Noticias incluidas en el briefing (verificación consola) ---")
     if not news:
