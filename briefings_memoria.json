@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "05-10",
-      "lineas": [
-        "El euro colapsa y los bonos soberanos europeos entran en zona de contagio: el par cae a mínimos de 17 meses por la crisis fiscal de Francia y la convocatoria de elecciones anticipadas en España, con whispers de riesgo de contagio en el mercado de deuda soberana europea que Bloomberg compara con episodios anteriores de fragmentación.",
-        "El peso chileno acumula +10% de depreciación en el año y toca $989,6 hoy, presionado por la fortaleza global del dólar; el cobre rebota +1,5% hasta US$6,59/lb pero no alcanza para compensar, y el Presupuesto 2027 ingresa al Congreso con puntos de tensión en educación, salud y obras públicas.",
-        "Schneider Electric anuncia la compra de PTC por US$23.700 millones en efectivo, la mayor operación corporativa del día; en paralelo, Arauco pospone su bono híbrido por la volatilidad de tasas y Lula y Bolsonaro van a segunda vuelta en Brasil, con mercados que esperan oscilaciones bruscas según el resultado."
-      ]
-    },
-    {
       "fecha": "06-10",
       "lineas": [
         "Hacienda golpea al dólar: un anuncio de licitaciones de divisas desplomó el USD/CLP más de $17 en la sesión, impidiendo que tocara la barrera de $1.000 y dejando el par hoy en $979.",
@@ -23,6 +15,14 @@
         "El dólar extiende su caída y el Presupuesto 2027 copa la agenda: tras el anuncio de licitaciones de Hacienda el lunes, el USD/CLP baja otro 0,7% hoy hasta $972,6, mientras el Congreso inaugura la discusión presupuestaria con tensiones por recortes y el debate sobre sostenibilidad de la deuda pública.",
         "Banco Mundial, Hacienda y el mercado coinciden en un 2026 débil: el organismo recortó su proyección de crecimiento para Chile a 0,8%, la propia Hacienda bajó su estimación a 0,7%, y la Dipres advierte que no habrá holguras fiscales entre 2028 y 2031, aunque prevé un repunte de hasta 3% en 2027.",
         "Energía y geopolítica dominan los mercados internacionales: el Brent supera US$101 (+1,2%) en un contexto de reservas globales de crudo al límite, la IEA convoca reunión de emergencia para coordinar una liberación de stocks de diésel, y la Fed publica hoy sus minutas con los mercados de bonos elevando yields."
+      ]
+    },
+    {
+      "fecha": "08-10",
+      "lineas": [
+        "El petróleo rompe US$100 y presiona bonos y bolsas globales: el WTI sube 3,8% a US$91,6 y el Brent 3,9% a US$104,1, las minutas de la Fed revelaron división sobre nuevas alzas, y el Treasury a 10 años escala a 5,28%; Wall Street cede terreno desde máximos históricos.",
+        "Chile crece apenas 0,8% en 2026 según el Banco Mundial —una de las peores marcas de la región—, mientras el Presupuesto 2027 enfrenta resistencia transversal en el Congreso por sus recortes y el gobierno anticipa cumplir la meta fiscal por primera vez en cuatro años.",
+        "CMPC enfrenta una disyuntiva de US$4.600 millones en Brasil: el proyecto de celulosa pone en tensión su grado de inversión, justo cuando las exportaciones chilenas de pulpa blanqueada crecen 49% en septiembre y los precios brasileños caen 7%."
       ]
     }
   ]
