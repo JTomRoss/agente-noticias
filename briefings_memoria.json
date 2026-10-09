@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "06-10",
-      "lineas": [
-        "Hacienda golpea al dólar: un anuncio de licitaciones de divisas desplomó el USD/CLP más de $17 en la sesión, impidiendo que tocara la barrera de $1.000 y dejando el par hoy en $979.",
-        "Brasil sorprende al mercado: Bolsonaro lidera la primera vuelta presidencial y el Bovespa alcanza récord histórico; los activos chilenos con exposición a Brasil suben con fuerza y el IPSA se contagia del optimismo.",
-        "Presupuesto 2027 ingresa al Congreso: el gobierno Kast presentó una Ley de Finanzas con endeudamiento autorizado de hasta US$25.000 millones, recortes polémicos en regiones, Ley Cholito (–86%) y el cierre de programas como Prodemu y Calles Sin Violencia, desatando críticas transversales."
-      ]
-    },
-    {
       "fecha": "07-10",
       "lineas": [
         "El dólar extiende su caída y el Presupuesto 2027 copa la agenda: tras el anuncio de licitaciones de Hacienda el lunes, el USD/CLP baja otro 0,7% hoy hasta $972,6, mientras el Congreso inaugura la discusión presupuestaria con tensiones por recortes y el debate sobre sostenibilidad de la deuda pública.",
@@ -23,6 +15,14 @@
         "El petróleo rompe US$100 y presiona bonos y bolsas globales: el WTI sube 3,8% a US$91,6 y el Brent 3,9% a US$104,1, las minutas de la Fed revelaron división sobre nuevas alzas, y el Treasury a 10 años escala a 5,28%; Wall Street cede terreno desde máximos históricos.",
         "Chile crece apenas 0,8% en 2026 según el Banco Mundial —una de las peores marcas de la región—, mientras el Presupuesto 2027 enfrenta resistencia transversal en el Congreso por sus recortes y el gobierno anticipa cumplir la meta fiscal por primera vez en cuatro años.",
         "CMPC enfrenta una disyuntiva de US$4.600 millones en Brasil: el proyecto de celulosa pone en tensión su grado de inversión, justo cuando las exportaciones chilenas de pulpa blanqueada crecen 49% en septiembre y los precios brasileños caen 7%."
+      ]
+    },
+    {
+      "fecha": "09-10",
+      "lineas": [
+        "La Fed sigue inclinada a subir más tasas, pero el mercado de bonos tambalea: las minutas confirmaron que la mayoría de los miembros espera al menos una alza adicional este año, el Treasury a 10 años baja levemente hoy a 5,23% y PIMCO advierte que podría tocar 6% por primera vez desde 2000, el nivel más alto desde entonces según fuentes de Reuters.",
+        "Chile crece apenas 0,8% en 2026 y la inflación de septiembre (0,4%) complica la meta oficial de 3,8%: el ministro Quiroz reconoció que \"está desafiante\" cumplir la proyección y pidió calma a los empresarios, mientras la huelga en Minera Centinela —filial del grupo Luksic— amenaza con reducir la producción de cobre a la mitad.",
+        "El aluvión en Las Condes fuerza estado de catástrofe y suspende la promulgación de la Ley de Reconstrucción, con el Gobierno además enfrentando críticas por la ausencia de alerta SAE y la suspensión de clases en diez comunas de la Región Metropolitana."
       ]
     }
   ]
