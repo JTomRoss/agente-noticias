@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "07-10",
-      "lineas": [
-        "El dólar extiende su caída y el Presupuesto 2027 copa la agenda: tras el anuncio de licitaciones de Hacienda el lunes, el USD/CLP baja otro 0,7% hoy hasta $972,6, mientras el Congreso inaugura la discusión presupuestaria con tensiones por recortes y el debate sobre sostenibilidad de la deuda pública.",
-        "Banco Mundial, Hacienda y el mercado coinciden en un 2026 débil: el organismo recortó su proyección de crecimiento para Chile a 0,8%, la propia Hacienda bajó su estimación a 0,7%, y la Dipres advierte que no habrá holguras fiscales entre 2028 y 2031, aunque prevé un repunte de hasta 3% en 2027.",
-        "Energía y geopolítica dominan los mercados internacionales: el Brent supera US$101 (+1,2%) en un contexto de reservas globales de crudo al límite, la IEA convoca reunión de emergencia para coordinar una liberación de stocks de diésel, y la Fed publica hoy sus minutas con los mercados de bonos elevando yields."
-      ]
-    },
-    {
       "fecha": "08-10",
       "lineas": [
         "El petróleo rompe US$100 y presiona bonos y bolsas globales: el WTI sube 3,8% a US$91,6 y el Brent 3,9% a US$104,1, las minutas de la Fed revelaron división sobre nuevas alzas, y el Treasury a 10 años escala a 5,28%; Wall Street cede terreno desde máximos históricos.",
@@ -23,6 +15,14 @@
         "La Fed sigue inclinada a subir más tasas, pero el mercado de bonos tambalea: las minutas confirmaron que la mayoría de los miembros espera al menos una alza adicional este año, el Treasury a 10 años baja levemente hoy a 5,23% y PIMCO advierte que podría tocar 6% por primera vez desde 2000, el nivel más alto desde entonces según fuentes de Reuters.",
         "Chile crece apenas 0,8% en 2026 y la inflación de septiembre (0,4%) complica la meta oficial de 3,8%: el ministro Quiroz reconoció que \"está desafiante\" cumplir la proyección y pidió calma a los empresarios, mientras la huelga en Minera Centinela —filial del grupo Luksic— amenaza con reducir la producción de cobre a la mitad.",
         "El aluvión en Las Condes fuerza estado de catástrofe y suspende la promulgación de la Ley de Reconstrucción, con el Gobierno además enfrentando críticas por la ausencia de alerta SAE y la suspensión de clases en diez comunas de la Región Metropolitana."
+      ]
+    },
+    {
+      "fecha": "12-10",
+      "lineas": [
+        "Trump anuncia un \"cese al fuego energético\" entre Rusia y Ucrania y firma un acuerdo de diésel con Moscú , provocando una caída inicial en los precios del combustible que luego se revierte: el WTI sube hoy +1,1% a US$92,9 y el Brent +1,1% a US$105,9, mientras Zelenski rechaza el acuerdo y la UE insta a Trump a imponer sanciones en su lugar.",
+        "El cobre sube +1,9% a US$6,77/lb impulsado en parte por un aluvión en una mina chilena , el Nobel de Economía recae en Robert E. Hall y Michael Woodford, y el Treasury a 10 años escala 1 pb a 5,24% mientras el mercado aguarda el CPI de esta semana y pistas sobre la Fed.",
+        "El Presupuesto 2027 de Chile concentra la agenda nacional : el Gobierno propone recortar más de $793.000 millones en 220 programas —incluido el Fondo de Tierras de Conadi— y prepara 10 medidas laborales, mientras la oposición critica el plan Chile Despega y el biministro Mas proyecta que 2027 será \"el año del crecimiento y el empleo\"."
       ]
     }
   ]
