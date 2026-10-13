@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "08-10",
-      "lineas": [
-        "El petróleo rompe US$100 y presiona bonos y bolsas globales: el WTI sube 3,8% a US$91,6 y el Brent 3,9% a US$104,1, las minutas de la Fed revelaron división sobre nuevas alzas, y el Treasury a 10 años escala a 5,28%; Wall Street cede terreno desde máximos históricos.",
-        "Chile crece apenas 0,8% en 2026 según el Banco Mundial —una de las peores marcas de la región—, mientras el Presupuesto 2027 enfrenta resistencia transversal en el Congreso por sus recortes y el gobierno anticipa cumplir la meta fiscal por primera vez en cuatro años.",
-        "CMPC enfrenta una disyuntiva de US$4.600 millones en Brasil: el proyecto de celulosa pone en tensión su grado de inversión, justo cuando las exportaciones chilenas de pulpa blanqueada crecen 49% en septiembre y los precios brasileños caen 7%."
-      ]
-    },
-    {
       "fecha": "09-10",
       "lineas": [
         "La Fed sigue inclinada a subir más tasas, pero el mercado de bonos tambalea: las minutas confirmaron que la mayoría de los miembros espera al menos una alza adicional este año, el Treasury a 10 años baja levemente hoy a 5,23% y PIMCO advierte que podría tocar 6% por primera vez desde 2000, el nivel más alto desde entonces según fuentes de Reuters.",
@@ -23,6 +15,14 @@
         "Trump anuncia un \"cese al fuego energético\" entre Rusia y Ucrania y firma un acuerdo de diésel con Moscú , provocando una caída inicial en los precios del combustible que luego se revierte: el WTI sube hoy +1,1% a US$92,9 y el Brent +1,1% a US$105,9, mientras Zelenski rechaza el acuerdo y la UE insta a Trump a imponer sanciones en su lugar.",
         "El cobre sube +1,9% a US$6,77/lb impulsado en parte por un aluvión en una mina chilena , el Nobel de Economía recae en Robert E. Hall y Michael Woodford, y el Treasury a 10 años escala 1 pb a 5,24% mientras el mercado aguarda el CPI de esta semana y pistas sobre la Fed.",
         "El Presupuesto 2027 de Chile concentra la agenda nacional : el Gobierno propone recortar más de $793.000 millones en 220 programas —incluido el Fondo de Tierras de Conadi— y prepara 10 medidas laborales, mientras la oposición critica el plan Chile Despega y el biministro Mas proyecta que 2027 será \"el año del crecimiento y el empleo\"."
+      ]
+    },
+    {
+      "fecha": "13-10",
+      "lineas": [
+        "El trade de IA cruje globalmente : comentarios del CEO de Broadcom sobre \"casino\" en IA y la caída de chips coreanos empujan los futuros del Nasdaq —0,5%; BlackRock baja su recomendación en renta variable y se vuelve alcista en Treasuries de corto plazo.",
+        "El IMF advierte desde Bangkok que la economía mundial roza sus límites de resiliencia , con deuda pública en niveles de posguerra, riesgo de un repunte desordenado en yields y el boom de IA como único contrapeso relevante al freno del conflicto.",
+        "En Chile, el Gobierno cierra el acuerdo con Autopista Central: rebaja de TAG de entre 10% y 25% a cambio de extender la concesión 20 meses ; mientras el Presupuesto 2027 concentra el debate político, con recortes de $793.000 millones en 220 programas y la CRUCH pidiendo revertir un recorte de más de $36.000 millones a universidades."
       ]
     }
   ]
