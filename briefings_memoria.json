@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "12-10",
-      "lineas": [
-        "Trump anuncia un \"cese al fuego energético\" entre Rusia y Ucrania y firma un acuerdo de diésel con Moscú , provocando una caída inicial en los precios del combustible que luego se revierte: el WTI sube hoy +1,1% a US$92,9 y el Brent +1,1% a US$105,9, mientras Zelenski rechaza el acuerdo y la UE insta a Trump a imponer sanciones en su lugar.",
-        "El cobre sube +1,9% a US$6,77/lb impulsado en parte por un aluvión en una mina chilena , el Nobel de Economía recae en Robert E. Hall y Michael Woodford, y el Treasury a 10 años escala 1 pb a 5,24% mientras el mercado aguarda el CPI de esta semana y pistas sobre la Fed.",
-        "El Presupuesto 2027 de Chile concentra la agenda nacional : el Gobierno propone recortar más de $793.000 millones en 220 programas —incluido el Fondo de Tierras de Conadi— y prepara 10 medidas laborales, mientras la oposición critica el plan Chile Despega y el biministro Mas proyecta que 2027 será \"el año del crecimiento y el empleo\"."
-      ]
-    },
-    {
       "fecha": "13-10",
       "lineas": [
         "El trade de IA cruje globalmente : comentarios del CEO de Broadcom sobre \"casino\" en IA y la caída de chips coreanos empujan los futuros del Nasdaq —0,5%; BlackRock baja su recomendación en renta variable y se vuelve alcista en Treasuries de corto plazo.",
@@ -23,6 +15,14 @@
         "El IPC de EE.UU. y la Fed concentran la jornada: los mercados aguardan el dato de septiembre, con expectativas de aceleración por gasolina; la Fed está dividida —Williams ve sin necesidad de alza en 2027, Collins deja la puerta abierta a una más este año— y el Treasury a 10 años retrocede 2 pb a 5,22% mientras el dólar cede terreno.",
         "El petróleo sube y el cobre toca máximos de tres semanas: los ataques de los hutíes a Arabia Saudita empujan el WTI a US$94,7 (+0,6%) y el Brent a US$105,8; el cobre escala a US$6,73/lb (+0,8%) impulsado por la amenaza de huelga en Escondida, que podría sumar a la ya declarada en Centinela, tensionando la oferta global.",
         "Chile enfrenta un panorama de bajo crecimiento con fricciones geopolíticas propias: el FMI recortó a 0,6% su proyección de PIB para 2026 —segunda más baja de Sudamérica— y estimó desempleo de 9,5%; fondos de pensiones acumularon pérdidas cuantiosas por sus posiciones en tasas de EE.UU.; y el buque chileno que navegará a Malvinas generó una amenaza de represalias comerciales desde Buenos Aires."
+      ]
+    },
+    {
+      "fecha": "15-10",
+      "lineas": [
+        "El IPC de EE.UU. en 3,7% rompe la calma y reaviva el debate sobre alza de la Fed: el Nasdaq cae más de 1% hoy y los futuros siguen presionados; el Treasury a 10 años cede 3 pb a 5,19% mientras los de corto plazo no se mueven, señalando que el mercado descuenta ya una acción en diciembre.",
+        "Chile, segunda economía de menor crecimiento en Sudamérica según el FMI: el organismo recortó la proyección de PIB 2026 a 0,6% y estimó desempleo de 9,5%; JPMorgan además rebajó su recomendación sobre Chile y anticipa un fuerte repunte en Brasil, endureciendo la mirada externa sobre el país.",
+        "Fondo E de AFP acumula pérdidas cuantiosas por sus posiciones en tasas de EE.UU.: el ministro Cortez se reunió con las AFP y el efecto de las tasas altas se tradujo en pérdidas de miles de millones de dólares; las administradoras defienden la estrategia como de largo plazo."
       ]
     }
   ]
