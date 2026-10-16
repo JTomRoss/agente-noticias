@@ -2,14 +2,6 @@
   "version": 1,
   "briefings": [
     {
-      "fecha": "13-10",
-      "lineas": [
-        "El trade de IA cruje globalmente : comentarios del CEO de Broadcom sobre \"casino\" en IA y la caída de chips coreanos empujan los futuros del Nasdaq —0,5%; BlackRock baja su recomendación en renta variable y se vuelve alcista en Treasuries de corto plazo.",
-        "El IMF advierte desde Bangkok que la economía mundial roza sus límites de resiliencia , con deuda pública en niveles de posguerra, riesgo de un repunte desordenado en yields y el boom de IA como único contrapeso relevante al freno del conflicto.",
-        "En Chile, el Gobierno cierra el acuerdo con Autopista Central: rebaja de TAG de entre 10% y 25% a cambio de extender la concesión 20 meses ; mientras el Presupuesto 2027 concentra el debate político, con recortes de $793.000 millones en 220 programas y la CRUCH pidiendo revertir un recorte de más de $36.000 millones a universidades."
-      ]
-    },
-    {
       "fecha": "14-10",
       "lineas": [
         "El IPC de EE.UU. y la Fed concentran la jornada: los mercados aguardan el dato de septiembre, con expectativas de aceleración por gasolina; la Fed está dividida —Williams ve sin necesidad de alza en 2027, Collins deja la puerta abierta a una más este año— y el Treasury a 10 años retrocede 2 pb a 5,22% mientras el dólar cede terreno.",
@@ -23,6 +15,14 @@
         "El IPC de EE.UU. en 3,7% rompe la calma y reaviva el debate sobre alza de la Fed: el Nasdaq cae más de 1% hoy y los futuros siguen presionados; el Treasury a 10 años cede 3 pb a 5,19% mientras los de corto plazo no se mueven, señalando que el mercado descuenta ya una acción en diciembre.",
         "Chile, segunda economía de menor crecimiento en Sudamérica según el FMI: el organismo recortó la proyección de PIB 2026 a 0,6% y estimó desempleo de 9,5%; JPMorgan además rebajó su recomendación sobre Chile y anticipa un fuerte repunte en Brasil, endureciendo la mirada externa sobre el país.",
         "Fondo E de AFP acumula pérdidas cuantiosas por sus posiciones en tasas de EE.UU.: el ministro Cortez se reunió con las AFP y el efecto de las tasas altas se tradujo en pérdidas de miles de millones de dólares; las administradoras defienden la estrategia como de largo plazo."
+      ]
+    },
+    {
+      "fecha": "16-10",
+      "lineas": [
+        "El presidente de la Fed, Kevin Warsh, se abstiene de dar señal sobre tasas pero respalda el optimismo sobre IA y productividad, lo que calma parcialmente los mercados: el S&P 500 termina levemente en verde tras la sangría del miércoles y el Treasury a 10 años cede 10 pb a 5,09%.",
+        "El fondo E de las AFP acumula pérdidas cuantiosas por posiciones en tasas de EE.UU.: el biministro Cortez se reúne con las administradoras, parlamentarios ofician a la Superintendencia de Pensiones y las AFP defienden la estrategia como \"de largo plazo\", mientras el caso escala al Congreso.",
+        "Los camioneros alcanzan un acuerdo parcial con el Gobierno por el alza del diésel —con garantía estatal de hasta 95% para créditos del sector— pero no descartan movilizaciones al no obtener su demanda de recargo obligatorio al usuario."
       ]
     }
   ]
